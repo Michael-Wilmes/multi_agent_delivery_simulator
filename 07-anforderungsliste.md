@@ -1,39 +1,5 @@
 # Anforderungsliste: Multi-Agenten-Liefersimulation
-
-> **Zweck:** Zentrale, abhakelbare Arbeits-, Abnahme- und Nachweisliste für die Umsetzung mit Python, Pygame, Contract-Net, A\*, Prolog und Auswertung.
->
-> **Quellengrundlage:** `Fahrplan_4_Wochen_MAS_Pygame_v2.pdf` und `Fahrplan_4_Wochen_MAS_Pygame.pdf`.
->
-> **Wichtiger Hinweis:** Die beiden Fahrpläne verweisen auf ein separates Original-Aufgabenblatt beziehungsweise eine bereits ausgefüllte Aufgabenmatrix. Dieses Original lag bei der Erstellung dieser Datei nicht vor. Punkte mit **[BLATT PRÜFEN]** müssen deshalb zwingend mit dem Original abgeglichen werden. Die Liste enthält alle Anforderungen und konkret genannten Prüfpunkte aus den beiden verfügbaren Fahrplänen, erhebt aber ohne das Originalblatt keinen Anspruch darauf, unbekannte Originalformulierungen abzubilden.
-
 ---
-
-## 0. Anforderungsabgleich und Projektsteuerung
-
-- [ ] Original-Aufgabenblatt vollständig beschaffen.
-- [ ] Original-Aufgabenblatt Punkt für Punkt mit dieser Liste abgleichen.
-- [ ] Jede Originalanforderung als Muss-, Kann- oder Komfortanforderung kennzeichnen.
-- [ ] Abweichende oder fehlende Anforderungen ergänzen.
-- [ ] Nur als `ABGLEICH` markierte Punkte korrigieren, wenn bereits eine ausgefüllte Matrix existiert.
-- [ ] Für jede Muss-Anforderung eine eindeutige Definition of Done formulieren.
-- [ ] Für jede Anforderung ein Abnahmekriterium festlegen.
-- [ ] Für jede Anforderung einen Nachweis festlegen, zum Beispiel automatisierter Test, Screenshot, Log, CSV oder Dokumentationsstelle.
-- [ ] Für jede Anforderung den Umsetzungsstatus pflegen.
-- [ ] Für jede Anforderung eine Zielwoche festlegen.
-- [ ] Aufgabenmatrix als verbindliches operatives Steuerungsinstrument verwenden.
-- [ ] Nach jeder Arbeitssitzung einen Commit erstellen.
-- [ ] Nach jeder Arbeitssitzung neue Architekturentscheidungen kurz dokumentieren.
-- [ ] Nach jeder Arbeitssitzung genau den nächsten konkreten Schritt festhalten.
-- [ ] Bei Zeitdruck zuerst Komfort und Optik reduzieren, nicht Pflichtlogik oder Nachweise.
-
-### Abnahme
-
-- [ ] Keine bekannte Anforderung ist nur implizit vorhanden.
-- [ ] Jede Muss-Anforderung ist Code, Test, Screenshot, Log, CSV oder Dokumentation zugeordnet.
-- [ ] Aufgabenliste und tatsächlicher Projektstand stimmen überein.
-
----
-
 ## 1. Projektgrundlage und Entwicklungsumgebung
 
 - [ ] Python-Version festlegen und dokumentieren.
@@ -47,18 +13,18 @@
 - [ ] Keine Fachlogik direkt im Pygame-Eventloop implementieren.
 - [ ] Keine unnötigen Sprite-Klassen einführen.
 - [ ] Keine Animationen, Sounds oder zusätzlichen GUI-Frameworks einführen, sofern nicht ausdrücklich gefordert.
-- [ ] Keine Mausbedienung voraussetzen, sofern das Originalblatt sie nicht verlangt. **[BLATT PRÜFEN]**
+- [ ] Keine Mausbedienung voraussetzen, sofern die Aufgabenstellung sie nicht verlangt. **[BLATT PRÜFEN]**
 
 ### Pygame-Grundlagen
 
-- [ ] Pygame initialisieren.
-- [ ] Fenster und Zeichenfläche erzeugen.
+- [x] Pygame initialisieren.
+- [x] Fenster und Zeichenfläche erzeugen.
 - [ ] Fenster kontrolliert schließen können.
 - [ ] Eventloop implementieren.
 - [ ] Tastatureingaben erkennen.
 - [ ] Rechtecke zeichnen.
 - [ ] Kreise zeichnen.
-- [ ] Text rendern.
+- [x] Text rendern.
 - [ ] Frames über eine Clock begrenzen.
 - [ ] Gezeichneten Frame sichtbar aktualisieren.
 - [ ] Simulationstakt und Bildrate voneinander trennen.
@@ -79,8 +45,9 @@
 - [ ] Klasse beziehungsweise Datentyp `AgentState` modellieren.
 - [ ] Klasse beziehungsweise Datentyp `Nachricht` modellieren.
 - [ ] Karte beziehungsweise Grid als eigenes Modell abbilden.
-- [ ] Befahrbare Straße modellieren.
-- [ ] Wand beziehungsweise Hindernis modellieren.
+- [ ] Karte als Graph modelieren. Kanten sind Verbindungen zu anderen Punkten. 
+- [ ] Wand beziehungsweise Hindernis modellieren (Im Graph)
+- [ ] Graph dokumentieren
 - [ ] Depot modellieren.
 - [ ] Ziel modellieren.
 - [ ] Agent modellieren.
