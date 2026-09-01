@@ -1,0 +1,2 @@
+IDLE = "idle"
+OPEN = "open"
