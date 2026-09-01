@@ -15,7 +15,7 @@ Bei der Wahl der Darstellung sind Sie ebenfalls frei, d. h., Sie können eine ei
 
 ## Aktuelle Phase
 
-- [ ] Erste Gedanken zum Projekt 
+- [x] Erste Gedanken zum Projekt 
 - [ ] Problem verstehen
 - [ ] Evaluieren, experimentieren oder implementieren
 - [ ] Arbeitsliste erstellen
