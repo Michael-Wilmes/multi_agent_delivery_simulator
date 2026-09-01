@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700">
+  <defs>
+    <style>
+      .title { font: 700 30px 'Segoe UI', Arial, sans-serif; fill: #eaf3ff; }
+      .small { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #bfd1eb; }
+      .cell { fill: #233446; stroke: #8aaac9; stroke-width: 2; }
+      .wall { fill: #111b27; stroke: #d6dff0; stroke-width: 2; }
+      .center { fill: #2b5d8a; stroke: #a7d3ff; stroke-width: 3; }
+      .arrow { stroke: #7ec8ff; stroke-width: 4; fill: none; marker-end: url(#arrowhead); }
+      .block { stroke: #ff7a7a; stroke-width: 4; fill: none; marker-end: url(#stop); }
+      .label { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #f4fbff; }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L0,12 L10,6 z" fill="#7ec8ff"/>
+    </marker>
+    <marker id="stop" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,12 M12,0 L0,12" fill="none" stroke="#ff7a7a" stroke-width="2"/>
+    </marker>
+  </defs>
+
+  <rect width="1100" height="700" fill="#0b1220"/>
+  <text x="60" y="70" class="title">Wall blocks one neighbor</text>
+
+  <g transform="translate(260,170)">
+    <rect x="0" y="0" width="160" height="160" class="cell"/>
+    <rect x="160" y="0" width="160" height="160" class="cell"/>
+    <rect x="320" y="0" width="160" height="160" class="cell"/>
+
+    <rect x="0" y="160" width="160" height="160" class="cell"/>
+    <rect x="160" y="160" width="160" height="160" class="center"/>
+    <rect x="320" y="160" width="160" height="160" class="wall"/>
+
+    <rect x="0" y="320" width="160" height="160" class="cell"/>
+    <rect x="160" y="320" width="160" height="160" class="cell"/>
+    <rect x="320" y="320" width="160" height="160" class="cell"/>
+
+    <text x="233" y="250" class="label">A</text>
+    <text x="28" y="250" class="small">left</text>
+    <text x="370" y="250" class="small">right = wall</text>
+    <text x="228" y="95" class="small">up</text>
+    <text x="225" y="438" class="small">down</text>
+
+    <path d="M160 240 H80" class="arrow"/>
+    <path d="M320 240 H400" class="block"/>
+    <path d="M240 160 V80" class="arrow"/>
+    <path d="M240 320 V400" class="arrow"/>
+  </g>
+
+  <text x="260" y="585" class="small">Because the right cell is a wall, no edge is created there.</text>
+</svg>

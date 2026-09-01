@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .title { font: 700 30px 'Segoe UI', Arial, sans-serif; fill: #e5f0ff; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #a7b8cf; }
+      .label { font: 600 20px 'Segoe UI', Arial, sans-serif; fill: #eaf3ff; }
+      .small { font: 500 16px 'Segoe UI', Arial, sans-serif; fill: #bfd1eb; }
+      .card { fill: #1a2433; stroke: #425d84; stroke-width: 2; rx: 18; }
+      .road { fill: #4a5363; }
+      .wall { fill: #0f1720; }
+      .depot { fill: #2b8a57; }
+      .target { fill: #d4a530; }
+      .arrow { stroke: #7dc6ff; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#7dc6ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="900" fill="#0b1220"/>
+  <text x="60" y="70" class="title">GraphMap model</text>
+  <text x="60" y="105" class="subtitle">The simulator turns the map into a grid of nodes and walkable connections</text>
+
+  <rect x="60" y="160" width="570" height="560" class="card"/>
+  <text x="90" y="210" class="label">1. Grid of nodes</text>
+
+  <g transform="translate(100,235)">
+    <rect x="0" y="0" width="60" height="60" class="road"/>
+    <rect x="60" y="0" width="60" height="60" class="wall"/>
+    <rect x="120" y="0" width="60" height="60" class="road"/>
+    <rect x="180" y="0" width="60" height="60" class="depot"/>
+    <rect x="240" y="0" width="60" height="60" class="road"/>
+    <rect x="300" y="0" width="60" height="60" class="target"/>
+
+    <rect x="0" y="60" width="60" height="60" class="road"/>
+    <rect x="60" y="60" width="60" height="60" class="road"/>
+    <rect x="120" y="60" width="60" height="60" class="wall"/>
+    <rect x="180" y="60" width="60" height="60" class="road"/>
+    <rect x="240" y="60" width="60" height="60" class="road"/>
+    <rect x="300" y="60" width="60" height="60" class="road"/>
+
+    <rect x="0" y="120" width="60" height="60" class="wall"/>
+    <rect x="60" y="120" width="60" height="60" class="road"/>
+    <rect x="120" y="120" width="60" height="60" class="road"/>
+    <rect x="180" y="120" width="60" height="60" class="target"/>
+    <rect x="240" y="120" width="60" height="60" class="road"/>
+    <rect x="300" y="120" width="60" height="60" class="wall"/>
+  </g>
+
+  <g transform="translate(90,520)">
+    <rect x="0" y="0" width="130" height="50" class="card"/>
+    <text x="20" y="32" class="small">ROAD = walkable</text>
+    <rect x="150" y="0" width="130" height="50" class="wall"/>
+    <text x="185" y="32" class="small" fill="#dfeaf7">WALL</text>
+    <rect x="300" y="0" width="130" height="50" class="depot"/>
+    <text x="334" y="32" class="small" fill="#dfeaf7">DEPOT</text>
+    <rect x="450" y="0" width="130" height="50" class="target"/>
+    <text x="485" y="32" class="small" fill="#0d1320">TARGET</text>
+  </g>
+
+  <rect x="720" y="160" width="610" height="560" class="card"/>
+  <text x="750" y="210" class="label">2. Connections between walkable cells</text>
+
+  <g transform="translate(810,250)">
+    <rect x="0" y="0" width="90" height="90" class="road"/>
+    <rect x="160" y="0" width="90" height="90" class="road"/>
+    <rect x="320" y="0" width="90" height="90" class="road"/>
+    <rect x="0" y="150" width="90" height="90" class="road"/>
+    <rect x="160" y="150" width="90" height="90" class="wall"/>
+    <rect x="320" y="150" width="90" height="90" class="depot"/>
+
+    <path d="M90 45 H160" class="arrow"/>
+    <path d="M250 45 H320" class="arrow"/>
+    <path d="M45 90 V150" class="arrow"/>
+    <path d="M205 90 V150" class="arrow"/>
+    <path d="M365 90 V150" class="arrow"/>
+
+    <text x="25" y="120" class="small">A</text>
+    <text x="185" y="120" class="small">B</text>
+    <text x="345" y="120" class="small">C</text>
+    <text x="25" y="270" class="small">D</text>
+    <text x="185" y="270" class="small">WALL</text>
+    <text x="345" y="270" class="small">DEPOT</text>
+  </g>
+
+  <text x="760" y="630" class="small">The graph stores each cell as a node and creates edges only between adjacent walkable tiles.</text>
+</svg>

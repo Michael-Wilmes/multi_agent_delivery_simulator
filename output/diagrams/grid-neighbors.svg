@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .title { font: 700 30px 'Segoe UI', Arial, sans-serif; fill: #eaf3ff; }
+      .small { font: 500 20px 'Segoe UI', Arial, sans-serif; fill: #bfd1eb; }
+      .cell { fill: #1f2d3d; stroke: #7ea3c8; stroke-width: 2; }
+      .center { fill: #2d5d8a; stroke: #9ed0ff; stroke-width: 2; }
+      .arrow { stroke: #7ec8ff; stroke-width: 4; fill: none; marker-end: url(#arrowhead); }
+      .label { font: 700 22px 'Segoe UI', Arial, sans-serif; fill: #f4fbff; }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L0,12 L10,6 z" fill="#7ec8ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="800" fill="#0b1220"/>
+  <text x="60" y="70" class="title">4-neighbor grid connections</text>
+
+  <g transform="translate(240,180)">
+    <rect x="0" y="0" width="160" height="160" class="cell"/>
+    <rect x="160" y="0" width="160" height="160" class="cell"/>
+    <rect x="320" y="0" width="160" height="160" class="cell"/>
+
+    <rect x="0" y="160" width="160" height="160" class="cell"/>
+    <rect x="160" y="160" width="160" height="160" class="center"/>
+    <rect x="320" y="160" width="160" height="160" class="cell"/>
+
+    <rect x="0" y="320" width="160" height="160" class="cell"/>
+    <rect x="160" y="320" width="160" height="160" class="cell"/>
+    <rect x="320" y="320" width="160" height="160" class="cell"/>
+
+    <text x="220" y="250" class="label">A</text>
+    <text x="35" y="250" class="small">left</text>
+    <text x="386" y="250" class="small">right</text>
+    <text x="220" y="95" class="small">up</text>
+    <text x="220" y="430" class="small">down</text>
+
+    <path d="M160 240 H80" class="arrow"/>
+    <path d="M320 240 H400" class="arrow"/>
+    <path d="M240 160 V80" class="arrow"/>
+    <path d="M240 320 V400" class="arrow"/>
+  </g>
+
+  <text x="220" y="675" class="small">The graph adds edges only for walkable neighboring cells.</text>
+  <text x="220" y="710" class="small">Because edges are stored in both directions, left/right/up/down are all reachable as neighbors.</text>
+</svg>

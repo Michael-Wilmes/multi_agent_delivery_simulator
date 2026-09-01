@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="980" viewBox="0 0 1500 980">
+  <defs>
+    <style>
+      .title { font: 700 32px 'Segoe UI', Arial, sans-serif; fill: #eaf3ff; }
+      .label { font: 600 20px 'Segoe UI', Arial, sans-serif; fill: #eaf3ff; }
+      .small { font: 500 17px 'Segoe UI', Arial, sans-serif; fill: #bfd1eb; }
+      .box { fill: #17253a; stroke: #4d6a8b; stroke-width: 2; rx: 18; }
+      .decision { fill: #1d2c41; stroke: #7bd0ff; stroke-width: 2; rx: 20; }
+      .good { fill: #1f3f2e; stroke: #4bd986; stroke-width: 2; }
+      .bad { fill: #3f2327; stroke: #f06a6a; stroke-width: 2; }
+      .arrow { stroke: #7ec8ff; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .arrow2 { stroke: #9bc3ff; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead2); }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L0,12 L10,6 z" fill="#7ec8ff"/>
+    </marker>
+    <marker id="arrowhead2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L0,10 L8,5 z" fill="#9bc3ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1500" height="980" fill="#0b1220"/>
+  <text x="60" y="70" class="title">How agents use the graph</text>
+
+  <rect x="80" y="120" width="220" height="110" class="box"/>
+  <text x="118" y="170" class="label">Simulation starts</text>
+  <text x="100" y="198" class="small">Load map / create GraphMap</text>
+
+  <rect x="360" y="120" width="250" height="110" class="box"/>
+  <text x="394" y="170" class="label">Find free road cells</text>
+  <text x="382" y="198" class="small">GraphMap.walkable_positions()</text>
+
+  <rect x="680" y="120" width="250" height="110" class="box"/>
+  <text x="720" y="170" class="label">Create agent</text>
+  <text x="704" y="198" class="small">AgentType + position + stats</text>
+
+  <rect x="1010" y="120" width="260" height="110" class="box"/>
+  <text x="1048" y="170" class="label">Store in engine</text>
+  <text x="1048" y="198" class="small">agents[] and messages[]</text>
+
+  <path d="M300 175 H360" class="arrow"/>
+  <path d="M610 175 H680" class="arrow"/>
+  <path d="M930 175 H1010" class="arrow"/>
+
+  <rect x="100" y="320" width="300" height="160" class="decision"/>
+  <text x="150" y="366" class="label">On each tick</text>
+  <text x="125" y="395" class="small">Get agent position</text>
+  <text x="125" y="422" class="small">Read adjacency list</text>
+  <text x="125" y="449" class="small">graph.neighbors(agent.position)</text>
+
+  <rect x="490" y="320" width="330" height="160" class="decision"/>
+  <text x="540" y="366" class="label">Filter valid moves</text>
+  <text x="520" y="395" class="small">not occupied</text>
+  <text x="520" y="422" class="small">not reserved</text>
+  <text x="520" y="449" class="small">adjacent and walkable</text>
+
+  <rect x="930" y="320" width="300" height="160" class="decision"/>
+  <text x="992" y="366" class="label">Choose next cell</text>
+  <text x="956" y="395" class="small">self.r.choice(possible)</text>
+  <text x="956" y="422" class="small">Update position</text>
+  <text x="956" y="449" class="small">Reserve target cell</text>
+
+  <path d="M400 400 H490" class="arrow"/>
+  <path d="M820 400 H930" class="arrow"/>
+
+  <rect x="360" y="610" width="420" height="170" class="decision"/>
+  <text x="446" y="656" class="label">Any valid neighbor available?</text>
+  <text x="404" y="691" class="small">yes → move to one candidate cell</text>
+  <text x="404" y="718" class="small">no → stay in place and continue</text>
+
+  <rect x="900" y="610" width="340" height="170" class="good"/>
+  <text x="960" y="658" class="label">Agent state updated</text>
+  <text x="930" y="694" class="small">position changed</text>
+  <text x="930" y="722" class="small">tick logged in messages</text>
+
+  <path d="M570 780 L570 840 L990 840" class="arrow2"/>
+  <path d="M990 780 L990 840" class="arrow2"/>
+
+  <path d="M570 610 L570 550" class="arrow"/>
+  <path d="M570 550 L1060 550 L1060 610" class="arrow"/>
+
+  <text x="1010" y="900" class="small">This is the simulation loop: graph → neighbors → valid moves → update position</text>
+</svg>

@@ -137,6 +137,14 @@ class SimulatorApp:
             lab = self.small.render(text, True, (8, 18, 24))
             self.screen.blit(lab, lab.get_rect(center=r.center))
 
+    def draw_battery_bar(self, x, y, value, width=54, height=8):
+        pct = max(0.0, min(1.0, value / 100.0))
+        bg = pygame.Rect(x, y, width, height)
+        fill = pygame.Rect(x, y, int(width * pct), height)
+        pygame.draw.rect(self.screen, (32, 38, 46), bg, border_radius=4)
+        color = GREEN if pct > 0.6 else YELLOW if pct > 0.25 else RED
+        pygame.draw.rect(self.screen, color, fill, border_radius=4)
+
     def draw_right(self, s, r):
         gap = 12
         top_h = 125
@@ -175,16 +183,38 @@ class SimulatorApp:
             self.screen.blit(self.small.render(msg, True, MUTED), (messages.x + 14, y))
             y += 21
 
-        headers = "ID   Typ       Pos       Status    Batterie   Kap.  Ladung"
-        self.screen.blit(self.small.render(headers, True, TEXT), (agents.x + 14, agents.y + 39))
+        id_x = agents.x + 14
+        type_x = agents.x + 72
+        pos_x = agents.x + 172
+        status_x = agents.x + 255
+        battery_x = agents.x + 350
+        battery_text_x = battery_x + 62
+        capacity_x = agents.x + 475
+        load_x = agents.x + 530
+
+        self.screen.blit(self.small.render("ID", True, TEXT), (id_x, agents.y + 39))
+        self.screen.blit(self.small.render("Typ", True, TEXT), (type_x, agents.y + 39))
+        self.screen.blit(self.small.render("Pos", True, TEXT), (pos_x, agents.y + 39))
+        self.screen.blit(self.small.render("Status", True, TEXT), (status_x, agents.y + 39))
+        self.screen.blit(self.small.render("Batterie", True, TEXT), (battery_x, agents.y + 39))
+        self.screen.blit(self.small.render("Kap.", True, TEXT), (capacity_x, agents.y + 39))
+        self.screen.blit(self.small.render("Ladung", True, TEXT), (load_x, agents.y + 39))
+
         y = agents.y + 64
         for a in s.agents[:8]:
-            bat = f"{a.battery:.0f}%" if self.config.simulation.battery_enabled else "offen"
-            line = (
-                f"{a.id:<4} {a.type.value:<9} {str(a.position):<9} {a.status:<9} "
-                f"{bat:<9} {a.capacity:<5} {a.load}/{a.capacity}"
-            )
-            self.screen.blit(self.small.render(line, True, MUTED), (agents.x + 14, y))
+            self.screen.blit(self.small.render(str(a.id), True, MUTED), (id_x, y))
+            self.screen.blit(self.small.render(a.type.value, True, MUTED), (type_x, y))
+            self.screen.blit(self.small.render(str(a.position), True, MUTED), (pos_x, y))
+            self.screen.blit(self.small.render(a.status, True, MUTED), (status_x, y))
+
+            if self.config.simulation.battery_enabled:
+                self.draw_battery_bar(battery_x, y + 5, a.battery)
+                self.screen.blit(self.small.render(f"{a.battery:.0f}%", True, MUTED), (battery_text_x, y))
+            else:
+                self.screen.blit(self.small.render("offen", True, MUTED), (battery_x, y))
+
+            self.screen.blit(self.small.render(str(a.capacity), True, MUTED), (capacity_x, y))
+            self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, MUTED), (load_x, y))
             y += 21
 
     def draw_contract(self, s, r):

@@ -1,5 +1,5 @@
 {
   "map": {"type": "map2", "random_seed": null, "random_width": 20, "random_height": 20, "wall_density": 0.20, "depot_count": 2, "target_count": 4},
-  "simulation": {"initial_standard_agents": 2, "initial_express_agents": 2, "auto_tick_ms": 450, "battery_enabled": false},
+  "simulation": {"initial_standard_agents": 2, "initial_express_agents": 2, "auto_tick_ms": 450, "battery_enabled": true},
   "window": {"width": 1600, "height": 900, "fps": 60}
 }
