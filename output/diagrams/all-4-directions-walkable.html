@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>All 4 directions walkable</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: #eaf3ff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(1000px, 92vw);
+      background: #101b2a;
+      border: 1px solid #334d73;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+    p {
+      color: #bfd1eb;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="all-4-directions-walkable.svg" alt="Node with all four neighbors walkable" />
+    <p>
+      In this case, all four neighboring cells are walkable. Therefore the center node is connected to left, right, up, and down.
+    </p>
+  </div>
+</body>
+</html>

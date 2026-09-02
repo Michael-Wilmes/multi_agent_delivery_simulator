@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Agent Graph Flow</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: #eaf3ff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(1200px, 94vw);
+      background: #101b2a;
+      border: 1px solid #334d73;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+    p {
+      margin-top: 14px;
+      color: #bfd1eb;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="agent-graph-flow.svg" alt="Agent graph flow" />
+    <p>
+      This flowchart shows how an agent uses the graph each tick: it reads its current node, looks at neighboring walkable cells, filters out occupied or reserved cells, then chooses a next cell and updates the agent position.
+    </p>
+  </div>
+</body>
+</html>

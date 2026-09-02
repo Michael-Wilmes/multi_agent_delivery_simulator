@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GraphMap Overview</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: #eaf3ff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(1100px, 92vw);
+      background: #101b2a;
+      border: 1px solid #334d73;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+    p {
+      margin-top: 14px;
+      color: #bfd1eb;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="graph-overview.svg" alt="GraphMap model overview" />
+    <p>
+      This diagram shows the core idea of the simulator: a map is a grid of nodes, each node is a cell with a kind such as road, wall, depot, or target, and walkable neighbors are connected by edges.
+    </p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Grid neighbors</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: #eaf3ff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(1100px, 92vw);
+      background: #101b2a;
+      border: 1px solid #334d73;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+    p {
+      color: #bfd1eb;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="grid-neighbors.svg" alt="4-neighbor grid connections" />
+    <p>
+      In this graph, each walkable cell is connected to its left, right, up and down neighbors. The connection is stored in both directions, so the graph behaves like an undirected 4-neighbor grid.
+    </p>
+  </div>
+</body>
+</html>
