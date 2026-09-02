@@ -42,6 +42,10 @@ class GraphMap:
     def node_at(self, p):
         return self.nodes[p]
 
+    def in_bounds(self, p):
+        x, y = p
+        return 0 <= x < self.width and 0 <= y < self.height
+
     def neighbors(self, p):
         return self.adjacency.get(p, {})
 

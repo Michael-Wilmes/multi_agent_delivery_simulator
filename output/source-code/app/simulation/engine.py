@@ -30,7 +30,7 @@ class SimulationEngine:
         self.running = False
         self.agents = []
         self.tasks = []
-        self.messages = [f'Karte geladen: {self.graph.name}']
+        self.messages = [f'Karte geladen: {self.graph.name}'] #todo: use from a centralized place
         self.contract_log = []
         self._next_agent_id = 1
         self._next_task_id = 1
@@ -44,16 +44,18 @@ class SimulationEngine:
         occupied = {a.position for a in self.agents}
         return [
             p for p, n in self.graph.nodes.items()
-            if n.kind is NodeKind.ROAD and p not in occupied
+            if n.kind is NodeKind.ROAD
+            and self.graph.neighbors(p)
+            and p not in occupied
         ]
 
     def add_agent(self, t):
         free = self.free_road_positions()
         if not free:
-            self.messages.append('Kein freies Strassenfeld')
+            self.messages.append('Kein freies Strassenfeld')# todo: use from a centralized place
             return False
 
-        speed, capacity = (1, 3) if t is AgentType.STANDARD else (2, 2)
+        speed, capacity = (1, 3) if t is AgentType.STANDARD else (2, 2)  #todo: make this configurable
         a = Agent(self._next_agent_id, t, self.r.choice(free), speed, capacity)
         self._next_agent_id += 1
         self.agents.append(a)
@@ -64,13 +66,13 @@ class SimulationEngine:
         ds = self.graph.positions_of_kind(NodeKind.DEPOT)
         zs = self.graph.positions_of_kind(NodeKind.TARGET)
         if not ds or not zs:
-            self.messages.append('Task nicht moeglich')
+            self.messages.append('Task nicht moeglich') #todo: use from a centralized place
             return False
 
         t = DeliveryTask(self._next_task_id, self.r.choice(ds), self.r.choice(zs), self.tick)
         self._next_task_id += 1
         self.tasks.append(t)
-        self.messages.append(f'T-{t.id:03d} erzeugt: {t.depot} -> {t.destination}')
+        self.messages.append(f'T-{t.id:03d} erzeugt: {t.depot} -> {t.destination}') #todo: use from a centralized place
         self.contract_log.append(
             (self.tick, 'CREATED', 'Depot -> Agenten', f'T-{t.id:03d}; Contract-Net folgt in Aufgabe 2')
         )
@@ -86,7 +88,7 @@ class SimulationEngine:
         for a in order:
             possible = [
                 p for p in self.graph.neighbors(a.position)
-                if p not in occupied and p not in reserved
+                if self.graph.in_bounds(p) and p not in occupied and p not in reserved
             ]
             if possible:
                 occupied.discard(a.position)
@@ -94,7 +96,7 @@ class SimulationEngine:
                 occupied.add(a.position)
                 reserved.add(a.position)
 
-        self.messages.append(f'Tick {self.tick} ausgefuehrt')
+        self.messages.append(f'Tick {self.tick} ausgeführt') #todo: use from a centralized place
 
     def toggle_running(self):
         self.running = not self.running

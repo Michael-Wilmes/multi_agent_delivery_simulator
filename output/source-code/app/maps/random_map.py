@@ -51,7 +51,7 @@ class RandomGraphMapFactory:
             g.nodes[p].kind = NodeKind.WALL
 
         g.rebuild_edges()
-        free = g.walkable_positions()
+        free = [p for p in g.walkable_positions() if g.neighbors(p)]
         chosen = self.r.sample(free, depot_count + target_count)
 
         for i, p in enumerate(chosen[:depot_count]):

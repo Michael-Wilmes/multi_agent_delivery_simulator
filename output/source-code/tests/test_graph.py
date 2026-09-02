@@ -25,9 +25,21 @@ def test_engine_starts_with_configured_agents():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
     assert len(engine.agents) == config.simulation.initial_standard_agents + config.simulation.initial_express_agents
+    assert all(engine.graph.neighbors(agent.position) for agent in engine.agents)
+
+
+def test_agents_stay_within_map_bounds_after_steps():
+    config = load_config(__import__('pathlib').Path('config/app.json'))
+    engine = SimulationEngine(config)
+
+    for _ in range(100):
+        engine.step()
+        assert all(engine.graph.in_bounds(agent.position) for agent in engine.agents)
 
 
 def test_maps():
-    check(create_map1(), 10, 10)
-    check(create_map2(), 10, 10)
-    check(RandomGraphMapFactory(42).create(), 20, 20)
+    maps = [create_map1(), create_map2(), RandomGraphMapFactory(42).create()]
+    for graph in maps:
+        check(graph, 10 if graph.name != 'Zufallskarte' else 20, 10 if graph.name != 'Zufallskarte' else 20)
+        special_positions = graph.positions_of_kind(NodeKind.DEPOT) + graph.positions_of_kind(NodeKind.TARGET)
+        assert all(graph.neighbors(position) for position in special_positions)

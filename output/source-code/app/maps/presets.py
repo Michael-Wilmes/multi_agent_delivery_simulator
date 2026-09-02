@@ -3,7 +3,7 @@ from app.domain.graph import GraphMap, GraphNode, NodeKind
 MAP_1 = [
     '...###..Z.',
     'D..#Z#.##.',
-    '.#. #.#....',
+    '.#.#.#.....',
     '.#....##..',
     '.####.....',
     '....#.##..',

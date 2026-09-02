@@ -1,5 +1,5 @@
 import pygame
-
+from app.shared.constants import AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT
 from app.domain.agent import AgentType
 from app.domain.graph import NodeKind
 
@@ -35,6 +35,9 @@ class SimulatorApp:
         self.title = pygame.font.SysFont("segoeui", 18, bold=True)
         self.last_auto_tick = pygame.time.get_ticks()
         self.buttons = []
+        self.agent_scroll = 0
+        self.agent_scroll_dragging = False
+        self.agent_scroll_drag_offset = 0
 
     def run(self):
         active = True
@@ -43,9 +46,16 @@ class SimulatorApp:
                 if e.type == pygame.QUIT:
                     active = False
                 elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    self.handle_click(e.pos)
-                elif e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
-                    self.engine.step()
+                    if not self.handle_scrollbar_click(e.pos):
+                        self.handle_click(e.pos)
+                elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
+                    self.agent_scroll_dragging = False
+                elif e.type == pygame.MOUSEMOTION and self.agent_scroll_dragging:
+                    self.handle_scrollbar_drag(e.pos[1])
+                elif e.type == pygame.KEYDOWN:
+                    active = self.handle_key(e.key)
+                    if not active:
+                        break
 
             now = pygame.time.get_ticks()
             if self.engine.running and now - self.last_auto_tick >= self.config.simulation.auto_tick_ms:
@@ -58,11 +68,52 @@ class SimulatorApp:
 
         pygame.quit()
 
+    def handle_key(self, key):
+        actions = {
+            pygame.K_1: self.engine.toggle_running,
+            pygame.K_2: self.engine.step,
+            pygame.K_3: self.engine.reset,
+            pygame.K_4: lambda: self.engine.add_agent(AgentType.STANDARD),
+            pygame.K_5: lambda: self.engine.add_agent(AgentType.EXPRESS),
+            pygame.K_6: self.engine.add_task,
+            pygame.K_SPACE: self.engine.step,
+        }
+        if key == pygame.K_ESCAPE:
+            return False
+        action = actions.get(key)
+        if action:
+            action()
+        return True
+
     def handle_click(self, p):
         for b, a in self.buttons:
             if b.hit(p):
                 a()
                 return
+
+    def handle_scrollbar_click(self, p):
+        if not hasattr(self, "agent_scrollbar_rect") or not self.agent_scrollbar_rect.collidepoint(p):
+            return False
+        thumb = self.agent_scrollbar_thumb
+        if thumb.collidepoint(p):
+            self.agent_scroll_dragging = True
+            self.agent_scroll_drag_offset = p[1] - thumb.y
+        else:
+            self.set_agent_scroll_from_y(p[1] - thumb.height // 2)
+        return True
+
+    def handle_scrollbar_drag(self, y):
+        self.set_agent_scroll_from_y(y - self.agent_scroll_drag_offset)
+
+    def set_agent_scroll_from_y(self, thumb_y):
+        track = self.agent_scrollbar_rect
+        thumb = self.agent_scrollbar_thumb
+        travel = track.height - thumb.height
+        if travel <= 0:
+            self.agent_scroll = 0
+            return
+        fraction = max(0.0, min(1.0, (thumb_y - track.y) / travel))
+        self.agent_scroll = round(fraction * self.agent_scroll_max)
 
     def panel(self, r, title=None):
         pygame.draw.rect(self.screen, PANEL, r, border_radius=8)
@@ -158,16 +209,17 @@ class SimulatorApp:
         tasks = pygame.Rect(sim.right + gap, r.y, tasks_w + 30, top_h)
         messages = pygame.Rect(r.x, r.y + top_h + gap, r.width, 175)
         agents = pygame.Rect(r.x, messages.bottom + gap, r.width, r.bottom - messages.bottom - gap)
+        self.agent_panel_rect = agents
 
-        self.panel(sim, "SIMULATION")
-        self.panel(tasks, "AKTIVE AUFTRAEGE")
-        self.panel(messages, "NACHRICHTEN (LETZTE 10)")
-        self.panel(agents, "AGENTENSTATUS")
+        self.panel(sim, "SIMULATION") #todo: use from a centralized place
+        self.panel(tasks, "AKTIVE AUFTRAEGE") #todo: use from a centralized place
+        self.panel(messages, "NACHRICHTEN (LETZTE 10)") #todo: use from a centralized place
+        self.panel(agents, "AGENTENSTATUS")#    todo: use from a centralized place
 
         self.screen.blit(self.font.render("Tick", True, MUTED), (sim.x + 15, sim.y + 43))
         self.screen.blit(self.title.render(str(s.tick), True, TEXT), (sim.x + 15, sim.y + 67))
         self.screen.blit(
-            self.small.render("AUTO" if s.running else "PAUSE", True, GREEN if s.running else MUTED),
+            self.small.render("AUTO" if s.running else "PAUSE", True, GREEN if s.running else MUTED), #todo: use from a centralized place
             (sim.x + 85, sim.y + 72),
         )
         y = tasks.y + 42
@@ -180,7 +232,7 @@ class SimulatorApp:
             y += 22
 
         if not s.tasks:
-            self.screen.blit(self.small.render("Noch keine Tasks", True, MUTED), (tasks.x + 14, y))
+            self.screen.blit(self.small.render("Noch keine Tasks", True, MUTED), (tasks.x + 14, y)) #todo: use from a centralized place
 
         y = messages.y + 40
         for msg in s.messages[-6:]:
@@ -204,8 +256,13 @@ class SimulatorApp:
         self.screen.blit(self.small.render("Kap.", True, TEXT), (capacity_x, agents.y + 39))
         self.screen.blit(self.small.render("Ladung", True, TEXT), (load_x, agents.y + 39))
 
+        visible_rows = max(0, (agents.bottom - 8 - (agents.y + 64)) // 21)
+        max_scroll = max(0, len(s.agents) - visible_rows)
+        self.agent_scroll = min(self.agent_scroll, max_scroll)
+        self.agent_scroll_max = max_scroll
+        self.draw_agent_scrollbar(agents, len(s.agents), visible_rows)
         y = agents.y + 64
-        for a in s.agents[:8]:
+        for a in s.agents[self.agent_scroll:self.agent_scroll + visible_rows]:
             self.screen.blit(self.small.render(str(a.id), True, MUTED), (id_x, y))
             self.screen.blit(self.small.render(a.type.value, True, MUTED), (type_x, y))
             self.screen.blit(self.small.render(str(a.position), True, MUTED), (pos_x, y))
@@ -220,6 +277,19 @@ class SimulatorApp:
             self.screen.blit(self.small.render(str(a.capacity), True, MUTED), (capacity_x, y))
             self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, MUTED), (load_x, y))
             y += 21
+
+    def draw_agent_scrollbar(self, panel, agent_count, visible_rows):
+        self.agent_scrollbar_rect = pygame.Rect(panel.right - 16, panel.y + 60, 7, panel.height - 68)
+        track = self.agent_scrollbar_rect
+        pygame.draw.rect(self.screen, (32, 45, 53), track, border_radius=3)
+        if agent_count <= visible_rows:
+            self.agent_scrollbar_thumb = track.copy()
+            return
+        thumb_height = max(18, track.height * visible_rows // agent_count)
+        travel = track.height - thumb_height
+        thumb_y = track.y + travel * self.agent_scroll // self.agent_scroll_max
+        self.agent_scrollbar_thumb = pygame.Rect(track.x, thumb_y, track.width, thumb_height)
+        pygame.draw.rect(self.screen, MUTED, self.agent_scrollbar_thumb, border_radius=3)
 
     def draw_contract(self, s, r):
         x = r.x + 15
@@ -250,18 +320,16 @@ class SimulatorApp:
 
         bx = r.x + int(r.width * 0.56)
         by = r.y + 78
-        # for text,c,w in [('ANNOUNCE',YELLOW,125),('BID',BLUE,105),('AWARD',GREEN,110)]:
-        # q=pygame.Rect(bx,by,w,52);pygame.draw.rect(self.screen,(12,24,35),q,border_radius=7);pygame.draw.rect(self.screen,c,q,2,border_radius=7);lab=self.font.render(text,True,c);self.screen.blit(lab,lab.get_rect(center=q.center));bx=q.right+34
-        # if text!='AWARD':pygame.draw.line(self.screen,TEXT,(q.right+5,q.centery),(q.right+27,q.centery),2);pygame.draw.polygon(self.screen,TEXT,[(q.right+27,q.centery),(q.right+20,q.centery-5),(q.right+20,q.centery+5)])
-
+       
     def draw_controls(self, r):
         specs = [
-            ("AUTO", 118, GREEN, self.engine.toggle_running),
-            ("STEP", 118, BLUE, self.engine.step),
-            ("RESET", 118, (45, 52, 58), self.engine.reset),
-            ("AGENT", 135, (31, 76, 121), lambda: self.engine.add_agent(AgentType.STANDARD)),
-            ("EXPRESS AGENT", 175, (116, 48, 42), lambda: self.engine.add_agent(AgentType.EXPRESS)),
-            ("TASK", 120, (120, 88, 19), self.engine.add_task),
+            (AUTO, 118, GREEN, self.engine.toggle_running),
+            (MANUAL, 118, BLUE, self.engine.step),
+            (RESET, 118, (45, 52, 58), self.engine.reset),
+            (AGENT, 135, (31, 76, 121), lambda: self.engine.add_agent(AgentType.STANDARD)),
+            (EXPRESS_AGENT, 175, (116, 48, 42), lambda: self.engine.add_agent(AgentType.EXPRESS)),
+            (TASK, 120, (120, 88, 19), self.engine.add_task),
+            (QUIT, 120, RED, lambda: exit(0)),
         ]
         x = r.x + 16
         y = r.y + 11
