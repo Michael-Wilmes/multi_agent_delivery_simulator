@@ -112,6 +112,10 @@ class SimulatorApp:
             for x in range(g.width):
                 n = g.node_at((x, y))
                 cr = pygame.Rect(ox + x * cell, oy + y * cell, cell, cell)
+                column_label = self.small.render(str(x), True, MUTED)
+                row_label = self.small.render(str(y), True, MUTED)
+                self.screen.blit(column_label, column_label.get_rect(center=(cr.centerx, oy - 9)))
+                self.screen.blit(row_label, row_label.get_rect(midright=(ox - 7, cr.centery)))
                 pygame.draw.rect(self.screen, WALL if n.kind is NodeKind.WALL else ROAD, cr)
                 pygame.draw.rect(self.screen, GRID, cr, 1)
                 if n.kind is NodeKind.DEPOT:
