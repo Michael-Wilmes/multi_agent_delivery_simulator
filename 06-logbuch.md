@@ -8,7 +8,7 @@
   - Code Cleanup
   - Apply common code formatting
   **02.09.2026**  
-  - Nummerrierung der Felder hinzugefügt
+  - Nummerierung der Felder hinzugefügt
   - Spielsteuerung per Tasten , mit Beschriftung an den Buttons
   - Bewegung der Agenten 
   - Gefundenes Issue: Manchmal sitzen Agenten in nicht erreichbaren Feldern => gelöst
@@ -17,4 +17,7 @@
 
 ## next to do : ##  
 - Pausen funktionalität hinzufügen. 
+- Standard und Express Agent per Konfig Datei.
+- Dauer / Kosten für Aufladen per Konfig Datei
+
   

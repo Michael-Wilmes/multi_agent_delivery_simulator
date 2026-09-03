@@ -18,7 +18,18 @@ Falls Ladestationen oder Ladevorgänge Bestandteil der Simulation sein sollen: M
     
 **gestellt am:** 28.08.2026  
 
-**Antwort:** 
+**Antwort: 03.09.2026**  
+Lieber Herr Wilmes,
+
+danke für die Nachfragen! Grundsätzlich gilt: Wenn die Aufgabenstellung ungenau ist, dürfen Sie Annahmen treffen, solange Sie sie dokumentieren. Bei den Agententypen beispielsweise könnte ein Expressagent weniger transportieren können oder teurer sein.
+
+Die Geschwindigkeit eines Agenten drückt sich in der Anzahl der Felder, die er pro Simulationsschritt gehen kann, aus.
+
+Bei den Batterien gilt sinngemäß das gleiche: Treffen und dokumentieren Sie Ihre Annahmen/Entscheidungen, wenn die Aufgabenstellung keine Vorgabe macht. Ein Agent mit leerer Batterie könnte z.B. stehen bleiben und ein Hindernis sein, aber da die Aufgabenstellung hier nichts entsprechendes fordert, sind Sie in der Entscheidung frei. Entsprechend natürlich auch bei den Ladestationen.
+
+HTH.
+
+Viel Erfolg bei der Bearbeitung der B-Aufgabe!
 
 
 ***
