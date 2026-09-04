@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from app.domain.agent import Agent, AgentType
 from app.domain.deliverytask import DeliveryTask
 from app.domain.graph import NodeKind
+from app.shared.constants import DELIVER, MOVE, PICKUP, SEND_MESSAGE
 from app.maps.factory import create_graph_map
 
 
@@ -55,8 +56,20 @@ class SimulationEngine:
             self.messages.append('Kein freies Strassenfeld')# todo: use from a centralized place
             return False
 
-        speed, capacity = (1, 3) if t is AgentType.STANDARD else (2, 2)  #todo: make this configurable
-        a = Agent(self._next_agent_id, t, self.r.choice(free), speed, capacity)
+        type_config = (
+            self.config.agentTypes.standard
+            if t is AgentType.STANDARD
+            else self.config.agentTypes.express
+        )
+        a = Agent(
+            self._next_agent_id,
+            t,
+            self.r.choice(free),
+            type_config.speed,
+            type_config.capacity,
+            battery=float(type_config.batteryCapacity),
+            battery_cost_per_field=type_config.batteryCostPerField,
+        )
         self._next_agent_id += 1
         self.agents.append(a)
         self.messages.append(f'Agent {a.id} ({a.type.value}) bei {a.position}')
@@ -86,17 +99,91 @@ class SimulationEngine:
         self.r.shuffle(order)
 
         for a in order:
-            possible = [
-                p for p in self.graph.neighbors(a.position)
-                if self.graph.in_bounds(p) and p not in occupied and p not in reserved
-            ]
-            if possible:
-                occupied.discard(a.position)
-                a.position = self.r.choice(possible)
-                occupied.add(a.position)
-                reserved.add(a.position)
+            # Meilenstein 1: In Meilenstein 2 durch die geplante Agentenaktion ersetzen.
+            action = self.choose_random_action()
+            self.execute_action(a, action, occupied, reserved)
 
         self.messages.append(f'Tick {self.tick} ausgeführt') #todo: use from a centralized place
+
+    def choose_random_action(self):
+        """Selects a random action for the initial simulation milestone.
+
+        This method is the replaceable action-selection policy. The action methods
+        themselves remain part of the simulation after random selection is removed.
+        """
+        return self.r.choice((MOVE, PICKUP, DELIVER, SEND_MESSAGE))
+
+    def execute_action(self, agent, action, occupied, reserved):
+        """Executes an action selected for an agent during the current tick."""
+        agent.last_action = action
+        if action == MOVE:
+            self.move_agent(agent, occupied, reserved)
+        elif action == PICKUP:
+            self.pick_up_task(agent)
+        elif action == DELIVER:
+            self.deliver_task(agent)
+        elif action == SEND_MESSAGE:
+            self.send_message(agent)
+
+    def send_message(self, agent):
+        """Records an agent message; its routing can be extended in milestone 2."""
+        self.messages.append(f'Agent {agent.id}: Nachricht gesendet')
+
+    def move_agent(self, agent, occupied, reserved):
+        for _ in range(agent.speed):
+            possible = [
+                p for p in self.graph.neighbors(agent.position)
+                if self.graph.in_bounds(p) and p not in occupied and p not in reserved
+            ]
+            if not possible:
+                break
+
+            occupied.discard(agent.position)
+            agent.position = self.r.choice(possible)
+            occupied.add(agent.position)
+            reserved.add(agent.position)
+
+            if self.graph.node_at(agent.position).kind in {NodeKind.DEPOT, NodeKind.TARGET}:
+                break
+
+    def pick_up_task(self, agent):
+        if agent.load >= agent.capacity:
+            self.messages.append(f'Agent {agent.id}: Kapazität erreicht')
+            return
+
+        task = next(
+            (
+                task for task in self.tasks
+                if task.status == 'open' and task.depot == agent.position
+            ),
+            None,
+        )
+        if task is None:
+            self.messages.append(f'Agent {agent.id}: Kein Paket am Depot')
+            return
+
+        agent.load += 1
+        task.status = 'in_transit'
+        task.assigned_agent_id = agent.id
+        self.messages.append(f'Agent {agent.id}: T-{task.id:03d} aufgenommen')
+
+    def deliver_task(self, agent):
+        task = next(
+            (
+                task for task in self.tasks
+                if task.status == 'in_transit'
+                and task.assigned_agent_id == agent.id
+                and task.destination == agent.position
+            ),
+            None,
+        )
+        if task is None:
+            self.messages.append(f'Agent {agent.id}: Keine Zustellung möglich')
+            return
+
+        agent.load -= 1
+        task.status = 'delivered'
+        self.messages.append(f'Agent {agent.id}: T-{task.id:03d} abgeliefert')
 
     def toggle_running(self):
         self.running = not self.running

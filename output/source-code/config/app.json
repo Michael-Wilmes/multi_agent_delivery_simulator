@@ -1,9 +1,9 @@
 {
   "map": {
-    "type": "map1",
+    "type": "random",
     "random_seed": null,
-    "random_width": 20,
-    "random_height": 20,
+    "random_width": 15,
+    "random_height": 15,
     "wall_density": 0.20,
     "depot_count": 2,
     "target_count": 4
@@ -14,9 +14,27 @@
     "auto_tick_ms": 500,
     "battery_enabled": true
   },
+  "agentTypes": {
+    "standard": {
+      "speed": 1,
+      "capacity": 3,
+      "batteryCapacity": 100,
+      "batteryCostPerField": 2
+    },
+    "express": {
+      "speed": 2,
+      "capacity": 1,
+      "batteryCapacity": 100,
+      "batteryCostPerField": 3
+    }
+  },
+  "battery": {
+    "chargingDurationTicks": 2,
+    "reserve": 10
+  },
   "window": {
-    "width": 1600,
-    "height": 900,
+    "width": 1920,
+    "height": 1080,
     "fps": 60
   }
 }

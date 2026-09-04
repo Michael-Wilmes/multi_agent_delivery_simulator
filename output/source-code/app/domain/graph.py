@@ -5,6 +5,8 @@ Position = tuple[int, int]
 
 
 class NodeKind(str, Enum):
+    """Defines the role of a position on the simulation map."""
+
     ROAD = "road"
     WALL = "wall"
     DEPOT = "depot"
@@ -13,6 +15,8 @@ class NodeKind(str, Enum):
 
 @dataclass
 class GraphNode:
+    """Represents one position and its type on the simulation map."""
+
     position: Position
     kind: NodeKind = NodeKind.ROAD
     label: str | None = None
@@ -24,6 +28,8 @@ class GraphNode:
 
 @dataclass
 class GraphMap:
+    """Represents the grid map used by the delivery simulation."""
+
     width: int
     height: int
     name: str
@@ -72,8 +78,10 @@ class GraphMap:
         seen = {start}
         stack = [start]
         while stack:
-            for n in self.neighbors(stack.pop()):
-                if n not in seen:
-                    seen.add(n)
-                    stack.append(n)
+            for position in self.neighbors(stack.pop()):
+                if position not in seen:
+                    seen.add(position)
+                    stack.append(position)
         return seen
+
+

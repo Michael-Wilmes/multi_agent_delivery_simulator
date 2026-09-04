@@ -26,6 +26,12 @@ def test_engine_starts_with_configured_agents():
     engine = SimulationEngine(config)
     assert len(engine.agents) == config.simulation.initial_standard_agents + config.simulation.initial_express_agents
     assert all(engine.graph.neighbors(agent.position) for agent in engine.agents)
+    standard = next(agent for agent in engine.agents if agent.type.value == 'Standard')
+    express = next(agent for agent in engine.agents if agent.type.value == 'Express')
+    assert (standard.speed, standard.capacity, standard.battery, standard.battery_cost_per_field) == (1, 3, 100.0, 2)
+    assert (express.speed, express.capacity, express.battery, express.battery_cost_per_field) == (2, 1, 100.0, 3)
+    assert config.battery.chargingDurationTicks == 2
+    assert config.battery.reserve == 10
 
 
 def test_agents_stay_within_map_bounds_after_steps():

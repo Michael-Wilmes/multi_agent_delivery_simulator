@@ -251,7 +251,7 @@ class SimulatorApp:
         self.screen.blit(self.small.render("ID", True, TEXT), (id_x, agents.y + 39))
         self.screen.blit(self.small.render("Typ", True, TEXT), (type_x, agents.y + 39))
         self.screen.blit(self.small.render("Pos", True, TEXT), (pos_x, agents.y + 39))
-        self.screen.blit(self.small.render("Status", True, TEXT), (status_x, agents.y + 39))
+        self.screen.blit(self.small.render("Aktion", True, TEXT), (status_x, agents.y + 39))
         self.screen.blit(self.small.render("Batterie", True, TEXT), (battery_x, agents.y + 39))
         self.screen.blit(self.small.render("Kap.", True, TEXT), (capacity_x, agents.y + 39))
         self.screen.blit(self.small.render("Ladung", True, TEXT), (load_x, agents.y + 39))
@@ -266,7 +266,7 @@ class SimulatorApp:
             self.screen.blit(self.small.render(str(a.id), True, MUTED), (id_x, y))
             self.screen.blit(self.small.render(a.type.value, True, MUTED), (type_x, y))
             self.screen.blit(self.small.render(str(a.position), True, MUTED), (pos_x, y))
-            self.screen.blit(self.small.render(a.status, True, MUTED), (status_x, y))
+            self.screen.blit(self.small.render(a.last_action, True, MUTED), (status_x, y))
 
             if self.config.simulation.battery_enabled:
                 self.draw_battery_bar(battery_x, y + 5, a.battery)

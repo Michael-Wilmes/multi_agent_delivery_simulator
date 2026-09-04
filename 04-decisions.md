@@ -200,3 +200,7 @@ Durch die verpflichtende Rückkehr zu einem Depot wird sichergestellt, dass die 
 - die Bewegungsplanung
 
 hat, ohne daraus ein eigenständiges Batteriemanagementsystem zu machen.
+
+
+## Dokumentation  
+Die HTML-Dokumentation wurde aus den projektbegleitenden Markdown-Dateien generiert. Sie enthält ein verlinktes Inhaltsverzeichnis und kann direkt offline im Browser geöffnet werden.

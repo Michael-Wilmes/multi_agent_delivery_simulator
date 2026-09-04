@@ -23,6 +23,26 @@ class SimulationConfig:
 
 
 @dataclass(frozen=True)
+class AgentTypeConfig:
+    speed: int
+    capacity: int
+    batteryCapacity: int
+    batteryCostPerField: int
+
+
+@dataclass(frozen=True)
+class AgentTypesConfig:
+    standard: AgentTypeConfig
+    express: AgentTypeConfig
+
+
+@dataclass(frozen=True)
+class BatteryConfig:
+    chargingDurationTicks: int
+    reserve: int
+
+
+@dataclass(frozen=True)
 class WindowConfig:
     width: int
     height: int
@@ -33,6 +53,8 @@ class WindowConfig:
 class AppConfig:
     map: MapConfig
     simulation: SimulationConfig
+    agentTypes: AgentTypesConfig
+    battery: BatteryConfig
     window: WindowConfig
 
 
@@ -48,5 +70,10 @@ def load_config(path: Path) -> AppConfig:
     return AppConfig(
         m,
         SimulationConfig(**raw["simulation"]),
+        AgentTypesConfig(
+            standard=AgentTypeConfig(**raw["agentTypes"]["standard"]),
+            express=AgentTypeConfig(**raw["agentTypes"]["express"]),
+        ),
+        BatteryConfig(**raw["battery"]),
         WindowConfig(**raw["window"]),
     )
