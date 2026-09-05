@@ -1,5 +1,5 @@
 import pygame
-from app.shared.constants import AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT
+from app.shared.constants import AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT, STRANDED, LOADING
 from app.domain.agent import AgentType
 from app.domain.graph import NodeKind
 
@@ -243,10 +243,10 @@ class SimulatorApp:
         type_x = agents.x + 72
         pos_x = agents.x + 172
         status_x = agents.x + 255
-        battery_x = agents.x + 350
+        battery_x = agents.x + 410
         battery_text_x = battery_x + 62
-        capacity_x = agents.x + 475
-        load_x = agents.x + 530
+        capacity_x = agents.x + 535
+        load_x = agents.x + 590
 
         self.screen.blit(self.small.render("ID", True, TEXT), (id_x, agents.y + 39))
         self.screen.blit(self.small.render("Typ", True, TEXT), (type_x, agents.y + 39))
@@ -266,7 +266,8 @@ class SimulatorApp:
             self.screen.blit(self.small.render(str(a.id), True, MUTED), (id_x, y))
             self.screen.blit(self.small.render(a.type.value, True, MUTED), (type_x, y))
             self.screen.blit(self.small.render(str(a.position), True, MUTED), (pos_x, y))
-            self.screen.blit(self.small.render(a.last_action, True, MUTED), (status_x, y))
+            displayed_action = a.current_action
+            self.screen.blit(self.small.render(displayed_action, True, MUTED), (status_x, y))
 
             if self.config.simulation.battery_enabled:
                 self.draw_battery_bar(battery_x, y + 5, a.battery)

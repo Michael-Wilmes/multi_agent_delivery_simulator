@@ -3,7 +3,8 @@
 ### Besonderheiten der eigenen Karte
 
 Die Simulation erzeugt bei jedem Start eine neue zufällige Karte mit einer Größe von
-15 × 15 Feldern. Dadurch unterscheidet sich die Kartenstruktur bei jedem Simulationslauf.
+15 × 15 Feldern. Dadurch unterscheidet sich die Kartenstruktur bei jedem
+Simulationslauf.
 
 Die Karte enthält:
 
@@ -13,12 +14,30 @@ Die Karte enthält:
 - befahrbare Straßenfelder
 - eine garantierte Verbindung zwischen allen befahrbaren Bereichen
 
-Beim Erzeugen wird überprüft, ob die Karte weiterhin zusammenhängend und damit vollständig
-befahrbar bleibt. Ungültige Wandplatzierungen werden verworfen.
+Beim Erzeugen der Karte wird überprüft, ob alle befahrbaren Felder weiterhin
+zusammenhängend erreichbar sind. Ungültige Wandplatzierungen werden verworfen.
+Dadurch bleibt die Karte trotz ihrer zufälligen Struktur spielbar.
 
-Die Karte ist dadurch zufällig und abwechslungsreich, bleibt aber trotzdem spielbar. Die
-Anzahl der Depots und Ziele sowie die maximale Wanddichte werden über die Konfiguration
-festgelegt. Mit `random_seed: null` entsteht bei jedem Start eine neue Karte.  
+Eine weitere Besonderheit ist die funktionale Bedeutung der Sonderfelder:
+
+- Steht ein Agent auf einem Depot, führt er die Aktion „Paket aufnehmen“ aus.
+- Steht ein Agent auf einem Lieferziel, führt er die Aktion „Paket abliefern“ aus.
+- Auf normalen Straßenfeldern kann der Agent zufällig zwischen Bewegung und
+  Nachrichtensendung wählen.
+
+Depots und Lieferziele sind dadurch nicht nur optische Markierungen auf der Karte,
+sondern bilden aktive Aktionspunkte innerhalb der Simulation. Die Karte beeinflusst
+somit direkt das Verhalten der Agenten.
+
+Mit `"random_seed": null` wird bei jedem Start eine neue Karte erzeugt. Aktuell wird
+bewusst nur der Wert `null` unterstützt. Die Verwendung eines festen Zufallswerts zur
+reproduzierbaren Kartenerzeugung ist derzeit nicht vorgesehen, da dies die
+Konfiguration und Logik unnötig komplexer machen würde.
+
+Die Kartenstruktur ist daher bei jedem Start zufällig, während
+die grundlegenden Eigenschaften wie Größe, Wanddichte, Anzahl der Depots und Anzahl
+der Ziele über die Konfiguration festgelegt bleiben.
+
 
 ### Hauptschleife und zufällige Bewegung
 

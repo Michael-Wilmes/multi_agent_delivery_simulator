@@ -25,4 +25,5 @@ class Agent:
     battery_cost_per_field: int = 0
     load: int = 0
     status: str = IDLE
-    last_action: str = IDLE
+    current_action: str = IDLE
+    charging_ticks_remaining: int = 0

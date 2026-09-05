@@ -46,9 +46,53 @@ Die Pfadlänge entspricht somit der Anzahl der tatsächlich zurückgelegten Feld
 
 ---
 
+## Bewegungsregeln der Agenten
+
+Die folgenden Regeln sind im aktuellen Simulationskern umgesetzt:
+
+### Allgemeine Bewegung
+
+- Agenten bewegen sich ausschließlich auf begehbaren, verbundenen Nachbarknoten.
+- Diagonale Bewegungen sind nicht erlaubt. Pro Bewegungsschritt wird nur ein horizontaler oder vertikaler Nachbar gewählt.
+- Die möglichen Nachbarfelder werden zufällig ausgewählt.
+- Ein Standard-Agent bewegt sich höchstens ein Feld pro Tick.
+- Ein Express-Agent bewegt sich höchstens zwei Felder pro Tick.
+- Die tatsächliche Anzahl der Felder kann geringer sein, wenn kein zulässiges Nachbarfeld verfügbar ist.
+- Bereits von einem anderen Agenten belegte Felder dürfen nicht betreten werden.
+- Ein Feld, das im aktuellen Tick bereits für einen anderen Agenten reserviert wurde, darf ebenfalls nicht betreten werden.
+- Nach jedem tatsächlich zurückgelegten Feld wird der Batterieverbrauch abgezogen.
+
+### Sonderregeln für Depots und Ziele
+
+- Hält ein Agent an einem Depot oder Ziel an und führt innerhalb desselben Bewegungsvorgangs keine weiteren Felder aus.
+- Kommt ein Agent ohne offenen Auftrag auf ein Depot, wird unmittelbar die aktuelle Aktion `Batterie laden` angezeigt. => Das gilt nur für Aufgabe 1
+- Kommt ein Agent auf ein Depot, an dem er einen Auftrag aufnehmen kann, wird der Auftrag unmittelbar aufgenommen und die aktuelle Aktion `Lieferung aufnehmen` angezeigt.
+- Im Tick nach `Lieferung aufnehmen` greift der Ladealgorithmus: Die aktuelle Aktion lautet `Batterie laden` und der Agent wartet diesen Tick.
+- Beim Aufenthalt auf einem Depot ohne Auftrag wird ebenfalls im folgenden Tick geladen und gewartet.
+- Das Betreten des Depots löst die Batterieladung nicht  selben Tick aus.
+- Die Batterie wird im Ladevorgang vollständig auf die konfigurierte Kapazität gesetzt.
+- Die Anzahl an Ticks, die der Lafevorgang benötigt kann konfiguriert werden.
+- Im Tick, in dem `Loading` gesetzt wird, darf der Agent keine Bewegung ausführen. Andere Aktionen, insbesondere das Aufnehmen eines Pakets, bleiben möglich.
+- Die aktuell ausgeführte Aktion wird über `current_action` dargestellt;
+- Ein Ziel darf nur betreten werden, wenn der Agent einen eigenen Auftrag im Status `in_transit` besitzt.
+- Ohne passenden Auftrag werden Zielknoten bei der Berechnung möglicher Bewegungen ausgeschlossen.
+- Eine Zustellung ist nur auf einem Ziel und nur für einen passenden Auftrag des Agenten möglich.
+
+### Kollisionen und leere Batterie
+- Erreicht die Batterie nach einer Bewegung den Wert `0`, wird der Agent als `Stranded` markiert.
+- Ein gestrandeter Agent bewegt sich nicht mehr und bleibt als belegtes Hindernis auf seiner Position stehen.
+- Sind alle Agenten gestrandet, wird die Simulation angehalten.
+
+### Ladezeitpunkt
+
+Die Konfiguration enthält den Parameter `chargingDurationTicks`. Im aktuell implementierten Bewegungsablauf wird jedoch nur ein Lade-Tick berücksichtigt: Das Laden beginnt im Tick nach dem Aufenthalt im Depot und setzt die Batterie vollständig auf. Eine mehrtickige Ladephase entsprechend dem konfigurierten Wert ist noch nicht umgesetzt.
+
+---
+
 ## Standard- und Express-Agenten
 
-Die Unterschiede zwischen Standard- und Express-Agenten sind in der Aufgabenstellung nicht eindeutig beschrieben. Daher werden folgende Annahmen getroffen.
+Die Unterschiede zwischen Standard- und Express-Agenten sind in der Aufgabenstellung nicht eindeutig beschrieben.  
+Daher werden folgende Annahmen getroffen.
 
 ### Standard-Agent
 
@@ -74,7 +118,18 @@ Daher wird ein einfaches Energiemodell verwendet, das die Auftragsvergabe und Be
 
 ### Batterieverbrauch
 
-Die Batterie reduziert sich linear mit der tatsächlich zurückgelegten Strecke.
+Für die Simulation wird eine idealisierte Welt angenommen. Jedes tatsächlich
+zurückgelegte Feld verursacht einen konstanten Energieverbrauch, der nur vom
+Agententyp abhängt. Die Anzahl der transportierten Pakete verändert den Verbrauch
+nicht.
+
+Diese Vereinfachung wurde bewusst gewählt, um die Batterieberechnung überschaubar und
+deterministisch zu halten. Dadurch kann dieselbe Kostenlogik später direkt bei der
+A*-Wegsuche und bei der Prüfung der Reichweite verwendet werden. Auch die Prolog-
+Abfrage `is_reachable/2` bleibt klar von der agentenspezifischen Energieberechnung
+getrennt: Sie prüft nur, ob grundsätzlich ein Weg existiert.
+
+Die Batterie reduziert sich linear mit der tatsächlich zurückgelegten Strecke:
 
 ```text
 BatterieNeu =
@@ -84,6 +139,9 @@ BatterieAlt -
 
 Es werden keine zusätzlichen Effekte berücksichtigt, wie beispielsweise:
 
+- Anzahl der transportierten Pakete
+- unterschiedliche Straßen- oder Feldtypen
+- Verkehrsaufkommen oder Staus
 - Batterietemperatur
 - Batteriealterung
 - Nichtlineare Entladekurven
@@ -92,8 +150,7 @@ Es werden keine zusätzlichen Effekte berücksichtigt, wie beispielsweise:
 
 ### Laden
 
-Batterien können ausschließlich in Depots geladen werden.
-
+Batterien können ausschließlich in Depots geladen werden.  
 Befindet sich ein Agent in einem Depot, startet automatisch ein Ladevorgang.
 
 Die Dauer des Ladevorgangs wird über die Konfigurationsdatei definiert.
@@ -114,7 +171,6 @@ Ein Agent darf einen Auftrag nur dann annehmen, wenn ausreichend Energie vorhand
 
 1. das auftraggebende Depot zu erreichen,
 2. den Auftrag vollständig auszuführen,
-3. anschließend wieder ein Depot zu erreichen.
 
 Zusätzlich wird eine Sicherheitsreserve berücksichtigt.
 
@@ -124,7 +180,6 @@ Formal:
 BatterieAktuell >=
 Energie(Position -> Depot)
 + Energie(Depot -> Ziel)
-+ Energie(Ziel -> Depot)
 + Sicherheitsreserve
 ```
 
@@ -138,6 +193,18 @@ Nach Abschluss eines Auftrags wird der aktuelle Batteriestand geprüft.
 
 Falls die verbleibende Energie nicht mehr ausreicht, um weitere Aufträge sicher ausführen zu können, fährt der Agent automatisch zum nächstgelegenen erreichbaren Depot und lädt dort seine Batterie auf.
 
+### Verhalten ohne Auftrag
+
+Hat ein Agent keinen offenen oder zu transportierenden Auftrag, wartet er an
+seiner aktuellen Position und bewegt sich nicht zufällig.
+
+Befindet sich der Agent in einem Depot und ist seine Batterie nicht vollständig
+geladen, lädt er dort automatisch. Bei vollständig geladener Batterie bleibt
+der Agent im Zustand `Idle`, bis ein neuer Auftrag verfügbar ist.
+
+Eine automatische Fahrt zu einem Depot ohne Auftrag findet nicht statt, da sie
+unnötig Energie verbrauchen würde.
+
 ### Leere Batterie
 
 Ein Agent sollte durch die Reichweitenprüfung vor der Auftragsannahme niemals während eines regulären Auftrags vollständig entladen werden.
@@ -145,11 +212,10 @@ Ein Agent sollte durch die Reichweitenprüfung vor der Auftragsannahme niemals w
 Erreicht die Batterie dennoch den Wert 0, gilt:
 
 ```text
-Status = INAKTIV
+Status = STRANDED
 ```
 
 Der Agent bleibt auf seiner aktuellen Position stehen und stellt ein Hindernis für andere Agenten dar.
-
 Diese Fälle werden als KPI erfasst und ausgewertet.
 
 ---
@@ -191,15 +257,6 @@ Beispiel:
 ```
 
 Die Werte stellen Simulationsparameter dar und sind keine physikalischen Messwerte.
-
-Durch die verpflichtende Rückkehr zu einem Depot wird sichergestellt, dass die Batteriekapazität einen direkten Einfluss auf:
-
-- die Auftragsvergabe,
-- die Reichweitenplanung,
-- die Verfügbarkeit von Agenten und
-- die Bewegungsplanung
-
-hat, ohne daraus ein eigenständiges Batteriemanagementsystem zu machen.
 
 
 ## Dokumentation  

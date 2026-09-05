@@ -52,7 +52,15 @@ Wenn kein geeignetes Feld mehr frei ist, wird kein weiterer Agent erzeugt und ei
 
 Die Simulation läuft in diskreten Ticks. In jedem Tick werden die Agenten in eine zufällige Reihenfolge gebracht. Dadurch erhält nicht immer derselbe Agent zuerst die Möglichkeit, eine Aktion auszuführen.
 
-Für jeden Agenten wird anschließend eine Aktion ausgewählt und ausgeführt. Die Aktionsauswahl ist in Meilenstein 1 bewusst zufällig:
+Für jeden Agenten wird anschließend eine Aktion ausgewählt und ausgeführt. Die Aktionsauswahl ist in Meilenstein 1 grundsätzlich zufällig. Für besondere Kartenpositionen gelten jedoch feste Regeln:
+
+- Steht der Agent auf einem Depot und liegt dort ein offenes Paket, wird `Paket aufnehmen` ausgelöst.
+- Steht der Agent auf einem Ziel und besitzt dort ein zustellbares Paket, wird `Paket abliefern` ausgelöst.
+- Steht der Agent auf einem normalen Straßenfeld, wird zufällig zwischen Bewegung und Nachrichtensendung gewählt.
+
+Die Ankunft auf einem Depot oder Ziel beendet die Bewegung nur für den aktuellen Tick.
+Im nächsten Tick kann der Agent das Sonderfeld wieder verlassen, wenn dort keine
+passende Aufnahme- oder Ablieferaktion möglich ist.
 
 ```python
 # Meilenstein 1: In Meilenstein 2 durch die geplante Agentenaktion ersetzen.
@@ -60,7 +68,7 @@ action = self.choose_random_action()
 self.execute_action(a, action, occupied, reserved)
 ```
 
-Die Methode `choose_random_action()` ist die austauschbare Auswahlstrategie. In Meilenstein 2 kann sie durch eine geplante Agentenaktion, Nachrichtenverarbeitung oder Contract-Net-Logik ersetzt werden. Die eigentlichen Aktionsmethoden bleiben davon unabhängig bestehen.
+Die Methode `choose_random_action(agent)` ist die austauschbare Auswahlstrategie. In Meilenstein 2 kann sie durch eine geplante Agentenaktion, Nachrichtenverarbeitung oder Contract-Net-Logik ersetzt werden. Die eigentlichen Aktionsmethoden bleiben davon unabhängig bestehen.
 
 ## Verfügbare Aktionen
 
@@ -76,6 +84,15 @@ Die Geschwindigkeit bestimmt die maximale Anzahl der Felder pro Tick:
 Nach jedem Feld werden die möglichen Nachbarn neu ermittelt. Dadurch wird die aktuelle Position berücksichtigt. Wenn kein gültiges Nachbarfeld vorhanden ist, endet die Bewegung für diesen Tick.
 
 Erreicht ein Agent während der Bewegung ein Depot oder ein Ziel, wird die Bewegung sofort beendet. Noch verfügbare Bewegungsfelder werden nicht genutzt. Der Agent bleibt bis zum nächsten Tick auf diesem Feld, damit Depot und Ziel als eigene Aktionspunkte behandelt werden können.
+
+Für jedes tatsächlich zurückgelegte Feld wird der konfigurierte Batterieverbrauch des
+Agententyps abgezogen. Sinkt die verbleibende Batterie auf `0`, erhält der Agent den
+Status `STRANDED`. Er führt danach keine weiteren Aktionen aus und bleibt auf seinem
+Feld. Seine Position bleibt in der Belegungsmenge der Simulation und wird dadurch wie
+ein Hindernis behandelt.
+
+Wenn alle Agenten den Status `STRANDED` besitzen, wird die Simulation automatisch
+angehalten. Die verbleibende Batteriekapazität wird in der Benutzeroberfläche angezeigt.
 
 Die Bewegung ist in Meilenstein 1 zufällig. Es wird noch kein Weg zu einem bestimmten Ziel berechnet. Die A*-Wegsuche wird in einem späteren Meilenstein ergänzt.
 
@@ -119,11 +136,15 @@ Eine echte Nachrichtenwarteschlange, Empfängerlogik und Nachrichtentypen wie `A
 
 ## Aktionen und Erweiterung für Meilenstein 2
 
-Die Auswahl zufälliger Aktionen gehört nur zur ersten Entwicklungsstufe. Für Meilenstein 2 wird dieser Teil ersetzt:
+Die zufällige Auswahl auf normalen Straßenfeldern gehört nur zur ersten Entwicklungsstufe. Die Ortsregeln für Depot und Ziel gehören ebenfalls zu dieser einfachen Auswahlstrategie. Für Meilenstein 2 wird dieser Teil ersetzt:
 
 ```python
-def choose_random_action(self):
-    return self.r.choice((MOVE, PICKUP, DELIVER, SEND_MESSAGE))
+def choose_random_action(self, agent):
+    if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
+        return PICKUP
+    if self.graph.node_at(agent.position).kind is NodeKind.TARGET:
+        return DELIVER
+    return self.r.choice((MOVE, SEND_MESSAGE))
 ```
 
 Die ausführenden Methoden bleiben als fachliche Aktionen erhalten:
@@ -161,7 +182,6 @@ Noch nicht vollständig umgesetzt sind:
 - Contract-Net-Ausschreibungen,
 - A*-Wegplanung,
 - automatische Auswahl einer sinnvollen Aktion,
-- tatsächlicher Batterieverbrauch,
 - Aufladen im Depot.
 
 Diese Funktionen werden in den späteren Meilensteinen ergänzt. Die vorhandenen Aktionsmethoden und die Anzeige der letzten Aktion bilden dafür die Grundlage.

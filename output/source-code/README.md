@@ -11,7 +11,7 @@ Complete runnable Pygame boilerplate for Aufgabe 1.
 - Runtime buttons: Auto, Step, Reset, Agent, Express Agent, Task
 - Separate UI windows for active tasks, messages, agent state and Contract-Net log
 - Collision-safe placement and movement only on walkable nodes
-- Battery data exists but behaviour is disabled pending clarification
+- Battery consumption is applied per moved field; empty agents become stranded obstacles
 
 ## Map selection
 Set `map.type` to `map1`, `map2` or `random`. For a different random map on each start use `random_seed: null`; use an integer for reproducibility.
