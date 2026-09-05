@@ -1,4 +1,4 @@
-##Aufgabe 1
+## Aufgabe 1
 
 ### Besonderheiten der eigenen Karte
 
@@ -58,6 +58,10 @@ diesem Meilenstein noch nicht statt. Die Agentenbewegung ist bewusst zufällig u
 als Vorbereitung für die spätere A*-Wegsuche in Meilenstein 3.
 
 Die Kommunikation zwischen Agenten, das Aufnehmen und Abliefern von Paketen sowie die
-Planung konkreter Aktionen werden in den folgenden Meilensteinen ergänzt. Die aktuelle
+Planung konkreter Aktionen werden in den folgenden Aufgaben ergänzt.  Die aktuelle
 Hauptschleife protokolliert bereits den Simulationsfortschritt und zeigt die Agenten,
 Tasks und Nachrichten in der Benutzeroberfläche an.
+
+
+## Aufgabe 2
+
