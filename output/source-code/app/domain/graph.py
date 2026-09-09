@@ -35,6 +35,8 @@ class GraphMap:
     name: str
     nodes: dict[Position, GraphNode] = field(default_factory=dict)
     adjacency: dict[Position, dict[Position, float]] = field(default_factory=dict)
+    depots: list["Depot"] = field(default_factory=list)
+    destinations: list["Destination"] = field(default_factory=list)
 
     def add_node(self, node):
         self.nodes[node.position] = node

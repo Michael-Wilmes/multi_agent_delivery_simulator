@@ -1,4 +1,6 @@
 from app.config import load_config
+from app.domain.depot import Depot
+from app.domain.destination import Destination
 from app.domain.deliverytask import DeliveryTask
 from app.domain.graph import NodeKind
 from app.maps.presets import create_map1, create_map2, graph_from_ascii
@@ -23,6 +25,20 @@ def test_ascii_space_is_road():
     assert g.nodes[(2, 1)].kind is NodeKind.TARGET
 
 
+def test_map_special_fields_are_domain_entities():
+    g = graph_from_ascii(['D.Z', '...'], 'entity-map')
+
+    assert g.depots == [Depot(0, (0, 0))]
+    assert g.destinations == [Destination(0, (2, 0))]
+
+
+def test_map_depots_are_domain_entities():
+    g = graph_from_ascii(['D.Z', '...'], 'entity-map')
+
+    assert g.depots == [Depot(0, (0, 0))]
+    assert g.depots[0].position == (0, 0)
+
+
 def test_engine_starts_with_configured_agents():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
@@ -34,6 +50,22 @@ def test_engine_starts_with_configured_agents():
     assert (express.speed, express.capacity, express.battery, express.battery_cost_per_field) == (2, 1, 100.0, 3)
     assert config.battery.chargingDurationTicks == 2
     assert config.battery.reserve == 10
+
+
+def test_engine_creates_package_every_five_ticks_and_records_depot_kpi():
+    config = load_config(__import__('pathlib').Path('config/app.json'))
+    engine = SimulationEngine(config)
+    engine.agents.clear()
+
+    for _ in range(5):
+        engine.step()
+
+    assert len(engine.tasks) == 1
+    tick, depot_id, task_id = engine.package_creation_kpi[0]
+    assert tick == 5
+    assert task_id == engine.tasks[0].id
+    assert depot_id in {depot.id for depot in engine.graph.depots}
+    assert any(f'Depot D{depot_id + 1} erzeugt T-{task_id:03d}' in message for message in engine.messages)
 
 
 def test_agents_stay_within_map_bounds_after_steps():
@@ -50,21 +82,21 @@ def test_random_actions_match_special_map_positions():
     engine = SimulationEngine(config)
     agent = engine.agents[0]
 
-    depot = engine.graph.positions_of_kind(NodeKind.DEPOT)[0]
-    target = engine.graph.positions_of_kind(NodeKind.TARGET)[0]
+    depot = engine.graph.depots[0]
+    target = engine.graph.destinations[0]
 
-    agent.position = depot
+    agent.position = depot.position
     engine.tasks.append(DeliveryTask(2, depot, target, engine.tick))
     assert engine.choose_random_action(agent) == PICKUP
 
     engine.tasks.clear()
     assert engine.choose_random_action(agent) in {MOVE, SEND_MESSAGE}
 
-    engine.tasks.append(DeliveryTask(3, (0, 0), depot, engine.tick, 'in_transit', agent.id))
+    engine.tasks.append(DeliveryTask(3, depot, target, engine.tick, 'in_transit', agent.id))
     assert engine.choose_random_action(agent) != DELIVER
 
-    agent.position = target
-    engine.tasks.append(DeliveryTask(1, (0, 0), target, engine.tick, 'in_transit', agent.id))
+    agent.position = target.position
+    engine.tasks.append(DeliveryTask(1, depot, target, engine.tick, 'in_transit', agent.id))
     assert engine.choose_random_action(agent) == DELIVER
 
     engine.tasks.clear()
@@ -82,10 +114,11 @@ def test_agent_charges_at_depot_without_moving_but_can_pick_up():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
     agent = engine.agents[0]
-    depot = engine.graph.positions_of_kind(NodeKind.DEPOT)[0]
-    agent.position = depot
+    depot = engine.graph.depots[0]
+    destination = engine.graph.destinations[0]
+    agent.position = depot.position
     agent.battery = 20.0
-    engine.tasks.append(DeliveryTask(2, depot, (0, 0), engine.tick))
+    engine.tasks.append(DeliveryTask(2, depot, destination, engine.tick))
     position = agent.position
 
     engine.step()

@@ -1,5 +1,7 @@
 import random
 
+from app.domain.destination import Destination
+from app.domain.depot import Depot
 from app.domain.graph import GraphMap, GraphNode, NodeKind
 
 
@@ -56,10 +58,12 @@ class RandomGraphMapFactory:
 
         for i, p in enumerate(chosen[:depot_count]):
             g.nodes[p].kind = NodeKind.DEPOT
-            g.nodes[p].label = f"D{i}"
+            g.nodes[p].label = f"D{i + 1}"
+            g.depots.append(Depot(i, p))
         for i, p in enumerate(chosen[depot_count:]):
             g.nodes[p].kind = NodeKind.TARGET
-            g.nodes[p].label = f"Z{i}"
+            g.nodes[p].label = f"Z{i + 1}"
+            g.destinations.append(Destination(i, p))
 
         g.rebuild_edges()
         return g

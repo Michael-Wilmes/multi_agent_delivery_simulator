@@ -1,3 +1,5 @@
+from app.domain.destination import Destination
+from app.domain.depot import Depot
 from app.domain.graph import GraphMap, GraphNode, NodeKind
 
 MAP_1 = [
@@ -42,7 +44,11 @@ def graph_from_ascii(lines, name):
         for x, s in enumerate(row):
             label = None
             if s in count:
-                label = f'{s}{count[s]}'
+                label = f'{s}{count[s] + 1}'
+                if s == 'D':
+                    g.depots.append(Depot(count[s], (x, y)))
+                elif s == 'Z':
+                    g.destinations.append(Destination(count[s], (x, y)))
                 count[s] += 1
             g.add_node(GraphNode((x, y), kinds.get(s, NodeKind.ROAD), label))
 

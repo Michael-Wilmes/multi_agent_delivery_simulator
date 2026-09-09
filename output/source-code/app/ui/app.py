@@ -170,9 +170,9 @@ class SimulatorApp:
                 pygame.draw.rect(self.screen, WALL if n.kind is NodeKind.WALL else ROAD, cr)
                 pygame.draw.rect(self.screen, GRID, cr, 1)
                 if n.kind is NodeKind.DEPOT:
-                    self.marker(cr, "D", GREEN)
+                    self.marker(cr, n.label or "D", GREEN)
                 elif n.kind is NodeKind.TARGET:
-                    self.marker(cr, "Z", YELLOW)
+                    self.marker(cr, n.label or "Z", YELLOW)
                 if (x, y) in agents:
                     a = agents[(x, y)]
                     pygame.draw.circle(
@@ -207,13 +207,17 @@ class SimulatorApp:
         tasks_w = int(r.width * 0.67)
         sim = pygame.Rect(r.x, r.y, r.width - tasks_w - gap - 30, top_h)
         tasks = pygame.Rect(sim.right + gap, r.y, tasks_w + 30, top_h)
-        messages = pygame.Rect(r.x, r.y + top_h + gap, r.width, 175)
+        lower_y = r.y + top_h + gap
+        messages_w = int(r.width * 0.62)
+        messages = pygame.Rect(r.x, lower_y, messages_w, 175)
+        depots = pygame.Rect(messages.right + gap, lower_y, r.right - messages.right - gap, 175)
         agents = pygame.Rect(r.x, messages.bottom + gap, r.width, r.bottom - messages.bottom - gap)
         self.agent_panel_rect = agents
 
         self.panel(sim, "SIMULATION") #todo: use from a centralized place
         self.panel(tasks, "AKTIVE AUFTRAEGE") #todo: use from a centralized place
         self.panel(messages, "NACHRICHTEN (LETZTE 10)") #todo: use from a centralized place
+        self.panel(depots, f"DEPOTS ({len(s.graph.depots)})")
         self.panel(agents, "AGENTENSTATUS")#    todo: use from a centralized place
 
         self.screen.blit(self.font.render("Tick", True, MUTED), (sim.x + 15, sim.y + 43))
@@ -226,7 +230,11 @@ class SimulatorApp:
 
         for t in s.tasks[-3:]:
             self.screen.blit(
-                self.small.render(f"T-{t.id:03d} {t.depot}->{t.destination} {t.status}", True, TEXT),
+                self.small.render(
+                    f"T-{t.id:03d} {t.depot.position}->{t.destination.position} {t.status}",
+                    True,
+                    TEXT,
+                ),
                 (tasks.x + 14, y),
             )
             y += 22
@@ -238,6 +246,8 @@ class SimulatorApp:
         for msg in s.messages[-6:]:
             self.screen.blit(self.small.render(msg, True, MUTED), (messages.x + 14, y))
             y += 21
+
+        self.draw_depot_status(s, depots)
 
         id_x = agents.x + 14
         type_x = agents.x + 72
@@ -278,6 +288,18 @@ class SimulatorApp:
             self.screen.blit(self.small.render(str(a.capacity), True, MUTED), (capacity_x, y))
             self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, MUTED), (load_x, y))
             y += 21
+
+    def draw_depot_status(self, s, panel):
+        created_by_depot = {depot.id: 0 for depot in s.graph.depots}
+        for _, depot_id, _ in s.package_creation_kpi:
+            created_by_depot[depot_id] = created_by_depot.get(depot_id, 0) + 1
+
+        y = panel.y + 43
+        for depot in s.graph.depots:
+            amount = created_by_depot[depot.id]
+            label = f"D{depot.id + 1}  Pakete: {amount}"
+            self.screen.blit(self.small.render(label, True, TEXT), (panel.x + 14, y))
+            y += 22
 
     def draw_agent_scrollbar(self, panel, agent_count, visible_rows):
         self.agent_scrollbar_rect = pygame.Rect(panel.right - 16, panel.y + 60, 7, panel.height - 68)

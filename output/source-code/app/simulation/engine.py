@@ -1,5 +1,7 @@
 import random
+import csv
 from dataclasses import dataclass
+from pathlib import Path
 
 from app.domain.agent import Agent, AgentType
 from app.domain.deliverytask import DeliveryTask
@@ -16,6 +18,7 @@ class SimulationSnapshot:
     tasks: tuple
     messages: tuple
     contract_log: tuple
+    package_creation_kpi: tuple
     running: bool
 
 
@@ -35,6 +38,11 @@ class SimulationEngine:
         self.contract_log = []
         self._next_agent_id = 1
         self._next_task_id = 1
+        self.package_creation_kpi = []
+        self.kpi_directory = Path(__file__).resolve().parents[2] / 'kpis'
+        self.package_creation_kpi_file = self.kpi_directory / 'package_creation.csv'
+        self.simulation_kpi_file = self.kpi_directory / 'simulation.csv'
+        self._initialize_kpi_files()
         self._all_stranded_message_sent = False
 
         for _ in range(self.config.simulation.initial_standard_agents):
@@ -77,20 +85,73 @@ class SimulationEngine:
         return True
 
     def add_task(self):
-        ds = self.graph.positions_of_kind(NodeKind.DEPOT)
-        zs = self.graph.positions_of_kind(NodeKind.TARGET)
-        if not ds or not zs:
+        depots = self.graph.depots
+        destinations = self.graph.destinations
+        if not depots or not destinations:
             self.messages.append('Task nicht moeglich') #todo: use from a centralized place
             return False
 
-        t = DeliveryTask(self._next_task_id, self.r.choice(ds), self.r.choice(zs), self.tick)
+        depot = self.r.choice(depots)
+        destination = self.r.choice(destinations)
+        t = DeliveryTask(self._next_task_id, depot, destination, self.tick)
         self._next_task_id += 1
         self.tasks.append(t)
-        self.messages.append(f'T-{t.id:03d} erzeugt: {t.depot} -> {t.destination}') #todo: use from a centralized place
+        self.package_creation_kpi.append((self.tick, depot.id, t.id))
+        self._store_package_creation_kpi(self.tick, depot.id, t.id)
+        self.messages.append(
+            f'Depot D{depot.id + 1} erzeugt T-{t.id:03d} bei Tick {self.tick}: '
+            f'{t.depot.position} -> {t.destination.position}'
+        ) #todo: use from a centralized place
         self.contract_log.append(
-            (self.tick, 'CREATED', 'Depot -> Agenten', f'T-{t.id:03d}; Contract-Net folgt in Aufgabe 2')
+            (self.tick, 'CREATED', f'Depot D{depot.id + 1}', f'T-{t.id:03d} -> {t.destination.position}')
         )
         return True
+
+    def _initialize_kpi_files(self):
+        self.kpi_directory.mkdir(parents=True, exist_ok=True)
+        with self.package_creation_kpi_file.open('w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(('tick', 'depot_id', 'task_id'))
+        with self.simulation_kpi_file.open('w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow((
+                'tick',
+                'total_agents',
+                'active_agents',
+                'stranded_agents',
+                'total_tasks',
+                'open_tasks',
+                'in_transit_tasks',
+                'delivered_tasks',
+                'total_load',
+                'packages_created',
+            ))
+
+    def _store_package_creation_kpi(self, tick, depot_id, task_id):
+        with self.package_creation_kpi_file.open('a', newline='', encoding='utf-8') as file:
+            csv.writer(file).writerow((tick, depot_id, task_id))
+
+    def _store_simulation_kpi(self):
+        task_counts = {
+            status: sum(task.status == status for task in self.tasks)
+            for status in ('open', 'in_transit', 'delivered')
+        }
+        stranded_agents = sum(agent.status == STRANDED for agent in self.agents)
+        created_this_tick = sum(event[0] == self.tick for event in self.package_creation_kpi)
+        row = (
+            self.tick,
+            len(self.agents),
+            len(self.agents) - stranded_agents,
+            stranded_agents,
+            len(self.tasks),
+            task_counts['open'],
+            task_counts['in_transit'],
+            task_counts['delivered'],
+            sum(agent.load for agent in self.agents),
+            created_this_tick,
+        )
+        with self.simulation_kpi_file.open('a', newline='', encoding='utf-8') as file:
+            csv.writer(file).writerow(row)
 
     def step(self):
         if self.all_agents_stranded():
@@ -136,7 +197,7 @@ class SimulationEngine:
                     else self.config.agentTypes.express
                 )
                 if a.load < a.capacity and any(
-                    task.status == 'open' and task.depot == a.position
+                    task.status == 'open' and task.depot.position == a.position
                     for task in self.tasks
                 ):
                     self.pick_up_task(a)
@@ -151,6 +212,10 @@ class SimulationEngine:
             action = self.choose_random_action(a)
             self.execute_action(a, action, occupied, reserved)
 
+        if self.tick % 5 == 0:
+            self.add_task()
+
+        self._store_simulation_kpi()
         self.stop_if_all_agents_stranded()
         self.messages.append(f'Tick {self.tick} ausgeführt') #todo: use from a centralized place
 
@@ -162,14 +227,14 @@ class SimulationEngine:
         """
         node_kind = self.graph.node_at(agent.position).kind
         if node_kind is NodeKind.DEPOT and agent.load < agent.capacity and any(
-            task.status == 'open' and task.depot == agent.position
+            task.status == 'open' and task.depot.position == agent.position
             for task in self.tasks
         ):
             return PICKUP
         if node_kind is NodeKind.TARGET and any(
             task.status == 'in_transit'
             and task.assigned_agent_id == agent.id
-            and task.destination == agent.position
+            and task.destination.position == agent.position
             for task in self.tasks
         ):
             return DELIVER
@@ -212,7 +277,7 @@ class SimulationEngine:
                         or any(
                             task.status == 'in_transit'
                             and task.assigned_agent_id == agent.id
-                            and task.destination == p
+                            and task.destination.position == p
                             for task in self.tasks
                         )
                     )
@@ -234,7 +299,7 @@ class SimulationEngine:
 
             if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
                 if agent.load < agent.capacity and any(
-                    task.status == 'open' and task.depot == agent.position
+                    task.status == 'open' and task.depot.position == agent.position
                     for task in self.tasks
                 ):
                     self.pick_up_task(agent)
@@ -283,7 +348,7 @@ class SimulationEngine:
         task = next(
             (
                 task for task in self.tasks
-                if task.status == 'open' and task.depot == agent.position
+                if task.status == 'open' and task.depot.position == agent.position
             ),
             None,
         )
@@ -306,7 +371,7 @@ class SimulationEngine:
                 task for task in self.tasks
                 if task.status == 'in_transit'
                 and task.assigned_agent_id == agent.id
-                and task.destination == agent.position
+                and task.destination.position == agent.position
             ),
             None,
         )
@@ -332,5 +397,6 @@ class SimulationEngine:
             tuple(self.tasks),
             tuple(self.messages[-20:]),
             tuple(self.contract_log[-20:]),
+            tuple(self.package_creation_kpi),
             self.running,
         )
