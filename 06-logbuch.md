@@ -12,12 +12,13 @@
   - Spielsteuerung per Tasten , mit Beschriftung an den Buttons
   - Bewegung der Agenten 
   - Gefundenes Issue: Manchmal sitzen Agenten in nicht erreichbaren Feldern => gelöst
-  - Widget für Agenten scrolar gemacht
+  - Widget für Agenten scrolar gemacht  
+  **02.09.2026**
+  - Alle Objekte in der Map werden durch Objekte representiert
+  - Paket - Ersstellung und Logging im UI implementiert
+  - Erste KPIs als csv angelegt. 
 
 
 ## next to do : ##  
-- Pausen funktionalität hinzufügen. 
-- Standard und Express Agent per Konfig Datei.
-- Dauer / Kosten für Aufladen per Konfig Datei
 
   

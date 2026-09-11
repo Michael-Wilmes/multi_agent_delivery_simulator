@@ -1,4 +1,4 @@
-## Aufgabe 1
+# Aufgabe 1
 
 ### Besonderheiten der eigenen Karte
 
@@ -63,19 +63,16 @@ Hauptschleife protokolliert bereits den Simulationsfortschritt und zeigt die Age
 Tasks und Nachrichten in der Benutzeroberfläche an.
 
 
-## Aufgabe 2
+# Aufgabe 2
 Für die Aufgabe 2 starte ich mit der Implementierung der Pakete in den Depots. 
 Das ist, auf den ersten Blick der leichteste Schritt und sollte nur lose an den Rest des
 Protokolls und der Vergabelogik gebunden sein. 
 
-Das Protkoll:  
-# Contract Net Protocol (CNP) – angepasst auf meine Paketzustellungssimulation
-
-## Grundidee
+## Grundidee: Contract Net Protocol (CNP) – angepasst auf die Simulation
 
 Das **Contract Net Protocol (CNP)** ist ein Protokoll zur Aufgabenverteilung in einem Multi-Agenten-System.
 
-In meiner Simulation werden Pakete in unterschiedlichen Depots erzeugt. Ein zentraler **ContractNetManager** übernimmt anschließend die komplette Vergabe des Lieferauftrags.
+In dieser Simulation werden Pakete in unterschiedlichen Depots erzeugt. Ein zentraler **ContractNetManager** übernimmt anschließend die komplette Vergabe des Lieferauftrags.
 
 Die Lieferagenten erhalten die Ausschreibung, prüfen selbstständig, ob sie den Auftrag übernehmen können, berechnen ihre Kosten und geben gegebenenfalls ein Angebot ab.
 
@@ -146,9 +143,9 @@ Falls nein, gibt er kein Angebot ab.
 
 ---
 
-# Ablauf des Contract Net Protocols
+## Ablauf des Contract Net Protocols
 
-## 1. Paket wird erzeugt
+### 1. Paket wird erzeugt
 
 Alle fünf Simulationsschritte wird an einem zufällig ausgewählten Depot ein neues Paket erzeugt.
 
@@ -178,7 +175,7 @@ bezeichnet werden.
 
 ---
 
-# 2. ANNOUNCE – Ausschreibung
+### 2. ANNOUNCE – Ausschreibung
 
 Der Manager erstellt nun eine Ausschreibung für den Auftrag.
 
@@ -210,7 +207,7 @@ Der Manager sagt damit sinngemäß:
 
 ---
 
-# 3. Agent bewertet den Auftrag
+### 3. Agent bewertet den Auftrag
 
 Jeder Agent erhält dieselbe Ausschreibung.
 
@@ -262,7 +259,7 @@ Kosten: 12
 
 ---
 
-# 4. BID – Angebot
+### 4. BID – Angebot
 
 Kann ein Agent den Auftrag übernehmen, sendet er ein Angebot an den Manager.
 
@@ -299,7 +296,7 @@ Agent 2 gibt kein Gebot ab.
 
 ---
 
-# 5. Angebote sammeln
+### 5. Angebote sammeln
 
 Der Manager sammelt die `BID`-Nachrichten.
 
@@ -319,7 +316,7 @@ Damit bleibt die Bewertung des Auftrags dezentral bei den Agenten.
 
 ---
 
-# 6. Angebote bewerten
+### 6. Angebote bewerten
 
 Wenn der Manager entsprechend der Simulationslogik wieder an der Reihe ist, wertet er die vorhandenen Angebote aus.
 
@@ -345,7 +342,7 @@ Agent 3
 
 ---
 
-# 7. AWARD – Zuschlag
+### 7. AWARD – Zuschlag
 
 Der Manager erteilt dem Gewinner den Zuschlag.
 
@@ -371,7 +368,7 @@ Damit erhält Agent 3 offiziell den Lieferauftrag.
 
 ---
 
-# Gesamter Ablauf
+### Gesamter Ablauf
 
 ```text
 Depot
@@ -407,7 +404,7 @@ ContractNetManager
 
 ---
 
-# Nachrichten des Protokolls
+### Nachrichten des Protokolls
 
 In der Simulation werden drei Nachrichtenarten verwendet:
 
@@ -440,7 +437,7 @@ ANNOUNCE(task_id, destination, deadline)
 
 ---
 
-## BID
+### BID
 
 Sender:
 
@@ -531,49 +528,22 @@ GEWINNER
 
 ---
 
-# Was ist daran das Contract Net Protocol?
+# Verzicht auf direkte Inter-Agenten-Kommunikation
 
-Der zentrale Punkt ist die Trennung zwischen **Ausschreibung**, **Bewertung** und **Vergabe**.
+Im Rahmen der Implementierung verzichte ich bewusst auf eine direkte Kommunikation zwischen den einzelnen Agenten verzichtet.  
+Die für die Auftragsvergabe benötigte Kommunikation erfolgt zwischen dem jeweiligen Depot als Manager und den Agenten.  
+Das Depot veröffentlicht einen Auftrag mittels ANNOUNCE, die Agenten antworten mit einem BID, und der ausgewählte Agent erhält anschließend über AWARD den Zuschlag.  
 
-Der Manager sagt nicht:
+Für die derzeitige Simulationslogik ergibt sich darüber hinaus kein konkreter Anwendungsfall, bei dem ein direkter Nachrichtenaustausch zwischen zwei Agenten erforderlich wäre.  
+Insbesondere die Behandlung von Bewegungskonflikten wird nicht über eine Kommunikation zwischen den beteiligten Agenten gelöst.  
+Vor einer Bewegung wird geprüft, ob der nächste vorgesehene Knoten belegt bzw. passierbar ist.  
+Ist eine Bewegung aufgrund eines anderen Agenten oder einer Blockade nicht möglich, wird eine erneute Routenplanung angestoßen. (Teil der Aufgabe 3)
 
-```text
-Agent 3 muss Paket 184 liefern.
-```
+Eine zusätzliche Inter-Agenten-Kommunikation würde hierfür keinen wesentlichen funktionalen Mehrwert bieten, gleichzeitig aber die Komplexität der Simulation erhöhen.  
+Beispielsweise wären zusätzliche Nachrichtentypen, Regeln für deren Verarbeitung sowie Mechanismen zur Koordination konkurrierender Agenten notwendig.
 
-Stattdessen sagt er:
-
-```text
-Wer kann Paket 184 liefern?
-```
-
-Die Agenten treffen daraufhin selbst eine Entscheidung.
-
-```text
-Agent 1:
-Ich kann liefern.
-Kosten: 18
-
-Agent 2:
-Ich kann nicht liefern.
-
-Agent 3:
-Ich kann liefern.
-Kosten: 12
-```
-
-Erst danach entscheidet der Manager:
-
-```text
-Agent 3 bekommt den Auftrag.
-```
-
-Damit ist die Entscheidung teilweise dezentralisiert:
-
-* Der **Agent** entscheidet, ob und zu welchen Kosten er bietet.
-* Der **Manager** entscheidet, welches Angebot gewinnt.
-
----
+Sollte es zu einem späteren notwendig sein, dass die Agenten untereinander kommunizieren,  
+ist die Archtitektur so aufgebaut,  dass dieses Funktionälität hinzugefügt werden kann. 
 
 # Kurzfassung
 
@@ -599,9 +569,4 @@ Das Contract Net Protocol meiner Simulation lässt sich auf folgenden Ablauf red
 8. Gewinner erhält den Zuschlag
    AWARD
 ```
-
-Die Kernidee lautet:
-
-> **Der Manager verteilt den Auftrag nicht direkt, sondern schreibt ihn aus. Die Agenten bewerten den Auftrag selbst und konkurrieren mit ihren Angeboten um den Zuschlag.**
-
 

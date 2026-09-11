@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.domain.agent import Agent, AgentType
+from app.domain.contractnetmanager import ContractNetManager
 from app.domain.deliverytask import DeliveryTask
 from app.domain.graph import NodeKind
 from app.shared.constants import CHARGE, DELIVER, IDLE, LOAD_DELIVERY, LOADING, MOVE, PICKUP, SEND_MESSAGE, STRANDED
@@ -35,7 +36,7 @@ class SimulationEngine:
         self.agents = []
         self.tasks = []
         self.messages = [f'Karte geladen: {self.graph.name}'] #todo: use from a centralized place
-        self.contract_log = []
+        self.contract_net_manager = ContractNetManager()
         self._next_agent_id = 1
         self._next_task_id = 1
         self.package_creation_kpi = []
@@ -102,9 +103,7 @@ class SimulationEngine:
             f'Depot D{depot.id + 1} erzeugt T-{t.id:03d} bei Tick {self.tick}: '
             f'{t.depot.position} -> {t.destination.position}'
         ) #todo: use from a centralized place
-        self.contract_log.append(
-            (self.tick, 'CREATED', f'Depot D{depot.id + 1}', f'T-{t.id:03d} -> {t.destination.position}')
-        )
+        self.contract_net_manager.announce_task(t, self.tick)
         return True
 
     def _initialize_kpi_files(self):
@@ -396,7 +395,7 @@ class SimulationEngine:
             tuple(self.agents),
             tuple(self.tasks),
             tuple(self.messages[-20:]),
-            tuple(self.contract_log[-20:]),
+            self.contract_net_manager.recent_events(),
             tuple(self.package_creation_kpi),
             self.running,
         )

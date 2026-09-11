@@ -16,7 +16,6 @@ class NodeKind(str, Enum):
 @dataclass
 class GraphNode:
     """Represents one position and its type on the simulation map."""
-
     position: Position
     kind: NodeKind = NodeKind.ROAD
     label: str | None = None
