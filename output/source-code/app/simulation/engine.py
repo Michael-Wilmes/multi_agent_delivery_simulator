@@ -3,10 +3,10 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from app.domain.agent import Agent, AgentType
-from app.domain.contractnetmanager import ContractNetManager
-from app.domain.deliverytask import DeliveryTask
-from app.domain.graph import NodeKind
+from app.domain.entities.agent import Agent, AgentType
+from app.domain.services.contractnetmanager import ContractNetManager
+from app.domain.entities.deliverytask import DeliveryTask
+from app.domain.entities.graph import NodeKind
 from app.shared.constants import CHARGE, DELIVER, IDLE, LOAD_DELIVERY, LOADING, MOVE, PICKUP, SEND_MESSAGE, STRANDED
 from app.maps.factory import create_graph_map
 
@@ -95,15 +95,16 @@ class SimulationEngine:
         depot = self.r.choice(depots)
         destination = self.r.choice(destinations)
         t = DeliveryTask(self._next_task_id, depot, destination, self.tick)
+        deadline = self.tick + self.r.randint(2, 10)
         self._next_task_id += 1
         self.tasks.append(t)
         self.package_creation_kpi.append((self.tick, depot.id, t.id))
         self._store_package_creation_kpi(self.tick, depot.id, t.id)
         self.messages.append(
             f'Depot D{depot.id + 1} erzeugt T-{t.id:03d} bei Tick {self.tick}: '
-            f'{t.depot.position} -> {t.destination.position}'
+            f'{t.depot.position} -> {t.destination.position}, Deadline: Tick {deadline}'
         ) #todo: use from a centralized place
-        self.contract_net_manager.announce_task(t, self.tick)
+        self.contract_net_manager.announce_task(t, self.tick, deadline=deadline)
         return True
 
     def _initialize_kpi_files(self):

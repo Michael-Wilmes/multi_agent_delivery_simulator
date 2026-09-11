@@ -1,6 +1,7 @@
-from app.domain.destination import Destination
-from app.domain.depot import Depot
-from app.domain.graph import GraphMap, GraphNode, NodeKind
+from app.domain.entities.destination import Destination
+from app.domain.entities.depot import Depot
+from app.domain.entities.graph import GraphMap, GraphNode, NodeKind
+
 
 MAP_1 = [
     '...###..Z.',

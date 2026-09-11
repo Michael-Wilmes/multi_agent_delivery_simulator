@@ -1,7 +1,7 @@
 import pygame
 from app.shared.constants import AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT, STRANDED, LOADING
-from app.domain.agent import AgentType
-from app.domain.graph import NodeKind
+from app.domain.entities.agent import AgentType
+from app.domain.entities.graph import NodeKind
 
 from .widgets import Button
 
@@ -334,9 +334,22 @@ class SimulatorApp:
                 (x, y),
             )
 
-        for tick, phase, msg, details in rows:
+        for message in rows:
+            if message.type.value == "ANNOUNCE":
+                depot = f"Depot D{message.depot_id + 1} {message.depot}"
+                destination = f"Ziel Z{message.destination_id + 1} {message.destination}"
+                details = f"T-{message.task_id:03d}: {depot} -> {destination}"
+                details += f" bis {message.deadline}"
+            elif message.type.value == "BID":
+                details = f"T-{message.task_id:03d} Kosten {message.cost}"
+            elif message.type.value == "AWARD":
+                details = f"T-{message.task_id:03d} an Agent {message.agent_id}"
             self.screen.blit(
-                self.small.render(f"{tick:<6} {phase:<11} {msg:<18} {details}", True, MUTED),
+                self.small.render(
+                    f"{message.tick:<6} {message.type.value:<11} {message.agent_id or '-':<18} {details}",
+                    True,
+                    MUTED,
+                ),
                 (x, y),
             )
             y += 22
