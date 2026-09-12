@@ -4,10 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.domain.entities.agent import Agent, AgentType
+from app.domain.entities.contractnetmessage import MessageType
 from app.domain.services.contractnetmanager import ContractNetManager
 from app.domain.entities.deliverytask import DeliveryTask
 from app.domain.entities.graph import NodeKind
-from app.shared.constants import CHARGE, DELIVER, IDLE, LOAD_DELIVERY, LOADING, MOVE, PICKUP, SEND_MESSAGE, STRANDED
+from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, IDLE, LOAD_DELIVERY, LOADING, MOVE, OPEN, PICKUP, STRANDED, SUBMIT_BID
 from app.maps.factory import create_graph_map
 
 
@@ -43,6 +44,7 @@ class SimulationEngine:
         self.kpi_directory = Path(__file__).resolve().parents[2] / 'kpis'
         self.package_creation_kpi_file = self.kpi_directory / 'package_creation.csv'
         self.simulation_kpi_file = self.kpi_directory / 'simulation.csv'
+        self.bid_kpi_file = self.kpi_directory / 'bidding.csv'
         self._initialize_kpi_files()
         self._all_stranded_message_sent = False
 
@@ -82,6 +84,7 @@ class SimulationEngine:
         )
         self._next_agent_id += 1
         self.agents.append(a)
+        self.contract_net_manager.register_agent(a)
         self.messages.append(f'Agent {a.id} ({a.type.value}) bei {a.position}')
         return True
 
@@ -98,6 +101,7 @@ class SimulationEngine:
         deadline = self.tick + self.r.randint(2, 10)
         self._next_task_id += 1
         self.tasks.append(t)
+        depot.add_task(t)
         self.package_creation_kpi.append((self.tick, depot.id, t.id))
         self._store_package_creation_kpi(self.tick, depot.id, t.id)
         self.messages.append(
@@ -126,10 +130,23 @@ class SimulationEngine:
                 'total_load',
                 'packages_created',
             ))
+        with self.bid_kpi_file.open('w', newline='', encoding='utf-8') as file:
+            csv.writer(file).writerow(('tick', 'task_id', 'agent_id', 'result', 'cost'))
 
     def _store_package_creation_kpi(self, tick, depot_id, task_id):
         with self.package_creation_kpi_file.open('a', newline='', encoding='utf-8') as file:
             csv.writer(file).writerow((tick, depot_id, task_id))
+
+    def _store_bid_kpi(self, event):
+        result = 'won' if event.type is MessageType.AWARD else 'lost'
+        with self.bid_kpi_file.open('a', newline='', encoding='utf-8') as file:
+            csv.writer(file).writerow((
+                event.tick,
+                event.task_id,
+                event.agent_id,
+                result,
+                event.cost,
+            ))
 
     def _store_simulation_kpi(self):
         task_counts = {
@@ -197,7 +214,7 @@ class SimulationEngine:
                     else self.config.agentTypes.express
                 )
                 if a.load < a.capacity and any(
-                    task.status == 'open' and task.depot.position == a.position
+                    self._task_available_for_agent(task, a)
                     for task in self.tasks
                 ):
                     self.pick_up_task(a)
@@ -215,6 +232,8 @@ class SimulationEngine:
         if self.tick % 5 == 0:
             self.add_task()
 
+        for outcome in self.contract_net_manager.award_ready_tasks(self.tasks, self.tick):
+            self._store_bid_kpi(outcome)
         self._store_simulation_kpi()
         self.stop_if_all_agents_stranded()
         self.messages.append(f'Tick {self.tick} ausgeführt') #todo: use from a centralized place
@@ -227,7 +246,7 @@ class SimulationEngine:
         """
         node_kind = self.graph.node_at(agent.position).kind
         if node_kind is NodeKind.DEPOT and agent.load < agent.capacity and any(
-            task.status == 'open' and task.depot.position == agent.position
+            self._task_available_for_agent(task, agent)
             for task in self.tasks
         ):
             return PICKUP
@@ -238,7 +257,7 @@ class SimulationEngine:
             for task in self.tasks
         ):
             return DELIVER
-        return self.r.choice((MOVE, SEND_MESSAGE))
+        return self.r.choice((MOVE, SUBMIT_BID))
 
     def execute_action(self, agent, action, occupied, reserved):
         """Executes an action selected for an agent during the current tick."""
@@ -254,12 +273,49 @@ class SimulationEngine:
             self.pick_up_task(agent)
         elif action == DELIVER:
             self.deliver_task(agent)
-        elif action == SEND_MESSAGE:
-            self.send_message(agent)
+        elif action == SUBMIT_BID:
+            self.submit_bid(agent)
 
-    def send_message(self, agent):
-        """Records an agent message; its routing can be extended in milestone 2."""
-        self.messages.append(f'Agent {agent.id}: Nachricht gesendet')
+    def submit_bid(self, agent):
+        """Submit a bid for the first notified task not bid on yet."""
+        task = next(
+            (
+                task for task in self.tasks
+                if any(
+                    notification.type is MessageType.ANNOUNCE
+                    and notification.task_id == task.id
+                    for notification in agent.notifications
+                )
+                and task.status == OPEN
+                and not self.contract_net_manager.has_bid(task.id, agent.id)
+            ),
+            None,
+        )
+        if task is None:
+            self.messages.append(f'Agent {agent.id}: Kein Task für Gebot verfügbar')
+            return
+
+        cost = self._bid_cost(agent, task)
+        self.contract_net_manager.record_bid(
+            agent.id,
+            task.id,
+            cost,
+            self.tick,
+        )
+        self.messages.append(
+            f'Agent {agent.id}: Gebot für T-{task.id:03d} abgegeben ({cost:.1f})'
+        )
+
+    def _bid_cost(self, agent, task):
+        distance_to_depot = sum(
+            abs(current - target)
+            for current, target in zip(agent.position, task.depot.position)
+        )
+        delivery_distance = sum(
+            abs(source - target)
+            for source, target in zip(task.depot.position, task.destination.position)
+        )
+        return distance_to_depot + delivery_distance
 
     def move_agent(self, agent, occupied, reserved):
         if agent.status == STRANDED:
@@ -299,7 +355,7 @@ class SimulationEngine:
 
             if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
                 if agent.load < agent.capacity and any(
-                    task.status == 'open' and task.depot.position == agent.position
+                    self._task_available_for_agent(task, agent)
                     for task in self.tasks
                 ):
                     self.pick_up_task(agent)
@@ -348,7 +404,7 @@ class SimulationEngine:
         task = next(
             (
                 task for task in self.tasks
-                if task.status == 'open' and task.depot.position == agent.position
+                if self._task_available_for_agent(task, agent)
             ),
             None,
         )
@@ -359,7 +415,15 @@ class SimulationEngine:
         agent.load += 1
         task.status = 'in_transit'
         task.assigned_agent_id = agent.id
+        task.depot.remove_task(task)
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} aufgenommen')
+
+    def _task_available_for_agent(self, task, agent):
+        if task.depot.position != agent.position:
+            return False
+        return task.status == OPEN or (
+            task.status == AWAIT_PICKUP and task.assigned_agent_id == agent.id
+        )
 
     def deliver_task(self, agent):
         if self.graph.node_at(agent.position).kind is not NodeKind.TARGET:

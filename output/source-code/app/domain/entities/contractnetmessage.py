@@ -6,6 +6,7 @@ class MessageType(StrEnum):
     ANNOUNCE = "ANNOUNCE"
     BID = "BID"
     AWARD = "AWARD"
+    BID_LOST = "BID_LOST"
 
 
 @dataclass(frozen=True)

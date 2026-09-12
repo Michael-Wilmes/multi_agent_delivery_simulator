@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
+from .contractnetmessage import ContractNetMessage
 from app.shared.constants import IDLE, OPEN, STRANDED
 from .graph import Position
 
@@ -27,3 +28,7 @@ class Agent:
     status: str = IDLE
     current_action: str = IDLE
     charging_ticks_remaining: int = 0
+    notifications: list[ContractNetMessage] = field(default_factory=list, repr=False)
+
+    def receive_notification(self, message: ContractNetMessage) -> None:
+        self.notifications.append(message)

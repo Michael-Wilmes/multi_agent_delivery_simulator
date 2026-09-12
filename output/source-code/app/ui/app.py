@@ -17,6 +17,8 @@ GREEN = (45, 150, 74)
 YELLOW = (234, 164, 25)
 BLUE = (47, 111, 195)
 RED = (215, 67, 51)
+EXPRESS = (165, 86, 190)
+DESTINATION = (220, 180, 40)
 
 
 class SimulatorApp:
@@ -172,12 +174,12 @@ class SimulatorApp:
                 if n.kind is NodeKind.DEPOT:
                     self.marker(cr, n.label or "D", GREEN)
                 elif n.kind is NodeKind.TARGET:
-                    self.marker(cr, n.label or "Z", YELLOW)
+                    self.marker(cr, n.label or "Z", DESTINATION)
                 if (x, y) in agents:
                     a = agents[(x, y)]
                     pygame.draw.circle(
                         self.screen,
-                        BLUE if a.type is AgentType.STANDARD else RED,
+                        BLUE if a.type is AgentType.STANDARD else EXPRESS,
                         cr.center,
                         max(4, cell // 3),
                     )
@@ -186,8 +188,8 @@ class SimulatorApp:
                         self.screen.blit(label, label.get_rect(center=cr.center))
 
     def marker(self, r, text, c):
-        q = r.inflate(-max(3, r.width // 3), -max(3, r.height // 3))
-        pygame.draw.rect(self.screen, c, q, border_radius=2)
+        pygame.draw.rect(self.screen, c, r)
+        pygame.draw.rect(self.screen, GRID, r, 1)
         if r.width >= 20:
             lab = self.small.render(text, True, (8, 18, 24))
             self.screen.blit(lab, lab.get_rect(center=r.center))
@@ -344,6 +346,8 @@ class SimulatorApp:
                 details = f"T-{message.task_id:03d} Kosten {message.cost}"
             elif message.type.value == "AWARD":
                 details = f"T-{message.task_id:03d} an Agent {message.agent_id}"
+            elif message.type.value == "BID_LOST":
+                details = f"T-{message.task_id:03d} verloren, Kosten {message.cost}"
             self.screen.blit(
                 self.small.render(
                     f"{message.tick:<6} {message.type.value:<11} {message.agent_id or '-':<18} {details}",

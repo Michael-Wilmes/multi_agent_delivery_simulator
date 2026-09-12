@@ -1,5 +1,20 @@
-## Ideen zur späteren Simulationsauswertung (Aufgabe 5) 
+## Bewegung der Agenten: 
+Jeder Agent, der eine Lieferung an einem Zielort abgegeben hat, muss diesen 
+nach der Lieferung wieder verlassen, damit es keine Kollisionen mit anderen Agenten geben kann. 
+Auf einem Feld kann immer nur ein Agent stehen
 
+## Depots: 
+Depots müssen eine Liste führen, welche Lieferungen abgeholt wurde und welche eventuell nicht. 
+Zum Beispiell  wei es keine Gebote auf dieses Paket gab, welches in der Deadline-Zeit abgegeben wurde. 
+
+## Zuschlag für Gebote: 
+Der zuschlag für Ausgeschriebene Lieferungen wird am  Deadline Tick berechnet. 
+Das ist aus Gründen der "Fairness", damit nicht der erste günstige Ageng gewinnt. 
+Gibt es zu diesem Tick kein Gebot, sendet der Contract Manager die Message NO-BID  
+und diese Lieferung wird als nicht geliefert markiert. 
+
+
+## Ideen zur späteren Simulationsauswertung (Aufgabe 5) 
 Für die vollständige Simulation sollen unterschiedliche Szenarien mit **3, 5 und 10 Agenten** durchgeführt werden. Neben den in der Aufgabenstellung geforderten KPIs können dabei weitere Kennzahlen erhoben werden, um Zusammenhänge zwischen der Anzahl der Agenten und der Leistungsfähigkeit des Gesamtsystems zu untersuchen.
 
 ### Ausschreibungen ohne Gebot

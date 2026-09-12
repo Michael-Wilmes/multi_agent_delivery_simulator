@@ -205,6 +205,12 @@ der Agent im Zustand `Idle`, bis ein neuer Auftrag verfügbar ist.
 Eine automatische Fahrt zu einem Depot ohne Auftrag findet nicht statt, da sie
 unnötig Energie verbrauchen würde.
 
+Befindet sich der Agent in einem Ziel, und hat nach Ablieferung keinen Auftrag mehr,  
+muss er sich aus dem Ziel entfernen, damit andere Agenten gegebenfalls abliefern können  
+und es keine Kollisionen gibt. 
+
+
+
 ### Leere Batterie
 
 Ein Agent sollte durch die Reichweitenprüfung vor der Auftragsannahme niemals während eines regulären Auftrags vollständig entladen werden.
@@ -257,6 +263,41 @@ Beispiel:
 ```
 
 Die Werte stellen Simulationsparameter dar und sind keine physikalischen Messwerte.
+
+
+# Task Workflow
+
+```mermaid
+flowchart TD
+    A[SimulationEngine creates DeliveryTask] --> B[Task added to engine.tasks]
+    B --> C[Task reference added to depot.tasks]
+    C --> D[Status: open]
+
+    D --> E[ContractNetManager awards task]
+    E --> F[ContractNetManager sets assigned_agent_id]
+    F --> G[ContractNetManager sets status: await_pickup]
+    G --> H[Task remains in depot.tasks]
+
+    H --> I[Assigned agent arrives at depot]
+    I --> J[Agent picks up task]
+    J --> K[Status: in_transit]
+    K --> L[Task removed from depot.tasks]
+
+    L --> M[Agent reaches destination]
+    M --> N[Status: delivered]
+```
+
+## Responsibilities
+
+| Component | Responsibility |
+|---|---|
+| `SimulationEngine` | Creates tasks and manages the simulation |
+| `Depot` | Stores references to tasks waiting for pickup |
+| `ContractNetManager` | Awards tasks and updates `assigned_agent_id` and `status` |
+| `Agent` | Picks up and delivers tasks |
+| `SimulationEngine` | Applies pickup and delivery state changes during simulation |
+
+The important distinction is that the **ContractNetManager performs the award update**, while the **SimulationEngine creates the task**.
 
 
 ## Dokumentation  
