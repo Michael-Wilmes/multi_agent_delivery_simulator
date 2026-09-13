@@ -171,6 +171,12 @@ Ein Agent darf einen Auftrag nur dann annehmen, wenn ausreichend Energie vorhand
 
 1. das auftraggebende Depot zu erreichen,
 2. den Auftrag vollständig auszuführen,
+3. die Ladekapazität noch nicht erreicht ist. 
+
+Wichtig: 
+Wenn ein Agent bereits Aufträge in seiner Liste hat, ist der Startpunkt der Berechnung
+das Ziel der letzten Lieferung. 
+Dabei muss ebenfalls die Batterie - Kapazität am Ziel im Voraus berechnet werden. 
 
 Zusätzlich wird eine Sicherheitsreserve berücksichtigt.
 

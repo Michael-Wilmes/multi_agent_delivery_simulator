@@ -28,6 +28,7 @@ class AgentTypeConfig:
     capacity: int
     batteryCapacity: int
     batteryCostPerField: int
+    taskCapacity: int
 
 
 @dataclass(frozen=True)

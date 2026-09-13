@@ -29,7 +29,7 @@ class ContractNetManager:
         )
         self.events.append(announcement)
         for agent in self.agents:
-            agent.receive_notification(announcement)
+            agent.receive_notification(announcement, task)
 
     def has_bid(self, task_id: int, agent_id: int) -> bool:
         return any(
@@ -105,7 +105,7 @@ class ContractNetManager:
         outcomes = [award]
         for agent in self.agents:
             if agent.id == agent_id:
-                agent.receive_notification(award)
+                agent.receive_notification(award, task)
                 break
         for bid in tuple(self.events):
             if (
@@ -124,7 +124,7 @@ class ContractNetManager:
                 outcomes.append(lost)
                 for agent in self.agents:
                     if agent.id == bid.agent_id:
-                        agent.receive_notification(lost)
+                        agent.receive_notification(lost, task)
                         break
         return tuple(outcomes)
 

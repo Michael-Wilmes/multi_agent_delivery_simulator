@@ -19,12 +19,14 @@
       "speed": 1,
       "capacity": 3,
       "batteryCapacity": 100,
+      "taskCapacity": 3,
       "batteryCostPerField": 2
     },
     "express": {
       "speed": 2,
       "capacity": 1,
       "batteryCapacity": 100,
+      "taskCapacity": 1,
       "batteryCostPerField": 3
     }
   },

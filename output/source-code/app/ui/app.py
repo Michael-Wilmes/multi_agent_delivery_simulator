@@ -40,6 +40,10 @@ class SimulatorApp:
         self.agent_scroll = 0
         self.agent_scroll_dragging = False
         self.agent_scroll_drag_offset = 0
+        self.depot_scroll = 0
+        self.depot_scroll_dragging = False
+        self.depot_scroll_drag_offset = 0
+        self.active_scrollbar = None
 
     def run(self):
         active = True
@@ -52,7 +56,9 @@ class SimulatorApp:
                         self.handle_click(e.pos)
                 elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                     self.agent_scroll_dragging = False
-                elif e.type == pygame.MOUSEMOTION and self.agent_scroll_dragging:
+                    self.depot_scroll_dragging = False
+                    self.active_scrollbar = None
+                elif e.type == pygame.MOUSEMOTION and self.active_scrollbar:
                     self.handle_scrollbar_drag(e.pos[1])
                 elif e.type == pygame.KEYDOWN:
                     active = self.handle_key(e.key)
@@ -94,18 +100,25 @@ class SimulatorApp:
                 return
 
     def handle_scrollbar_click(self, p):
-        if not hasattr(self, "agent_scrollbar_rect") or not self.agent_scrollbar_rect.collidepoint(p):
-            return False
-        thumb = self.agent_scrollbar_thumb
-        if thumb.collidepoint(p):
-            self.agent_scroll_dragging = True
-            self.agent_scroll_drag_offset = p[1] - thumb.y
-        else:
-            self.set_agent_scroll_from_y(p[1] - thumb.height // 2)
-        return True
+        for name in ("depot", "agent"):
+            track = getattr(self, f"{name}_scrollbar_rect", None)
+            if track is None or not track.collidepoint(p):
+                continue
+            thumb = getattr(self, f"{name}_scrollbar_thumb")
+            if thumb.collidepoint(p):
+                setattr(self, f"{name}_scroll_dragging", True)
+                setattr(self, f"{name}_scroll_drag_offset", p[1] - thumb.y)
+            else:
+                getattr(self, f"set_{name}_scroll_from_y")(p[1] - thumb.height // 2)
+            self.active_scrollbar = name
+            return True
+        return False
 
     def handle_scrollbar_drag(self, y):
-        self.set_agent_scroll_from_y(y - self.agent_scroll_drag_offset)
+        name = self.active_scrollbar
+        if name:
+            offset = getattr(self, f"{name}_scroll_drag_offset")
+            getattr(self, f"set_{name}_scroll_from_y")(y - offset)
 
     def set_agent_scroll_from_y(self, thumb_y):
         track = self.agent_scrollbar_rect
@@ -116,6 +129,16 @@ class SimulatorApp:
             return
         fraction = max(0.0, min(1.0, (thumb_y - track.y) / travel))
         self.agent_scroll = round(fraction * self.agent_scroll_max)
+
+    def set_depot_scroll_from_y(self, thumb_y):
+        track = self.depot_scrollbar_rect
+        thumb = self.depot_scrollbar_thumb
+        travel = track.height - thumb.height
+        if travel <= 0:
+            self.depot_scroll = 0
+            return
+        fraction = max(0.0, min(1.0, (thumb_y - track.y) / travel))
+        self.depot_scroll = round(fraction * self.depot_scroll_max)
 
     def panel(self, r, title=None):
         pygame.draw.rect(self.screen, PANEL, r, border_radius=8)
@@ -130,7 +153,7 @@ class SimulatorApp:
         gap = 12
         controls_h = 66
         log_h = 205
-        upper_h = h - m * 4 - controls_h - log_h
+        upper_h = h - m * 3 - log_h
         left_w = int(w * 0.56)
         right_x = m + left_w + gap
         right_w = w - right_x - m
@@ -138,15 +161,21 @@ class SimulatorApp:
         map_r = pygame.Rect(m, m, left_w, upper_h)
         right_r = pygame.Rect(right_x, m, right_w, upper_h)
         log_r = pygame.Rect(m, m + upper_h + gap, w - 2 * m, log_h)
-        controls_r = pygame.Rect(m, h - controls_h - m, w - 2 * m, controls_h)
+        map_content = map_r.copy()
+        map_content.height -= controls_h
+        controls_r = pygame.Rect(
+            map_r.x + 8,
+            map_r.bottom - controls_h - 8,
+            map_r.width - 16,
+            controls_h,
+        )
 
         self.panel(map_r)
-        self.draw_map(s, map_r)
+        self.draw_map(s, map_content)
+        self.draw_controls(controls_r)
         self.draw_right(s, right_r)
         self.panel(log_r, "CONTRACT-NET LOG")
         self.draw_contract(s, log_r)
-        self.panel(controls_r)
-        self.draw_controls(controls_r)
 
     def draw_map(self, s, r):
         g = s.graph
@@ -206,21 +235,21 @@ class SimulatorApp:
         gap = 12
         top_h = 125
 
-        tasks_w = int(r.width * 0.67)
-        sim = pygame.Rect(r.x, r.y, r.width - tasks_w - gap - 30, top_h)
-        tasks = pygame.Rect(sim.right + gap, r.y, tasks_w + 30, top_h)
-        lower_y = r.y + top_h + gap
-        messages_w = int(r.width * 0.62)
-        messages = pygame.Rect(r.x, lower_y, messages_w, 175)
-        depots = pygame.Rect(messages.right + gap, lower_y, r.right - messages.right - gap, 175)
-        agents = pygame.Rect(r.x, messages.bottom + gap, r.width, r.bottom - messages.bottom - gap)
+        sim = pygame.Rect(r.x, r.y, r.width, top_h)
+        agents_y = sim.bottom + gap
+        agents_h = min(220, max(150, (r.bottom - agents_y - gap) // 2))
+        agents = pygame.Rect(r.x, agents_y, r.width, agents_h)
+        depots = pygame.Rect(
+            r.x,
+            agents.bottom + gap,
+            r.width,
+            r.bottom - agents.bottom - gap,
+        )
         self.agent_panel_rect = agents
 
         self.panel(sim, "SIMULATION") #todo: use from a centralized place
-        self.panel(tasks, "AKTIVE AUFTRAEGE") #todo: use from a centralized place
-        self.panel(messages, "NACHRICHTEN (LETZTE 10)") #todo: use from a centralized place
-        self.panel(depots, f"DEPOTS ({len(s.graph.depots)})")
         self.panel(agents, "AGENTENSTATUS")#    todo: use from a centralized place
+        self.panel(depots, f"DEPOT-AUFTRAEGE ({len(s.graph.depots)})")
 
         self.screen.blit(self.font.render("Tick", True, MUTED), (sim.x + 15, sim.y + 43))
         self.screen.blit(self.title.render(str(s.tick), True, TEXT), (sim.x + 15, sim.y + 67))
@@ -228,29 +257,6 @@ class SimulatorApp:
             self.small.render("AUTO" if s.running else "PAUSE", True, GREEN if s.running else MUTED), #todo: use from a centralized place
             (sim.x + 85, sim.y + 72),
         )
-        y = tasks.y + 42
-
-        for t in s.tasks[-3:]:
-            self.screen.blit(
-                self.small.render(
-                    f"T-{t.id:03d} {t.depot.position}->{t.destination.position} {t.status}",
-                    True,
-                    TEXT,
-                ),
-                (tasks.x + 14, y),
-            )
-            y += 22
-
-        if not s.tasks:
-            self.screen.blit(self.small.render("Noch keine Tasks", True, MUTED), (tasks.x + 14, y)) #todo: use from a centralized place
-
-        y = messages.y + 40
-        for msg in s.messages[-6:]:
-            self.screen.blit(self.small.render(msg, True, MUTED), (messages.x + 14, y))
-            y += 21
-
-        self.draw_depot_status(s, depots)
-
         id_x = agents.x + 14
         type_x = agents.x + 72
         pos_x = agents.x + 172
@@ -291,17 +297,85 @@ class SimulatorApp:
             self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, MUTED), (load_x, y))
             y += 21
 
-    def draw_depot_status(self, s, panel):
-        created_by_depot = {depot.id: 0 for depot in s.graph.depots}
-        for _, depot_id, _ in s.package_creation_kpi:
-            created_by_depot[depot_id] = created_by_depot.get(depot_id, 0) + 1
+        self.draw_depot_tasks(s, depots)
 
-        y = panel.y + 43
-        for depot in s.graph.depots:
-            amount = created_by_depot[depot.id]
-            label = f"D{depot.id + 1}  Pakete: {amount}"
-            self.screen.blit(self.small.render(label, True, TEXT), (panel.x + 14, y))
-            y += 22
+    def draw_depot_tasks(self, s, panel):
+        tasks_by_depot = {depot.id: [] for depot in s.graph.depots}
+        for task in s.tasks:
+            tasks_by_depot.setdefault(task.depot.id, []).append(task)
+
+        content_top = panel.y + 40
+        content_bottom = panel.bottom - 8
+        content_height = content_bottom - content_top
+        gap = 10
+        min_card_width = 190
+        columns = max(1, (panel.width - 28 + gap) // (min_card_width + gap))
+        card_width = (panel.width - 28 - gap * (columns - 1)) // columns
+        card_x = panel.x + 14
+        card_heights = [
+            48 + max(1, len(tasks_by_depot[depot.id])) * 21
+            for depot in s.graph.depots
+        ]
+        row_heights = []
+        for row_start in range(0, len(card_heights), columns):
+            row_heights.append(max(card_heights[row_start:row_start + columns]))
+        total_rows = len(row_heights)
+        total_height = sum(row_heights) + max(0, total_rows - 1) * gap
+        self.depot_scroll_max = max(0, total_height - content_height)
+        self.depot_scroll = min(self.depot_scroll, self.depot_scroll_max)
+
+        clip = self.screen.get_clip()
+        self.screen.set_clip(pygame.Rect(panel.x + 8, content_top, panel.width - 24, content_height))
+
+        for depot_index, depot in enumerate(s.graph.depots):
+            row = depot_index // columns
+            column = depot_index % columns
+            card_y = content_top - self.depot_scroll + sum(row_heights[:row]) + row * gap
+            x = card_x + column * (card_width + gap)
+            depot_tasks = tasks_by_depot[depot.id]
+            card_height = card_heights[depot_index]
+
+            card = pygame.Rect(x, card_y, card_width, card_height)
+            pygame.draw.rect(self.screen, (24, 45, 55), card, border_radius=5)
+            pygame.draw.rect(self.screen, BORDER, card, 1, border_radius=5)
+            self.screen.blit(
+                self.small.render(
+                    f"Depot {depot.id + 1} Start {depot.position}",
+                    True,
+                    TEXT,
+                ),
+                (card.x + 10, card.y + 9),
+            )
+            if not depot_tasks:
+                self.screen.blit(
+                    self.small.render("Keine Auftraege", True, MUTED),
+                    (card.x + 10, card.y + 31),
+                )
+                continue
+            for task_index, task in enumerate(depot_tasks):
+                label = f"T-{task.id:03d}: {task.status} Z{task.destination.position}"
+                if task.assigned_agent_id is not None:
+                    label += f" (A{task.assigned_agent_id})"
+                self.screen.blit(
+                    self.small.render(label, True, MUTED),
+                    (card.x + 10, card.y + 31 + task_index * 21),
+                )
+
+        self.screen.set_clip(clip)
+        self.draw_depot_scrollbar(panel, total_height, content_height)
+
+    def draw_depot_scrollbar(self, panel, content_height, visible_height):
+        self.depot_scrollbar_rect = pygame.Rect(panel.right - 16, panel.y + 40, 7, panel.height - 48)
+        track = self.depot_scrollbar_rect
+        pygame.draw.rect(self.screen, (32, 45, 53), track, border_radius=3)
+        if content_height <= visible_height:
+            self.depot_scrollbar_thumb = track.copy()
+            return
+        thumb_height = max(18, track.height * visible_height // content_height)
+        travel = track.height - thumb_height
+        thumb_y = track.y + travel * self.depot_scroll / self.depot_scroll_max
+        self.depot_scrollbar_thumb = pygame.Rect(track.x, thumb_y, track.width, thumb_height)
+        pygame.draw.rect(self.screen, MUTED, self.depot_scrollbar_thumb, border_radius=3)
 
     def draw_agent_scrollbar(self, panel, agent_count, visible_rows):
         self.agent_scrollbar_rect = pygame.Rect(panel.right - 16, panel.y + 60, 7, panel.height - 68)
@@ -363,15 +437,15 @@ class SimulatorApp:
        
     def draw_controls(self, r):
         specs = [
-            (AUTO, 118, GREEN, self.engine.toggle_running),
-            (MANUAL, 118, BLUE, self.engine.step),
-            (RESET, 118, (45, 52, 58), self.engine.reset),
-            (AGENT, 135, (31, 76, 121), lambda: self.engine.add_agent(AgentType.STANDARD)),
-            (EXPRESS_AGENT, 175, (116, 48, 42), lambda: self.engine.add_agent(AgentType.EXPRESS)),
-            (TASK, 120, (120, 88, 19), self.engine.add_task),
-            (QUIT, 120, RED, lambda: exit(0)),
+            ("▶ Auto", 92, GREEN, self.engine.toggle_running),
+            ("⏭ Schritt", 104, BLUE, self.engine.step),
+            ("↻ Reset", 92, (45, 52, 58), self.engine.reset),
+            ("+ Agent", 100, (31, 76, 121), lambda: self.engine.add_agent(AgentType.STANDARD)),
+            ("⚡ Express", 118, EXPRESS, lambda: self.engine.add_agent(AgentType.EXPRESS)),
+            ("+ Task", 92, (120, 88, 19), self.engine.add_task),
+            ("× Ende", 92, RED, lambda: exit(0)),
         ]
-        x = r.x + 16
+        x = r.x + 8
         y = r.y + 11
         self.buttons = []
 
@@ -379,4 +453,4 @@ class SimulatorApp:
             b = Button(pygame.Rect(x, y, w, 44), label, c)
             b.draw(self.screen, self.font)
             self.buttons.append((b, a))
-            x += w + 12
+            x += w + 8

@@ -79,6 +79,7 @@ class SimulationEngine:
             self.r.choice(free),
             type_config.speed,
             type_config.capacity,
+            type_config.taskCapacity,
             battery=float(type_config.batteryCapacity),
             battery_cost_per_field=type_config.batteryCostPerField,
         )
@@ -288,6 +289,7 @@ class SimulationEngine:
                 )
                 and task.status == OPEN
                 and not self.contract_net_manager.has_bid(task.id, agent.id)
+                and any(delivery.task.id == task.id for delivery in agent.deliveries)
             ),
             None,
         )
@@ -295,27 +297,19 @@ class SimulationEngine:
             self.messages.append(f'Agent {agent.id}: Kein Task für Gebot verfügbar')
             return
 
-        cost = self._bid_cost(agent, task)
+        delivery = next(
+            delivery for delivery in agent.deliveries
+            if delivery.task.id == task.id
+        )
         self.contract_net_manager.record_bid(
             agent.id,
             task.id,
-            cost,
+            delivery.cost,
             self.tick,
         )
         self.messages.append(
-            f'Agent {agent.id}: Gebot für T-{task.id:03d} abgegeben ({cost:.1f})'
+            f'Agent {agent.id}: Gebot für T-{task.id:03d} abgegeben ({delivery.cost:.1f})'
         )
-
-    def _bid_cost(self, agent, task):
-        distance_to_depot = sum(
-            abs(current - target)
-            for current, target in zip(agent.position, task.depot.position)
-        )
-        delivery_distance = sum(
-            abs(source - target)
-            for source, target in zip(task.depot.position, task.destination.position)
-        )
-        return distance_to_depot + delivery_distance
 
     def move_agent(self, agent, occupied, reserved):
         if agent.status == STRANDED:
@@ -445,6 +439,7 @@ class SimulationEngine:
 
         agent.load -= 1
         task.status = 'delivered'
+        agent.remove_delivery(task.id)
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} abgeliefert')
 
     def toggle_running(self):

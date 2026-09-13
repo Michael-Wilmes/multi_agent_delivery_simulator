@@ -1,14 +1,12 @@
 from dataclasses import dataclass, field
 from enum import Enum
-
 from .contractnetmessage import ContractNetMessage
-from app.shared.constants import IDLE, OPEN, STRANDED
+from .agentdelivery import AgentDelivery
+from app.shared.constants import IDLE
 from .graph import Position
 
 
 class AgentType(str, Enum):
-    """Identifies the movement and capacity profile of an agent."""
-
     STANDARD = "Standard"
     EXPRESS = "Express"
 
@@ -22,6 +20,7 @@ class Agent:
     position: Position
     speed: int
     capacity: int
+    task_capacity: int
     battery: float = 100.0
     battery_cost_per_field: int = 0
     load: int = 0
@@ -29,6 +28,59 @@ class Agent:
     current_action: str = IDLE
     charging_ticks_remaining: int = 0
     notifications: list[ContractNetMessage] = field(default_factory=list, repr=False)
+    deliveries: list[AgentDelivery] = field(default_factory=list, repr=False)
+    log_messages: list[str] = field(default_factory=list, repr=False)
 
-    def receive_notification(self, message: ContractNetMessage) -> None:
+    def receive_notification(self, message: ContractNetMessage, task=None) -> None:
         self.notifications.append(message)
+        if task is None:
+            return
+
+        if message.type.value == "ANNOUNCE":
+            if self.has_task_capacity() and self._is_target_reachable(task):
+                cost = self.calulate_delivery_task_cost(task)
+                self.deliveries.append(
+                    AgentDelivery(
+                        task=task,
+                        agent_id=self.id,
+                        route=[],
+                        cost=cost,
+                    )
+                )
+        elif message.type.value == "BID_LOST":
+            self.remove_delivery(task.id)
+            self.log_messages.append(f"Remove Task {task.id}, BID LOST")
+
+    def has_task_capacity(self, reserved_tasks: int = 0) -> bool:
+        return len(self.deliveries) + reserved_tasks < self.task_capacity
+
+    def remove_delivery(self, task_id: int) -> None:
+        self.deliveries[:] = [
+            delivery for delivery in self.deliveries
+            if delivery.task.id != task_id
+        ]
+
+    def _is_target_reachable(self, task) -> bool:
+        return True
+
+    def clear_notifications(self) -> None:
+        self.notifications.clear()
+
+    def calulate_delivery_task_cost(self, task) -> float:
+        """Calculates the cost of a delivery task for this agent."""
+        distance_to_depot = sum(
+            abs(current - target)
+            for current, target in zip(self.position, task.depot.position)
+        )
+
+        delivery_distance = sum(
+            abs(source - target)
+            for source, target in zip(task.depot.position, task.destination.position)
+        )
+
+        battery_loss = (distance_to_depot + delivery_distance) * self.battery_cost_per_field
+
+        if self.battery - battery_loss < 0:
+            return float("inf")  # Not enough battery to complete the task
+        return float(distance_to_depot + delivery_distance)
+        
