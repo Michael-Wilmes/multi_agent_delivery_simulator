@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 
+MAX_MAP_SIZE = 50
+
 
 @dataclass(frozen=True)
 class MapConfig:
@@ -59,6 +61,13 @@ class AppConfig:
     window: WindowConfig
 
 
+def validate_map_size(width: int, height: int) -> None:
+    if width > MAX_MAP_SIZE or height > MAX_MAP_SIZE:
+        raise ValueError(
+            "The max size of the map is 50x50, please adapt the app config file !"
+        )
+
+
 def load_config(path: Path) -> AppConfig:
     raw = json.loads(path.read_text(encoding="utf-8"))
     m = MapConfig(**raw["map"])
@@ -67,6 +76,7 @@ def load_config(path: Path) -> AppConfig:
         raise ValueError("map.type must be map1, map2 or random")
     if not 0 <= m.wall_density <= 0.45:
         raise ValueError("wall_density must be between 0.0 and 0.45")
+    validate_map_size(m.random_width, m.random_height)
 
     return AppConfig(
         m,

@@ -8,8 +8,9 @@ from app.domain.entities.contractnetmessage import MessageType
 from app.domain.services.contractnetmanager import ContractNetManager
 from app.domain.entities.deliverytask import DeliveryTask
 from app.domain.entities.graph import NodeKind
-from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, IDLE, LOAD_DELIVERY, LOADING, MOVE, OPEN, PICKUP, STRANDED, SUBMIT_BID
+from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, DELIVERED, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, OPEN, PICKUP, STRANDED, SUBMIT_BID
 from app.maps.factory import create_graph_map
+from app.config import validate_map_size
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ class SimulationEngine:
 
     def reset(self):
         self.graph = create_graph_map(self.config.map)
+        validate_map_size(self.graph.width, self.graph.height)
         self.tick = 0
         self.running = False
         self.agents = []
@@ -139,7 +141,11 @@ class SimulationEngine:
             csv.writer(file).writerow((tick, depot_id, task_id))
 
     def _store_bid_kpi(self, event):
-        result = 'won' if event.type is MessageType.AWARD else 'lost'
+        result = {
+            MessageType.AWARD: 'won',
+            MessageType.BID_LOST: 'lost',
+            MessageType.NO_BID: 'no_bid',
+        }[event.type]
         with self.bid_kpi_file.open('a', newline='', encoding='utf-8') as file:
             csv.writer(file).writerow((
                 event.tick,
@@ -152,7 +158,7 @@ class SimulationEngine:
     def _store_simulation_kpi(self):
         task_counts = {
             status: sum(task.status == status for task in self.tasks)
-            for status in ('open', 'in_transit', 'delivered')
+            for status in (OPEN, IN_TRANSIT, DELIVERED)
         }
         stranded_agents = sum(agent.status == STRANDED for agent in self.agents)
         created_this_tick = sum(event[0] == self.tick for event in self.package_creation_kpi)
@@ -162,9 +168,9 @@ class SimulationEngine:
             len(self.agents) - stranded_agents,
             stranded_agents,
             len(self.tasks),
-            task_counts['open'],
-            task_counts['in_transit'],
-            task_counts['delivered'],
+            task_counts[OPEN],
+            task_counts[IN_TRANSIT],
+            task_counts[DELIVERED],
             sum(agent.load for agent in self.agents),
             created_this_tick,
         )
@@ -252,7 +258,7 @@ class SimulationEngine:
         ):
             return PICKUP
         if node_kind is NodeKind.TARGET and any(
-            task.status == 'in_transit'
+            task.status == IN_TRANSIT
             and task.assigned_agent_id == agent.id
             and task.destination.position == agent.position
             for task in self.tasks
@@ -325,7 +331,7 @@ class SimulationEngine:
                     and (
                         self.graph.node_at(p).kind is not NodeKind.TARGET
                         or any(
-                            task.status == 'in_transit'
+                            task.status == IN_TRANSIT
                             and task.assigned_agent_id == agent.id
                             and task.destination.position == p
                             for task in self.tasks
@@ -407,8 +413,7 @@ class SimulationEngine:
             return
 
         agent.load += 1
-        task.status = 'in_transit'
-        task.assigned_agent_id = agent.id
+        agent.mark_task_in_transit(task)
         task.depot.remove_task(task)
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} aufgenommen')
 
@@ -427,7 +432,7 @@ class SimulationEngine:
         task = next(
             (
                 task for task in self.tasks
-                if task.status == 'in_transit'
+                if task.status == IN_TRANSIT
                 and task.assigned_agent_id == agent.id
                 and task.destination.position == agent.position
             ),
@@ -438,8 +443,7 @@ class SimulationEngine:
             return
 
         agent.load -= 1
-        task.status = 'delivered'
-        agent.remove_delivery(task.id)
+        agent.mark_task_delivered(task)
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} abgeliefert')
 
     def toggle_running(self):

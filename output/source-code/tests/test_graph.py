@@ -2,10 +2,11 @@ from app.config import load_config
 from app.domain.depot import Depot
 from app.domain.destination import Destination
 from app.domain.deliverytask import DeliveryTask
+from app.domain.agentdelivery import AgentDelivery
 from app.domain.graph import NodeKind
 from app.maps.presets import create_map1, create_map2, graph_from_ascii
 from app.maps.random_map import RandomGraphMapFactory
-from app.shared.constants import CHARGE, DELIVER, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED, SUBMIT_BID
+from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, DELIVERED, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED, SUBMIT_BID
 from app.simulation.engine import SimulationEngine
 
 
@@ -92,11 +93,11 @@ def test_random_actions_match_special_map_positions():
     engine.tasks.clear()
     assert engine.choose_random_action(agent) in {MOVE, SUBMIT_BID}
 
-    engine.tasks.append(DeliveryTask(3, depot, target, engine.tick, 'in_transit', agent.id))
+    engine.tasks.append(DeliveryTask(3, depot, target, engine.tick, IN_TRANSIT, agent.id))
     assert engine.choose_random_action(agent) != DELIVER
 
     agent.position = target.position
-    engine.tasks.append(DeliveryTask(1, depot, target, engine.tick, 'in_transit', agent.id))
+    engine.tasks.append(DeliveryTask(1, depot, target, engine.tick, IN_TRANSIT, agent.id))
     assert engine.choose_random_action(agent) == DELIVER
 
     engine.tasks.clear()
@@ -127,7 +128,7 @@ def test_agent_charges_at_depot_without_moving_but_can_pick_up():
     assert agent.battery == 20.0
     assert agent.status == LOADING
     assert agent.current_action == LOAD_DELIVERY
-    assert engine.tasks[-1].status == 'in_transit'
+    assert engine.tasks[-1].status == IN_TRANSIT
 
     engine.step()
 
@@ -152,8 +153,27 @@ def test_depot_tracks_created_tasks_and_removes_picked_up_task():
     engine.pick_up_task(agent)
 
     assert task not in depot.tasks
-    assert task.status == 'in_transit'
+    assert task.status == IN_TRANSIT
     assert task.assigned_agent_id == agent.id
+
+
+def test_agent_marks_task_delivered_and_removes_active_delivery():
+    config = load_config(__import__('pathlib').Path('config/app.json'))
+    engine = SimulationEngine(config)
+    agent = engine.agents[0]
+    depot = engine.graph.depots[0]
+    destination = engine.graph.destinations[0]
+    task = DeliveryTask(2, depot, destination, engine.tick, IN_TRANSIT, agent.id)
+    agent.position = destination.position
+    agent.load = 1
+    agent.deliveries.append(AgentDelivery(task, agent.id, []))
+    engine.tasks.append(task)
+
+    engine.deliver_task(agent)
+
+    assert task.status == DELIVERED
+    assert task not in [delivery.task for delivery in agent.deliveries]
+    assert agent.load == 0
 
 
 def test_award_updates_the_depot_task_record():
@@ -167,7 +187,24 @@ def test_award_updates_the_depot_task_record():
     engine.contract_net_manager.award_task(task.id, engine.agents[0].id, engine.tick, task)
 
     assert depot.tasks[0].assigned_agent_id == engine.agents[0].id
-    assert depot.tasks[0].status == 'await_pickup'
+    assert depot.tasks[0].status == AWAIT_PICKUP
+
+
+def test_no_bid_is_recorded_at_task_deadline():
+    config = load_config(__import__('pathlib').Path('config/app.json'))
+    engine = SimulationEngine(config)
+    depot = engine.graph.depots[0]
+    destination = engine.graph.destinations[0]
+    task = DeliveryTask(2, depot, destination, engine.tick)
+    depot.add_task(task)
+    engine.contract_net_manager.announce_task(task, engine.tick, deadline=engine.tick)
+
+    outcomes = engine.contract_net_manager.award_ready_tasks([task], engine.tick)
+
+    assert len(outcomes) == 1
+    assert outcomes[0].type.value == 'NO_BID'
+    assert outcomes[0].task_id == task.id
+    assert outcomes[0].agent_id is None
 
 
 def test_agent_without_task_loads_immediately_and_waits_one_tick():

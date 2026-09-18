@@ -12,12 +12,12 @@
   - Spielsteuerung per Tasten , mit Beschriftung an den Buttons
   - Bewegung der Agenten 
   - Gefundenes Issue: Manchmal sitzen Agenten in nicht erreichbaren Feldern => gelöst
-  - Widget für Agenten scrolar gemacht  
-  **02.09.2026**
+  - Widget für Agenten scrollbar gemacht  
+  **16.09.2026**
   - Alle Objekte in der Map werden durch Objekte representiert
   - Paket - Ersstellung und Logging im UI implementiert
   - Erste KPIs als csv angelegt. 
-
+  **18.09.2026**
 
 ## next to do : ##  
 

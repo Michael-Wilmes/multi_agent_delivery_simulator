@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from .contractnetmessage import ContractNetMessage
 from .agentdelivery import AgentDelivery
-from app.shared.constants import IDLE
+from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT
 from .graph import Position
 
 
@@ -47,6 +47,8 @@ class Agent:
                         cost=cost,
                     )
                 )
+        elif message.type.value == "AWARD":
+            self.mark_task_await_pickup(task)
         elif message.type.value == "BID_LOST":
             self.remove_delivery(task.id)
             self.log_messages.append(f"Remove Task {task.id}, BID LOST")
@@ -59,6 +61,18 @@ class Agent:
             delivery for delivery in self.deliveries
             if delivery.task.id != task_id
         ]
+
+    def mark_task_in_transit(self, task) -> None:
+        task.status = IN_TRANSIT
+        task.assigned_agent_id = self.id
+
+    def mark_task_await_pickup(self, task) -> None:
+        task.status = AWAIT_PICKUP
+        task.assigned_agent_id = self.id
+
+    def mark_task_delivered(self, task) -> None:
+        task.status = DELIVERED
+        self.remove_delivery(task.id)
 
     def _is_target_reachable(self, task) -> bool:
         return True

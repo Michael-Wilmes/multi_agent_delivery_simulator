@@ -3,7 +3,7 @@ from app.domain.entities.contractnetmessage import (
     ContractNetMessage,
     MessageType
 )
-from app.shared.constants import AWAIT_PICKUP
+from app.shared.constants import OPEN
 
 @dataclass
 class ContractNetManager:
@@ -42,7 +42,7 @@ class ContractNetManager:
     def award_ready_tasks(self, tasks, tick: int) -> tuple[ContractNetMessage, ...]:
         outcomes = []
         for task in tasks:
-            if task.status != "open":
+            if task.status != OPEN:
                 continue
 
             announcement = next(
@@ -56,13 +56,31 @@ class ContractNetManager:
             if announcement is None:
                 continue
 
+            if any(
+                event.type is MessageType.NO_BID
+                and event.task_id == task.id
+                for event in self.events
+            ):
+                continue
+
             bids = [
                 event for event in self.events
                 if event.type is MessageType.BID
                 and event.task_id == task.id
             ]
             deadline_reached = announcement.deadline is not None and tick >= announcement.deadline
-            if not bids or not deadline_reached:
+            if not deadline_reached:
+                continue
+
+            if not bids:
+                outcomes.append(
+                    ContractNetMessage(
+                        type=MessageType.NO_BID,
+                        tick=tick,
+                        task_id=task.id,
+                    )
+                )
+                self.events.append(outcomes[-1])
                 continue
 
             winning_bid = min(bids, key=lambda bid: (bid.cost, bid.agent_id))
@@ -82,9 +100,6 @@ class ContractNetManager:
 
 
     def award_task(self, task_id: int, agent_id: int, tick: int, task=None):
-        if task is not None:
-            task.assigned_agent_id = agent_id
-            task.status = AWAIT_PICKUP
         winning_bid = next(
             (
                 event for event in self.events
@@ -101,12 +116,15 @@ class ContractNetManager:
             agent_id=agent_id,
             cost=winning_bid.cost if winning_bid else None,
         )
+
         self.events.append(award)
         outcomes = [award]
+
         for agent in self.agents:
             if agent.id == agent_id:
                 agent.receive_notification(award, task)
                 break
+            
         for bid in tuple(self.events):
             if (
                 bid.type is MessageType.BID

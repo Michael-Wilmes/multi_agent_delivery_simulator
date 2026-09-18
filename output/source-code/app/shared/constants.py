@@ -1,6 +1,8 @@
 IDLE = "idle"
 OPEN = "open"
 AWAIT_PICKUP = "await_pickup"
+IN_TRANSIT = "in_transit"
+DELIVERED = "delivered"
 AUTO = "Auto (1)"
 MANUAL = "Manuel (2)" 
 RESET = "Reset (3)"

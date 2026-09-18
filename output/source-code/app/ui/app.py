@@ -422,6 +422,8 @@ class SimulatorApp:
                 details = f"T-{message.task_id:03d} an Agent {message.agent_id}"
             elif message.type.value == "BID_LOST":
                 details = f"T-{message.task_id:03d} verloren, Kosten {message.cost}"
+            elif message.type.value == "NO_BID":
+                details = f"T-{message.task_id:03d} ohne Gebot"
             self.screen.blit(
                 self.small.render(
                     f"{message.tick:<6} {message.type.value:<11} {message.agent_id or '-':<18} {details}",
@@ -445,7 +447,9 @@ class SimulatorApp:
             ("+ Task", 92, (120, 88, 19), self.engine.add_task),
             ("× Ende", 92, RED, lambda: exit(0)),
         ]
-        x = r.x + 8
+        gap = 8
+        row_width = sum(width for _, width, _, _ in specs) + gap * (len(specs) - 1)
+        x = r.centerx - row_width // 2
         y = r.y + 11
         self.buttons = []
 
@@ -453,4 +457,4 @@ class SimulatorApp:
             b = Button(pygame.Rect(x, y, w, 44), label, c)
             b.draw(self.screen, self.font)
             self.buttons.append((b, a))
-            x += w + 8
+            x += w + gap
