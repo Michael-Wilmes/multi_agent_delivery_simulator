@@ -2,8 +2,8 @@
   "map": {
     "type": "random",
     "random_seed": null,
-    "random_width": 51,
-    "random_height": 50,
+    "random_width": 20,
+    "random_height": 20,
     "wall_density": 0.20,
     "depot_count": 4,
     "target_count": 4

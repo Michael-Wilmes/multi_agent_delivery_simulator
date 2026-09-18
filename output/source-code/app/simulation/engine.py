@@ -142,6 +142,7 @@ class SimulationEngine:
 
     def _store_bid_kpi(self, event):
         result = {
+            MessageType.BID: 'submitted',
             MessageType.AWARD: 'won',
             MessageType.BID_LOST: 'lost',
             MessageType.NO_BID: 'no_bid',
@@ -307,12 +308,13 @@ class SimulationEngine:
             delivery for delivery in agent.deliveries
             if delivery.task.id == task.id
         )
-        self.contract_net_manager.record_bid(
+        bid = self.contract_net_manager.record_bid(
             agent.id,
             task.id,
             delivery.cost,
             self.tick,
         )
+        self._store_bid_kpi(bid)
         self.messages.append(
             f'Agent {agent.id}: Gebot für T-{task.id:03d} abgegeben ({delivery.cost:.1f})'
         )

@@ -87,16 +87,16 @@ class ContractNetManager:
             outcomes.extend(self.award_task(task.id, winning_bid.agent_id, tick, task))
         return tuple(outcomes)
 
-    def record_bid(self, agent_id: int, task_id: int, cost: float, tick: int) -> None:
-        self.events.append(
-            ContractNetMessage(
-                type=MessageType.BID,
-                tick=tick,
-                task_id=task_id,
-                agent_id=agent_id,
-                cost=cost,
-            )
+    def record_bid(self, agent_id: int, task_id: int, cost: float, tick: int):
+        bid = ContractNetMessage(
+            type=MessageType.BID,
+            tick=tick,
+            task_id=task_id,
+            agent_id=agent_id,
+            cost=cost,
         )
+        self.events.append(bid)
+        return bid
 
 
     def award_task(self, task_id: int, agent_id: int, tick: int, task=None):

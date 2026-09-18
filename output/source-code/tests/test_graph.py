@@ -4,6 +4,7 @@ from app.domain.destination import Destination
 from app.domain.deliverytask import DeliveryTask
 from app.domain.agentdelivery import AgentDelivery
 from app.domain.graph import NodeKind
+from app.domain.services.routecalculator import ManhattanRouteCalculator
 from app.maps.presets import create_map1, create_map2, graph_from_ascii
 from app.maps.random_map import RandomGraphMapFactory
 from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, DELIVERED, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED, SUBMIT_BID
@@ -16,6 +17,12 @@ def check(g, w, h):
     assert len(g.reachable_from(walk[0])) == len(walk)
     assert len(g.positions_of_kind(NodeKind.DEPOT)) >= 2
     assert len(g.positions_of_kind(NodeKind.TARGET)) >= 3
+
+
+def test_manhattan_route_calculator_returns_distance():
+    calculator = ManhattanRouteCalculator()
+
+    assert calculator.calculate_distance((2, 3), (7, 1)) == 7
 
 
 def test_ascii_space_is_road():

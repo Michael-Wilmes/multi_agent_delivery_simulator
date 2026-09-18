@@ -4,6 +4,7 @@ from .contractnetmessage import ContractNetMessage
 from .agentdelivery import AgentDelivery
 from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT
 from .graph import Position
+from app.domain.services.routecalculator import ManhattanRouteCalculator
 
 
 class AgentType(str, Enum):
@@ -30,6 +31,10 @@ class Agent:
     notifications: list[ContractNetMessage] = field(default_factory=list, repr=False)
     deliveries: list[AgentDelivery] = field(default_factory=list, repr=False)
     log_messages: list[str] = field(default_factory=list, repr=False)
+    route_calculator: ManhattanRouteCalculator = field(
+        default_factory=ManhattanRouteCalculator,
+        repr=False,
+    )
 
     def receive_notification(self, message: ContractNetMessage, task=None) -> None:
         self.notifications.append(message)
@@ -82,14 +87,13 @@ class Agent:
 
     def calulate_delivery_task_cost(self, task) -> float:
         """Calculates the cost of a delivery task for this agent."""
-        distance_to_depot = sum(
-            abs(current - target)
-            for current, target in zip(self.position, task.depot.position)
+        distance_to_depot = self.route_calculator.calculate_distance(
+            self.position,
+            task.depot.position,
         )
-
-        delivery_distance = sum(
-            abs(source - target)
-            for source, target in zip(task.depot.position, task.destination.position)
+        delivery_distance = self.route_calculator.calculate_distance(
+            task.depot.position,
+            task.destination.position,
         )
 
         battery_loss = (distance_to_depot + delivery_distance) * self.battery_cost_per_field

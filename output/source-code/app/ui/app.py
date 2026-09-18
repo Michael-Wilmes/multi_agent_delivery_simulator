@@ -419,7 +419,10 @@ class SimulatorApp:
             elif message.type.value == "BID":
                 details = f"T-{message.task_id:03d} Kosten {message.cost}"
             elif message.type.value == "AWARD":
-                details = f"T-{message.task_id:03d} an Agent {message.agent_id}"
+                details = (
+                    f"T-{message.task_id:03d} an Agent {message.agent_id}, "
+                    f"Kosten {message.cost}"
+                )
             elif message.type.value == "BID_LOST":
                 details = f"T-{message.task_id:03d} verloren, Kosten {message.cost}"
             elif message.type.value == "NO_BID":

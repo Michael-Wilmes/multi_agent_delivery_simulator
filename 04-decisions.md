@@ -18,6 +18,7 @@ Auch bei der Architektur habe ich versucht, möglichst früh eine saubere Trennu
 - Die Karte wird unabhängig von der Darstellung in einer eigenen Graphenstruktur verwaltet.
 - Die grafische Oberfläche ist ausschließlich für die Visualisierung zuständig.
 - Agenten, Aufträge und weitere Objekte erhalten eigene Klassen, auch wenn diese zu Beginn teilweise noch leer bleiben.
+- Die maximale größer der Karte ist auf 50x50 limitiert. 
 
 Dadurch kann die Funktionalität schrittweise erweitert werden, ohne dass die bestehende Struktur grundlegend angepasst werden muss.
 
