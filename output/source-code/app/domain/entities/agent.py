@@ -1,10 +1,12 @@
 from dataclasses import dataclass, field
 from enum import Enum
+import math
 from .contractnetmessage import ContractNetMessage
 from .agentdelivery import AgentDelivery
 from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT
 from .graph import Position
 from app.domain.services.routecalculator import ManhattanRouteCalculator
+from .contractnetmessage import MessageType
 
 
 class AgentType(str, Enum):
@@ -44,6 +46,16 @@ class Agent:
         if message.type.value == "ANNOUNCE":
             if self.has_task_capacity() and self._is_target_reachable(task):
                 cost = self.calulate_delivery_task_cost(task)
+                if not math.isfinite(cost):
+                    self.log_messages.append(
+                        "Insufficient capacity."
+                    )
+                    return ContractNetMessage(
+                        type=MessageType.NO_BID_RESOURCES,
+                        tick=message.tick,
+                        task_id=task.id,
+                        agent_id=self.id,
+                    )
                 self.deliveries.append(
                     AgentDelivery(
                         task=task,

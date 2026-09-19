@@ -28,8 +28,13 @@ class ContractNetManager:
             deadline=deadline,
         )
         self.events.append(announcement)
+        resource_events = []
         for agent in self.agents:
-            agent.receive_notification(announcement, task)
+            response = agent.receive_notification(announcement, task)
+            if response is not None:
+                self.events.append(response)
+                resource_events.append(response)
+        return tuple(resource_events)
 
     def has_bid(self, task_id: int, agent_id: int) -> bool:
         return any(

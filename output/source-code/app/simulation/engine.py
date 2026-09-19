@@ -111,7 +111,8 @@ class SimulationEngine:
             f'Depot D{depot.id + 1} erzeugt T-{t.id:03d} bei Tick {self.tick}: '
             f'{t.depot.position} -> {t.destination.position}, Deadline: Tick {deadline}'
         ) #todo: use from a centralized place
-        self.contract_net_manager.announce_task(t, self.tick, deadline=deadline)
+        for event in self.contract_net_manager.announce_task(t, self.tick, deadline=deadline):
+            self._store_bid_kpi(event)
         return True
 
     def _initialize_kpi_files(self):
@@ -143,6 +144,7 @@ class SimulationEngine:
     def _store_bid_kpi(self, event):
         result = {
             MessageType.BID: 'submitted',
+            MessageType.NO_BID_RESOURCES: 'no_bid_resources',
             MessageType.AWARD: 'won',
             MessageType.BID_LOST: 'lost',
             MessageType.NO_BID: 'no_bid',
@@ -391,7 +393,7 @@ class SimulationEngine:
     def stop_if_all_agents_stranded(self):
         if self.all_agents_stranded() and not self._all_stranded_message_sent:
             self.running = False
-            self.messages.append('Keine Bewegungen mehr möglich')
+            self.messages.append('Stopped. Agents out of battery')
             self._all_stranded_message_sent = True
 
     def pick_up_task(self, agent):

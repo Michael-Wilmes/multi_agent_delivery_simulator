@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pygame
 from app.shared.constants import AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT, STRANDED, LOADING
 from app.domain.entities.agent import AgentType
@@ -44,6 +46,28 @@ class SimulatorApp:
         self.depot_scroll_dragging = False
         self.depot_scroll_drag_offset = 0
         self.active_scrollbar = None
+        self.icons = self.load_icons()
+
+    def load_icons(self):
+        assets_dir = Path(__file__).resolve().parents[1] / "assets"
+        icon_files = {
+            "auto": "auto.svg",
+            "step": "step.svg",
+            "reset": "reset.svg",
+            "agent": "add-agent.svg",
+            "express": "express-agent.svg",
+            "task": "add-task.svg",
+            "end": "end.svg",
+        }
+        icons = {}
+        for name, filename in icon_files.items():
+            path = assets_dir / filename
+            try:
+                icon = pygame.image.load(path).convert_alpha()
+                icons[name] = pygame.transform.smoothscale(icon, (20, 20))
+            except (FileNotFoundError, pygame.error):
+                icons[name] = None
+        return icons
 
     def run(self):
         active = True
@@ -394,7 +418,7 @@ class SimulatorApp:
         x = r.x + 15
         y = r.y + 42
         self.screen.blit(
-            self.small.render("Tick   Phase       Nachricht          Details", True, TEXT),
+            self.small.render("Tick   Phase             Agent              Details", True, TEXT),
             (x, y),
         )
         y += 23
@@ -417,7 +441,7 @@ class SimulatorApp:
                 details = f"T-{message.task_id:03d}: {depot} -> {destination}"
                 details += f" bis {message.deadline}"
             elif message.type.value == "BID":
-                details = f"T-{message.task_id:03d} Kosten {message.cost}"
+                details = f"T-{message.task_id:03d} Agent {message.agent_id} Kosten {message.cost}"
             elif message.type.value == "AWARD":
                 details = (
                     f"T-{message.task_id:03d} an Agent {message.agent_id}, "
@@ -427,9 +451,14 @@ class SimulatorApp:
                 details = f"T-{message.task_id:03d} verloren, Kosten {message.cost}"
             elif message.type.value == "NO_BID":
                 details = f"T-{message.task_id:03d} ohne Gebot"
+            elif message.type.value == "NO_BID_RESOURCES":
+                details = (
+                    f"T-{message.task_id:03d} Agent {message.agent_id}: "
+                    "Insufficient capacity."
+                )
             self.screen.blit(
                 self.small.render(
-                    f"{message.tick:<6} {message.type.value:<11} {message.agent_id or '-':<18} {details}",
+                    f"{message.tick:<6} {message.type.value:<17} {message.agent_id or '-':<18} {details}",
                     True,
                     MUTED,
                 ),
@@ -442,22 +471,29 @@ class SimulatorApp:
        
     def draw_controls(self, r):
         specs = [
-            ("▶ Auto", 92, GREEN, self.engine.toggle_running),
-            ("⏭ Schritt", 104, BLUE, self.engine.step),
-            ("↻ Reset", 92, (45, 52, 58), self.engine.reset),
-            ("+ Agent", 100, (31, 76, 121), lambda: self.engine.add_agent(AgentType.STANDARD)),
-            ("⚡ Express", 118, EXPRESS, lambda: self.engine.add_agent(AgentType.EXPRESS)),
-            ("+ Task", 92, (120, 88, 19), self.engine.add_task),
-            ("× Ende", 92, RED, lambda: exit(0)),
+            ("Auto", 92, GREEN, "auto", self.engine.toggle_running),
+            ("Schritt", 104, BLUE, "step", self.engine.step),
+            ("Reset", 92, (45, 52, 58), "reset", self.engine.reset),
+            ("Agent", 100, (31, 76, 121), "agent", lambda: self.engine.add_agent(AgentType.STANDARD)),
+            ("Express", 118, EXPRESS, "express", lambda: self.engine.add_agent(AgentType.EXPRESS)),
+            ("Task", 92, (120, 88, 19), "task", self.engine.add_task),
+            ("Ende", 92, RED, "end", lambda: exit(0)),
         ]
         gap = 8
-        row_width = sum(width for _, width, _, _ in specs) + gap * (len(specs) - 1)
+        row_width = sum(width for _, width, _, _, _ in specs) + gap * (len(specs) - 1)
         x = r.centerx - row_width // 2
         y = r.y + 11
         self.buttons = []
+        mouse_position = pygame.mouse.get_pos()
+        hovering_button = False
 
-        for label, w, c, a in specs:
-            b = Button(pygame.Rect(x, y, w, 44), label, c)
-            b.draw(self.screen, self.font)
-            self.buttons.append((b, a))
+        for label, w, c, icon_name, action in specs:
+            b = Button(pygame.Rect(x, y, w, 44), label, c, self.icons[icon_name])
+            hovered = b.hit(mouse_position)
+            hovering_button = hovering_button or hovered
+            b.draw(self.screen, self.font, hovered)
+            self.buttons.append((b, action))
             x += w + gap
+
+        cursor = pygame.SYSTEM_CURSOR_HAND if hovering_button else pygame.SYSTEM_CURSOR_ARROW
+        pygame.mouse.set_cursor(cursor)
