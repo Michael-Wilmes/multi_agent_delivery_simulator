@@ -17,7 +17,9 @@
   - Alle Objekte in der Map werden durch Objekte representiert
   - Paket - Ersstellung und Logging im UI implementiert
   - Erste KPIs als csv angelegt. 
-  **18.09.2026**
+  **20.09.2026**
+  - Erzeugen eines Auction - Managers: die Vergabe des Aufträge aoll über einen Auction Manager gehen. 
+  - Der Auftrag wird vom ContractNetManager an den Auction Manager Übergeben
 
 ## next to do : ##  
 
