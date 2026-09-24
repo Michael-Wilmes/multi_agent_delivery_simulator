@@ -159,11 +159,19 @@ So yes, postponing the extraction is reasonable. The current engine is acting as
 ### nächste Schritte: 
 - [x] Agent muss die Status der Lieferungen setzen, die er Ausliefert 
 - [x] Ein Gewonnener Aufrag muss den Status: Await Pickup, durch den Agenten steuert werden
-- [] Ein verlorener Aufrag muss als KPI gespeichert werden und dann aus der Liste des Agenten gelöscht werden. 
-- [] Ein gelieferter Auftrag muss der Agenten Liste gelöscht werden. 
-- [] Manhatten Distan z Berechnung ! 
+- [x] Ein verlorener Aufrag muss als KPI gespeichert werden und dann aus der Liste des Agenten gelöscht werden. 
+- [x] Ein gelieferter Auftrag muss der Agenten Liste gelöscht werden. 
+- [x] Manhatten Distan z Berechnung ! 
+
+
+### nächste Schritte am 21.09.2026
+- Separater Auction Manager
+- Saubere Anzeige der ui. 
+- Loggen aller Anzeig in der UI in einer eigenen Log Datei
+- Das Loggen muss mit in die Architektur, in dem Passus : Trennung von UI und Simulation. 
 
 - Das alles muss sauber in der UI zu sehen sein. 
+
 
 
  # Refactoring

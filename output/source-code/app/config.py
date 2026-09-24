@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 
 MAX_MAP_SIZE = 50
+MAX_DEPOT_COUNT = 10
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,13 @@ def validate_map_size(width: int, height: int) -> None:
         )
 
 
+def validate_depot_count(depot_count: int) -> None:
+    if depot_count > MAX_DEPOT_COUNT:
+        raise ValueError(
+            f"The max number of depots is {MAX_DEPOT_COUNT}, please adapt the app config file !"
+        )
+
+
 def load_config(path: Path) -> AppConfig:
     raw = json.loads(path.read_text(encoding="utf-8"))
     m = MapConfig(**raw["map"])
@@ -77,6 +85,7 @@ def load_config(path: Path) -> AppConfig:
     if not 0 <= m.wall_density <= 0.45:
         raise ValueError("wall_density must be between 0.0 and 0.45")
     validate_map_size(m.random_width, m.random_height)
+    validate_depot_count(m.depot_count)
 
     return AppConfig(
         m,

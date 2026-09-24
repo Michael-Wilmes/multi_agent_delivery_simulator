@@ -1,7 +1,10 @@
 from pathlib import Path
 
 import pygame
-from app.shared.constants import AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT, STRANDED, LOADING
+from app.shared.constants import (
+    AUTO, MANUAL, RESET, AGENT, EXPRESS_AGENT, TASK, QUIT, STRANDED, LOADING,
+    OPEN, AWAIT_PICKUP, IN_TRANSIT, DELIVERED, NO_BID,
+)
 from app.domain.entities.agent import AgentType
 from app.domain.entities.graph import NodeKind
 
@@ -183,8 +186,8 @@ class SimulatorApp:
         right_w = w - right_x - m
 
         map_r = pygame.Rect(m, m, left_w, upper_h)
-        right_r = pygame.Rect(right_x, m, right_w, upper_h)
-        log_r = pygame.Rect(m, m + upper_h + gap, w - 2 * m, log_h)
+        right_r = pygame.Rect(right_x, m, right_w, h - 2 * m)
+        log_r = pygame.Rect(m, m + upper_h + gap, left_w, log_h)
         map_content = map_r.copy()
         map_content.height -= controls_h
         controls_r = pygame.Rect(
@@ -230,15 +233,22 @@ class SimulatorApp:
                     self.marker(cr, n.label or "Z", DESTINATION)
                 if (x, y) in agents:
                     a = agents[(x, y)]
+                    stranded = a.status == STRANDED
+                    radius = max(4, cell // 3)
                     pygame.draw.circle(
                         self.screen,
-                        BLUE if a.type is AgentType.STANDARD else EXPRESS,
+                        MUTED if stranded else (BLUE if a.type is AgentType.STANDARD else EXPRESS),
                         cr.center,
-                        max(4, cell // 3),
+                        radius,
                     )
                     if cell >= 20:
                         label = self.small.render(str(a.id), True, TEXT)
                         self.screen.blit(label, label.get_rect(center=cr.center))
+                    if stranded:
+                        cx, cy = cr.center
+                        offset = radius + 2
+                        pygame.draw.line(self.screen, RED, (cx - offset, cy - offset), (cx + offset, cy + offset), 3)
+                        pygame.draw.line(self.screen, RED, (cx - offset, cy + offset), (cx + offset, cy - offset), 3)
 
     def marker(self, r, text, c):
         pygame.draw.rect(self.screen, c, r)
@@ -258,16 +268,19 @@ class SimulatorApp:
     def draw_right(self, s, r):
         gap = 12
         top_h = 125
+        sim_w = 220
 
-        sim = pygame.Rect(r.x, r.y, r.width, top_h)
-        agents_y = sim.bottom + gap
+        agents_y = r.y + top_h + gap
         agents_h = min(220, max(150, (r.bottom - agents_y - gap) // 2))
-        agents = pygame.Rect(r.x, agents_y, r.width, agents_h)
+        combined_h = top_h + gap + agents_h
+
+        sim = pygame.Rect(r.x, r.y, sim_w, combined_h)
+        agents = pygame.Rect(sim.right + gap, r.y, r.width - sim_w - gap, combined_h)
         depots = pygame.Rect(
             r.x,
-            agents.bottom + gap,
+            sim.bottom + gap,
             r.width,
-            r.bottom - agents.bottom - gap,
+            r.bottom - sim.bottom - gap,
         )
         self.agent_panel_rect = agents
 
@@ -281,14 +294,16 @@ class SimulatorApp:
             self.small.render("AUTO" if s.running else "PAUSE", True, GREEN if s.running else MUTED), #todo: use from a centralized place
             (sim.x + 85, sim.y + 72),
         )
-        id_x = agents.x + 14
-        type_x = agents.x + 72
-        pos_x = agents.x + 172
-        status_x = agents.x + 255
-        battery_x = agents.x + 410
-        battery_text_x = battery_x + 62
-        capacity_x = agents.x + 535
-        load_x = agents.x + 590
+        # Spaltenabstaende skalieren mit der (jetzt schmaleren) Agentenspalte.
+        scale = agents.width / 809
+        id_x = agents.x + round(14 * scale)
+        type_x = agents.x + round(72 * scale)
+        pos_x = agents.x + round(172 * scale)
+        status_x = agents.x + round(255 * scale)
+        battery_x = agents.x + round(410 * scale)
+        battery_text_x = battery_x + round(62 * scale)
+        capacity_x = agents.x + round(535 * scale)
+        load_x = agents.x + round(590 * scale)
 
         self.screen.blit(self.small.render("ID", True, TEXT), (id_x, agents.y + 39))
         self.screen.blit(self.small.render("Typ", True, TEXT), (type_x, agents.y + 39))
@@ -305,25 +320,27 @@ class SimulatorApp:
         self.draw_agent_scrollbar(agents, len(s.agents), visible_rows)
         y = agents.y + 64
         for a in s.agents[self.agent_scroll:self.agent_scroll + visible_rows]:
-            self.screen.blit(self.small.render(str(a.id), True, MUTED), (id_x, y))
-            self.screen.blit(self.small.render(a.type.value, True, MUTED), (type_x, y))
-            self.screen.blit(self.small.render(str(a.position), True, MUTED), (pos_x, y))
+            agent_color = RED if a.status == STRANDED else MUTED
+            self.screen.blit(self.small.render(str(a.id), True, agent_color), (id_x, y))
+            self.screen.blit(self.small.render(a.type.value, True, agent_color), (type_x, y))
+            self.screen.blit(self.small.render(str(a.position), True, agent_color), (pos_x, y))
             displayed_action = a.current_action
-            self.screen.blit(self.small.render(displayed_action, True, MUTED), (status_x, y))
+            self.screen.blit(self.small.render(displayed_action, True, agent_color), (status_x, y))
 
             if self.config.simulation.battery_enabled:
-                self.draw_battery_bar(battery_x, y + 5, a.battery)
-                self.screen.blit(self.small.render(f"{a.battery:.0f}%", True, MUTED), (battery_text_x, y))
+                self.draw_battery_bar(battery_x, y + 5, a.battery, width=round(54 * scale))
+                self.screen.blit(self.small.render(f"{a.battery:.0f}%", True, agent_color), (battery_text_x, y))
             else:
-                self.screen.blit(self.small.render("offen", True, MUTED), (battery_x, y))
+                self.screen.blit(self.small.render("offen", True, agent_color), (battery_x, y))
 
-            self.screen.blit(self.small.render(str(a.capacity), True, MUTED), (capacity_x, y))
-            self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, MUTED), (load_x, y))
+            self.screen.blit(self.small.render(str(a.capacity), True, agent_color), (capacity_x, y))
+            self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, agent_color), (load_x, y))
             y += 21
 
         self.draw_depot_tasks(s, depots)
 
     def draw_depot_tasks(self, s, panel):
+        """Renders depots as a fixed 2x10 grid so card size never depends on message volume."""
         tasks_by_depot = {depot.id: [] for depot in s.graph.depots}
         for task in s.tasks:
             tasks_by_depot.setdefault(task.depot.id, []).append(task)
@@ -332,32 +349,32 @@ class SimulatorApp:
         content_bottom = panel.bottom - 8
         content_height = content_bottom - content_top
         gap = 10
-        min_card_width = 190
-        columns = max(1, (panel.width - 28 + gap) // (min_card_width + gap))
+        columns = 2
+        card_height = 90  # feste Hoehe: Badges duerfen nie ausserhalb der Karte landen
         card_width = (panel.width - 28 - gap * (columns - 1)) // columns
         card_x = panel.x + 14
-        card_heights = [
-            48 + max(1, len(tasks_by_depot[depot.id])) * 21
-            for depot in s.graph.depots
-        ]
-        row_heights = []
-        for row_start in range(0, len(card_heights), columns):
-            row_heights.append(max(card_heights[row_start:row_start + columns]))
-        total_rows = len(row_heights)
-        total_height = sum(row_heights) + max(0, total_rows - 1) * gap
+
+        total_rows = max(1, -(-len(s.graph.depots) // columns))
+        total_height = total_rows * card_height + (total_rows - 1) * gap
         self.depot_scroll_max = max(0, total_height - content_height)
         self.depot_scroll = min(self.depot_scroll, self.depot_scroll_max)
 
         clip = self.screen.get_clip()
         self.screen.set_clip(pygame.Rect(panel.x + 8, content_top, panel.width - 24, content_height))
 
+        badge_specs = (
+            ((OPEN,), "OFFEN", YELLOW),
+            ((AWAIT_PICKUP, IN_TRANSIT), "UNTERWEGS", BLUE),
+            ((DELIVERED,), "GELIEFERT", GREEN),
+            ((NO_BID,), "KEIN GEBOT", RED),
+        )
+
         for depot_index, depot in enumerate(s.graph.depots):
             row = depot_index // columns
             column = depot_index % columns
-            card_y = content_top - self.depot_scroll + sum(row_heights[:row]) + row * gap
+            card_y = content_top - self.depot_scroll + row * (card_height + gap)
             x = card_x + column * (card_width + gap)
             depot_tasks = tasks_by_depot[depot.id]
-            card_height = card_heights[depot_index]
 
             card = pygame.Rect(x, card_y, card_width, card_height)
             pygame.draw.rect(self.screen, (24, 45, 55), card, border_radius=5)
@@ -370,20 +387,25 @@ class SimulatorApp:
                 ),
                 (card.x + 10, card.y + 9),
             )
-            if not depot_tasks:
-                self.screen.blit(
-                    self.small.render("Keine Auftraege", True, MUTED),
-                    (card.x + 10, card.y + 31),
-                )
-                continue
-            for task_index, task in enumerate(depot_tasks):
-                label = f"T-{task.id:03d}: {task.status} Z{task.destination.position}"
-                if task.assigned_agent_id is not None:
-                    label += f" (A{task.assigned_agent_id})"
-                self.screen.blit(
-                    self.small.render(label, True, MUTED),
-                    (card.x + 10, card.y + 31 + task_index * 21),
-                )
+
+            counts = [
+                (label, sum(task.status in statuses for task in depot_tasks), color)
+                for statuses, label, color in badge_specs
+            ]
+            badge_gap = 6
+            badge_w = (card_width - 20 - badge_gap) // 2
+            for badge_index, (label, count, color) in enumerate(counts):
+                badge_col = badge_index % 2
+                badge_row = badge_index // 2
+                badge_x = card.x + 10 + badge_col * (badge_w + badge_gap)
+                badge_y = card.y + 30 + badge_row * (22 + badge_gap)
+                badge = pygame.Rect(badge_x, badge_y, badge_w, 22)
+                pygame.draw.rect(self.screen, (16, 26, 30), badge, border_radius=11)
+                pygame.draw.rect(self.screen, color, badge, 1, border_radius=11)
+                label_surface = self.small.render(label, True, color)
+                count_surface = self.small.render(str(count), True, color)
+                self.screen.blit(label_surface, label_surface.get_rect(midleft=(badge.x + 10, badge.centery)))
+                self.screen.blit(count_surface, count_surface.get_rect(midright=(badge.right - 10, badge.centery)))
 
         self.screen.set_clip(clip)
         self.draw_depot_scrollbar(panel, total_height, content_height)
@@ -452,9 +474,16 @@ class SimulatorApp:
             elif message.type.value == "NO_BID":
                 details = f"T-{message.task_id:03d} ohne Gebot"
             elif message.type.value == "NO_BID_RESOURCES":
+                distance = "unknown" if message.distance is None else f"{message.distance:.1f}"
+                energy_range = (
+                    "unlimited"
+                    if message.energy_range is None
+                    else f"{message.energy_range:.1f}"
+                )
                 details = (
                     f"T-{message.task_id:03d} Agent {message.agent_id}: "
-                    "Insufficient capacity."
+                    f"Not reachable. Distance {distance}, "
+                    f"Energy range {energy_range}."
                 )
             self.screen.blit(
                 self.small.render(

@@ -20,7 +20,17 @@
   **20.09.2026**
   - Erzeugen eines Auction - Managers: die Vergabe des Aufträge aoll über einen Auction Manager gehen. 
   - Der Auftrag wird vom ContractNetManager an den Auction Manager Übergeben
+  **24.09.2026**  
+  - Ändernug des User Interfaces, bessere Depot übersicht
+  - Maximale Anzahl von Depots: 10
+  - Mehrere Issues in der Status-Änderung der Lieferungen gelöst. 
+  
+## next to do : ##
+- Pick up muss geloggt werden
+- In Transit muss gelogt werden
+- Delivered muss geloggt werden.
+- Die Status - Änderungen muss als Timeseries (pro Agent / Auftrag) geloggt werden. Ziel: Für jeden Auftrag muss gemessen werden können, wie lange er unterwegs  
+  war, welcher Agent den Autrag ausgeführt hat. Später soll eine Metrik enstehen, die messen kann wie lange eine durchschnittliche Lieferzeit (für die ausgelieferten Aufträge) war !
 
-## next to do : ##  
 
   

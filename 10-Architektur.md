@@ -14,24 +14,34 @@ Dadurch kann die Simulation vollständig **headless**, also ohne grafische Benut
 
 Die grundlegende Struktur lässt sich vereinfacht wie folgt darstellen:
 
-```text id="wcdsyc"
-                     +----------------+
-                     |   Desktop UI   |
-                     +-------+--------+
-                             |
-                             |
-+----------------------------+----------------------------+
-|                    Simulation Core                      |
-|                                                         |
-|   Depots                 ContractNetManager              |
-|                                |                        |
-|                         AuctionManager                  |
-|                                                         |
-|   Agents                    RouteManager                 |
-|                                                         |
-|                     Simulation Clock                    |
-+---------------------------------------------------------+
+```mermaid
+flowchart TD
+    UI[Desktop UI] -->|Commands / Snapshot| Engine[SimulationEngine]
+
+    Engine -->|Erzeugung auslösen| Depot
+    Depot -->|Task einreichen| Manager[ContractNetManager]
+    Manager --> Bid[BidCalculator]
+    Manager -->|ANNOUNCE / AWARD / BID_LOST| Agents[Agents]
+    Agents -->|BID / Decline| Manager
+
+    Engine --> KPI[KpiRecorder]
+    Agents --> Distance[ManhattanRouteCalculator]
+    Engine -. spaeter .-> Route[RouteManager]
 ```
+
+Die `SimulationEngine` löst die Task-Erzeugung im richtigen Simulationstick aus und injiziert den konkreten `ContractNetManager` beim Aufbau in die Depots. Das Depot reicht den erzeugten Task anschließend direkt beim `ContractNetManager` ein:
+
+```text
+SimulationEngine
+  | Task-Erzeugung auslösen
+  v
+Depot
+  | Task einreichen
+  v
+ContractNetManager
+```
+
+Das Depot kennt dabei bewusst den konkreten `ContractNetManager`. Diese direkte Kopplung ist eine einfache und bewusste Designentscheidung: Das Depot ist der Ursprung neuer Aufträge und gibt sie direkt in den Contract-Net-Prozess. Eine zusätzliche Port-, Interface- oder Adapter-Schicht wird für den aktuellen Projektumfang nicht eingeführt. Das Depot entscheidet nicht über die Vergabe; diese Aufgabe liegt beim `BidCalculator`. Die `SimulationEngine` koordiniert weiterhin den globalen Simulationsablauf.
 
 Die Benutzeroberfläche stellt damit lediglich eine mögliche Präsentationsschicht des Simulationssystems dar.
 
@@ -62,11 +72,27 @@ Der Simulationskern besteht im Wesentlichen aus folgenden Komponenten:
 * **Agenten** repräsentieren die autonomen Teilnehmer des Systems.
 * **Depots** erzeugen und verwalten Transportaufträge.
 * Der **ContractNetManager** bildet die zentrale Kommunikations- und Vermittlungskomponente des Contract-Net-Verfahrens.
-* Der **AuctionManager** verwaltet Ausschreibungen, Gebote, Deadlines und die eigentliche Vergabe der Aufträge.
-* Der **RouteManager** übernimmt die zentrale Wegplanung und Kollisionsvermeidung.
-* Die **Simulation Clock** stellt den gemeinsamen zeitlichen Ablauf der diskreten Simulation über Simulationsticks sicher.
+* Der **BidCalculator** verwaltet Ausschreibungen, Gebote, Deadlines und die eigentliche Vergabe der Aufträge.
+* Der **Agent** berechnet seine eigene Reichweite und die Kosten eines Auftrags.
+* Die **SimulationEngine** steuert die Ticks und den Gesamtablauf der Simulation.
 
 Die Verantwortlichkeiten dieser Komponenten werden bewusst voneinander getrennt.
+
+### Rolle der SimulationEngine
+
+Die `SimulationEngine` ist die steuernde Anwendungskomponente der Simulation. Sie ist bewusst dafür verantwortlich, den zeitlichen Ablauf zu koordinieren. Dazu gehören insbesondere:
+
+* Erhöhen des Simulationsticks,
+* Erzeugen neuer Tasks,
+* Auswahl von Depot und Ziel,
+* Vergabe von Task-ID und Deadline,
+* Ausführen der Agentenaktionen,
+* Starten der Contract-Net-Auswertung,
+* Fortschreiben der Simulations- und KPI-Daten.
+
+Die `SimulationEngine` bestimmt den Zeitpunkt sowie die globalen Erzeugungsparameter wie Task-ID, Ziel und Deadline. Das Depot registriert den Task in seinem eigenen Kontext und reicht ihn direkt über den injizierten `ContractNetManager` in den Contract-Net-Prozess ein. Eine zusätzliche `TaskCreationService` oder Interface-Schicht ist für den aktuellen Umfang nicht notwendig.
+
+Die Engine koordiniert den Ablauf, übernimmt aber nicht jede fachliche Einzelentscheidung. Beispielsweise berechnet der Agent seine eigene Reichweite und der `BidCalculator` entscheidet über das Gewinnergebot.
 
 ### Autonomie der Agenten
 
@@ -75,6 +101,8 @@ Die Agenten handeln innerhalb ihres jeweiligen Verantwortungsbereichs autonom. A
 Wird ein neuer Auftrag ausgeschrieben, entscheidet ein Agent eigenständig, ob er an der Ausschreibung teilnimmt und ein Gebot abgibt. Grundlage hierfür sind sein eigener Zustand und seine aktuelle Auftragsplanung.
 
 Globale Koordinationsaufgaben werden dagegen bewusst an spezialisierte Komponenten delegiert. Dadurch müssen die Agenten beispielsweise weder die Auftragsvergabe untereinander aushandeln noch globale Informationen über die geplanten Bewegungen anderer Agenten verwalten.
+
+Die Reichweiten- und Kostenentscheidung bleibt jedoch beim Agenten. Er kennt seine aktuelle Position, Batterie und seinen Energieverbrauch und entscheidet deshalb selbst, ob ein Auftrag für ihn ausführbar ist. Nur wenn diese Prüfung erfolgreich ist, kann er ein `BID` abgeben.
 
 Die Architektur kann daher als **Multiagentensystem mit zentralen Koordinationsdiensten** betrachtet werden.
 
@@ -86,7 +114,7 @@ Agenten registrieren sich beim `ContractNetManager` und kommunizieren bezüglich
 
 Der `ContractNetManager` übernimmt jedoch bewusst **nicht die fachliche Durchführung einer Auktion**.
 
-Seine Aufgabe besteht darin, Nachrichten zwischen den beteiligten Komponenten zu vermitteln und die Schnittstelle zwischen Depots, Agenten und dem `AuctionManager` bereitzustellen.
+Seine Aufgabe besteht darin, Nachrichten zwischen den beteiligten Komponenten zu vermitteln und den Kommunikationsweg zwischen Depots, Agenten und dem `BidCalculator` bereitzustellen.
 
 Vereinfacht ergibt sich folgende Kommunikationsstruktur:
 
@@ -98,30 +126,30 @@ Vereinfacht ergibt sich folgende Kommunikationsstruktur:
                  /           \
                 /             \
                v               v
-       AuctionManager        Agents
+      BidCalculator         Agents
 ```
 
-Der `AuctionManager` benötigt dadurch keinen eigenen Kommunikationsmechanismus zu den Agenten.
+Der `BidCalculator` benötigt dadurch keinen eigenen Kommunikationsmechanismus zu den Agenten.
 
 Diese Trennung verhindert, dass Kommunikationslogik und Vergabelogik miteinander vermischt werden.
 
-### AuctionManager
+### BidCalculator
 
-Der `AuctionManager` ist vollständig für den Lebenszyklus einer Ausschreibung verantwortlich.
+Der `BidCalculator` ist vollständig für den fachlichen Lebenszyklus einer Ausschreibung verantwortlich.
 
-Wird durch ein Depot ein neuer Auftrag erzeugt, gelangt dieser zunächst zum `ContractNetManager`. Dieser übergibt den Auftrag an den `AuctionManager`, der daraus eine neue Ausschreibung erzeugt.
+Wird durch die `SimulationEngine` ein neuer Auftrag erzeugt, wird er beim Depot registriert. Das Depot übergibt ihn anschließend direkt an den injizierten `ContractNetManager`. Dieser übergibt den Auftrag an den `BidCalculator`, der daraus eine neue Ausschreibung erzeugt.
 
 Zu seinen Aufgaben gehören insbesondere:
 
 * Erzeugen und Verwalten einer Ausschreibung,
-* Festlegen bzw. Verwalten der zugehörigen Deadline,
+* Verwalten und Prüfen der zugehörigen Deadline,
 * Sammeln und Zuordnen eingehender Gebote,
 * Beenden der Ausschreibung nach Ablauf der Deadline,
 * Bewerten der eingegangenen Gebote,
 * Ermitteln des erfolgreichen Gebots,
 * Bereitstellen des Ergebnisses der Ausschreibung.
 
-Der `AuctionManager` ist damit für die Frage verantwortlich:
+Der `BidCalculator` ist damit für die Frage verantwortlich:
 
 > **Welches Gebot gewinnt die Ausschreibung?**
 
@@ -131,14 +159,14 @@ Er ist dagegen nicht dafür verantwortlich, die hierfür notwendigen Nachrichten
 
 Die Auftragsvergabe orientiert sich am Contract Net Protocol.
 
-Ein Depot erzeugt zunächst einen neuen Transportauftrag und übergibt diesen an den `ContractNetManager`.
+Die `SimulationEngine` erzeugt zunächst einen neuen Transportauftrag und registriert diesen beim ausgewählten Depot.
 
-Der `ContractNetManager` übergibt den Auftrag an den `AuctionManager`. Dieser erzeugt und verwaltet die zugehörige Ausschreibung.
+Das Depot übergibt den Auftrag anschließend direkt an den `ContractNetManager`. Dieser übergibt den Auftrag an den `BidCalculator`, der die zugehörige Ausschreibung erzeugt und verwaltet.
 
 Die Veröffentlichung gegenüber den registrierten Agenten erfolgt anschließend über den `ContractNetManager` mittels einer `ANNOUNCE`-Nachricht.
 
 ```text id="mds9bw"
-Depot
+SimulationEngine
   |
   | neuer Auftrag
   v
@@ -146,7 +174,7 @@ ContractNetManager
   |
   | Auftrag
   v
-AuctionManager
+BidCalculator
   |
   | Ausschreibung erzeugen
   |
@@ -164,7 +192,7 @@ Jeder Agent entscheidet anschließend selbstständig, ob er an der Ausschreibung
 
 Entscheidet er sich für eine Teilnahme, berechnet er die Kosten für die Übernahme des Auftrags und sendet ein `BID` an den `ContractNetManager`.
 
-Dieser leitet das Gebot an den `AuctionManager` weiter:
+Dieser leitet das Gebot an den `BidCalculator` weiter:
 
 ```text id="grg3fn"
 Agent
@@ -175,17 +203,17 @@ ContractNetManager
   |
   | BID
   v
-AuctionManager
+BidCalculator
 ```
 
-Der `AuctionManager` sammelt die eingegangenen Gebote bis zum Erreichen der Deadline.
+Der `BidCalculator` sammelt die eingegangenen Gebote bis zum Erreichen der Deadline.
 
-Nach Ablauf der Deadline wird die Ausschreibung geschlossen und die eingegangenen Gebote werden bewertet. Der `AuctionManager` bestimmt anschließend das erfolgreiche Gebot und stellt das Ergebnis dem `ContractNetManager` zur Verfügung.
+Nach Ablauf der Deadline wird die Ausschreibung geschlossen und die eingegangenen Gebote werden bewertet. Der `BidCalculator` bestimmt anschließend das erfolgreiche Gebot und stellt das Ergebnis dem `ContractNetManager` zur Verfügung.
 
 Dieser übernimmt wiederum die Kommunikation mit den Agenten:
 
 ```text id="k6xtef"
-                    AuctionManager
+                    BidCalculator
                           |
                           | Ergebnis
                           v
@@ -201,7 +229,7 @@ Dieser übernimmt wiederum die Kommunikation mit den Agenten:
 Damit besteht eine klare Trennung zwischen **Vergabeentscheidung und Kommunikation**:
 
 ```text id="pjmvw7"
-AuctionManager
+BidCalculator
     |
     +-- Was wird ausgeschrieben?
     +-- Welche Gebote liegen vor?
@@ -252,7 +280,7 @@ delivered
 
 Auch nach Abschluss der Auktion laufen auftragsbezogene Nachrichten weiterhin über den `ContractNetManager`.
 
-Der `AuctionManager` ist an der eigentlichen Ausführung eines bereits vergebenen Auftrags nicht mehr beteiligt.
+Der `BidCalculator` ist an der eigentlichen Ausführung eines bereits vergebenen Auftrags nicht mehr beteiligt.
 
 Dadurch endet seine Verantwortung mit der abgeschlossenen Vergabe.
 
@@ -260,7 +288,7 @@ Dadurch endet seine Verantwortung mit der abgeschlossenen Vergabe.
 
 Eine direkte Kommunikation zwischen den Agenten wurde bewusst nicht vorgesehen.
 
-Die für die Simulation notwendige Koordination erfolgt bereits über den `ContractNetManager`, den `AuctionManager` und den `RouteManager`.
+Die für die Simulation notwendige Koordination erfolgt bereits über den `ContractNetManager`, den `BidCalculator` und die `SimulationEngine`.
 
 Eine zusätzliche direkte Kommunikation zwischen Agenten würde weitere Koordinationsmechanismen erforderlich machen, ohne für das betrachtete Szenario einen notwendigen funktionalen Mehrwert zu liefern.
 
@@ -272,79 +300,30 @@ Auf diese zusätzliche Komplexität wird bewusst verzichtet.
 
 Sollte eine spätere Erweiterung eine tatsächliche Kooperation oder Verhandlung zwischen Agenten erfordern, kann eine entsprechende Kommunikationsform gezielt ergänzt werden.
 
-### Zentrale Routenplanung
+### Wegplanung und Bewegung
 
-Die Wegplanung wird bewusst aus den Agenten ausgelagert und durch einen zentralen `RouteManager` durchgeführt.
+Der Agent besitzt seine eigene Position und führt seine Bewegung aus. Er entscheidet jedoch nicht über globale Kollisionsfreiheit. Diese Verantwortung liegt beim geplanten `RouteManager`, der die Routen aller Agents gemeinsam berechnet und zeitliche Überschneidungen prüft.
 
-Ein Agent übermittelt dem `RouteManager` die für eine Wegberechnung notwendigen Informationen, insbesondere Startposition, Zielposition und den vorgesehenen Startzeitpunkt.
+Der `ManhattanRouteCalculator` wird vom Agenten für die eigene Distanz- und Reichweitenberechnung verwendet. Damit bleibt die Frage
 
-Der `RouteManager` berechnet daraufhin eine geeignete Route.
+> „Kann ich diesen Auftrag mit meiner aktuellen Batterie übernehmen?“
 
-Da der `RouteManager` die bereits geplanten Routen kennt, kann er bei der Berechnung bestehende Reservierungen berücksichtigen und dadurch Kollisionen zwischen geplanten Bewegungen vermeiden.
+beim Agenten.
 
-Eine Route wird dabei nicht ausschließlich räumlich betrachtet. Da eine Kollision nur dann entsteht, wenn zwei Bewegungen dieselbe Position zum gleichen Zeitpunkt beanspruchen, besitzt die Planung zusätzlich eine zeitliche Dimension.
+Die `SimulationEngine` steuert aktuell den Tick und ruft die Agentenaktionen auf. In der nächsten Ausbaustufe übergibt sie die Bewegungsabsichten an den `RouteManager`. Dieser berechnet für jeden Agenten eine Route, prüft Kollisionen und liefert die zulässigen Bewegungsschritte zurück.
 
-Ein Routenschritt kann somit vereinfacht als
+Damit bleibt die Verantwortung klar getrennt:
 
-$$
-(x, y, t)
-$$
+```text
+Agent:
+  eigene Position und Bewegungsentscheidung
 
-betrachtet werden, wobei \(x\) und \(y\) die Position und \(t\) den entsprechenden Simulationstick repräsentieren.
+RouteManager:
+  globale Routenplanung und Kollisionsprüfung
 
-Auch das Warten an einer Position kann dadurch als gültiger Routenschritt modelliert werden:
-
-```text id="qz8fkd"
-Tick 10     (4,5)
-Tick 11     (4,5)    <- WAIT
-Tick 12     (4,6)
-Tick 13     (4,7)
+SimulationEngine:
+  Tick-Steuerung und Anwendung der geplanten Bewegung
 ```
-
-Dadurch muss bei einer zeitlichen Überschneidung nicht zwangsläufig eine vollständig andere räumliche Route gewählt werden.
-
-### Entkopplung des RouteManagers von den Agenten
-
-Der `RouteManager` soll bewusst keine Kenntnis darüber besitzen, welcher Agent eine bestimmte Route verwendet.
-
-Für die Kollisionsvermeidung ist die Identität eines Agenten nicht relevant. Entscheidend ist ausschließlich, ob eine bestimmte Position zu einem bestimmten Zeitpunkt bereits reserviert ist.
-
-Der `RouteManager` verwaltet daher **Routenreservierungen und keine Agenten**.
-
-Eine Anfrage kann beispielsweise zu folgendem Ergebnis führen:
-
-```text id="8mzw68"
-RouteRequest
-     |
-     v
-RouteManager
-     |
-     v
-RouteReservation
-     |
-     +-- ReservationId
-     |
-     +-- Route
-          |
-          +-- (x, y, t)
-          +-- (x, y, t+1)
-          +-- (x, y, t+2)
-          +-- ...
-```
-
-Die Zuordnung zwischen Agent und Route bleibt außerhalb des `RouteManager`.
-
-Über eine `ReservationId` kann eine bestehende Reservierung eindeutig referenziert und bei Bedarf wieder aufgehoben oder ersetzt werden. Der `RouteManager` benötigt dafür keine `AgentId`.
-
-Seine zentrale Fragestellung lautet damit nicht:
-
-> „Wo befindet sich Agent X?“
-
-sondern:
-
-> „Ist Position `(x,y)` zum Zeitpunkt `t` bereits reserviert?“
-
-Diese Entkopplung ermöglicht es außerdem, die Routenplanung unabhängig vom restlichen Agentensystem zu entwickeln und zu testen.
 
 ### Trennung der Verantwortlichkeiten
 
@@ -353,10 +332,17 @@ Aus den beschriebenen Entscheidungen ergibt sich folgende grundlegende Aufteilun
 ```text id="l4epjh"
 Simulation Core
 |
++-- SimulationEngine
+|    |
+|    +-- Steuerung der Simulationsticks
+|    +-- Erzeugung von Tasks
+|    +-- Ausführung der Agentenaktionen
+|    +-- Start der Contract-Net-Auswertung
+|    +-- KPI-Aufzeichnung
+|
 +-- Depot
 |    |
-|    +-- Erzeugung von Aufträgen
-|    +-- Verwaltung des Task-Zustands
+|    +-- Verwaltung der zugeordneten Tasks
 |
 +-- ContractNetManager
 |    |
@@ -364,33 +350,36 @@ Simulation Core
 |    +-- zentrale Nachrichtenvermittlung
 |    +-- ANNOUNCE
 |    +-- Weiterleitung von BID
-|    +-- Übermittlung von WIN / BID_LOST
+|    +-- Übermittlung von AWARD / BID_LOST
 |    +-- Vermittlung weiterer Task-Nachrichten
 |
-+-- AuctionManager
++-- BidCalculator
 |    |
 |    +-- Verwaltung der Ausschreibungen
 |    +-- Verwaltung der Deadlines
 |    +-- Sammlung der Gebote
 |    +-- Bewertung der Gebote
 |    +-- Ermittlung des Gewinners
+|    +-- Erzeugung von AWARD / BID_LOST / NO_BID
 |
 +-- Agent
 |    |
 |    +-- eigener Zustand
 |    +-- eigene Auftragsliste
 |    +-- Entscheidung über Teilnahme an Ausschreibungen
-|    +-- Berechnung des Gebots
+|    +-- Berechnung der eigenen Reichweite und des Gebots
 |    +-- Ausführung angenommener Aufträge
 |
-+-- RouteManager
+ +-- ManhattanRouteCalculator
 |    |
-|    +-- Wegberechnung
-|    +-- Verwaltung von Routenreservierungen
-|    +-- zeitliche Planung
-|    +-- Kollisionsvermeidung
+|    +-- Berechnung geometrischer Distanzen
 |
-+-- Simulation Clock
++-- RouteManager (geplant)
+  |
+  +-- Routen für alle Agents
+  +-- zeitliche Kollisionsprüfung
+|
++-- SimulationEngine
      |
      +-- Verwaltung der Simulationsticks
      +-- zeitliche Synchronisation der Simulation
@@ -408,31 +397,26 @@ Agent
 ContractNetManager
     "Wie werden die beteiligten Komponenten miteinander verbunden?"
 
-AuctionManager
+BidCalculator
     "Welches Gebot gewinnt die Ausschreibung?"
 
-RouteManager
-    "Wie gelangt etwas kollisionsfrei von A nach B?"
+ +-- ManhattanRouteCalculator
+  "Wie groß ist die geometrische Distanz zwischen zwei Positionen?"
 
-Simulation Clock
-    "Welcher Simulationszeitpunkt liegt aktuell vor?"
-```
-
-### Architekturprinzipien
-
-Die Architektur verfolgt bewusst keine maximale Dezentralisierung. Stattdessen wird für jede Aufgabe entschieden, welche Komponente die dafür notwendigen Informationen besitzt und wo die entsprechende Verantwortung sinnvoll angesiedelt werden kann.
-
-Die wesentlichen Leitgedanken sind:
-
+SimulationEngine
+  "Welcher Simulationszeitpunkt liegt aktuell vor und welcher Ablauf wird ausgeführt?"
+|    |
+|    +-- Routen für alle Agents
+|    +-- zeitliche Kollisionsprüfung
 * **Keep it Simple:** Es werden nur Kommunikations- und Koordinationsmechanismen implementiert, die für das betrachtete Szenario tatsächlich benötigt werden.
 * **Separation of Concerns:** Jede Komponente besitzt einen klar abgegrenzten Verantwortungsbereich.
 * **Lose Kopplung:** Komponenten besitzen möglichst wenig Wissen über die interne Funktionsweise anderer Komponenten.
 * **Gezielte Erweiterbarkeit:** Neue Anforderungen sollen möglichst durch Änderungen oder Ergänzungen einzelner Komponenten umgesetzt werden können.
 * **Austauschbarkeit:** Insbesondere Wegplanung, Vergabestrategie und Benutzeroberfläche können unabhängig voneinander verändert oder ersetzt werden.
-* **Testbarkeit:** Komponenten wie `AuctionManager` und `RouteManager` können unabhängig vom vollständigen Multiagentensystem getestet werden.
+* **Testbarkeit:** Komponenten wie `BidCalculator`, `AwardPolicy` und `ManhattanRouteCalculator` können unabhängig vom vollständigen Multiagentensystem getestet werden.
 * **UI-Unabhängigkeit:** Die Simulationslogik ist unabhängig von ihrer Darstellung und kann sowohl mit unterschiedlichen Benutzeroberflächen als auch vollständig headless betrieben werden.
 
-Die Aufteilung zwischen `ContractNetManager` und `AuctionManager` folgt diesen Prinzipien besonders deutlich. Der `ContractNetManager` stellt die Kommunikationsstruktur des Contract-Net-Verfahrens bereit, während der `AuctionManager` ausschließlich die fachliche Durchführung und Entscheidung der Ausschreibungen übernimmt.
+Die Aufteilung zwischen `ContractNetManager` und `BidCalculator` folgt diesen Prinzipien besonders deutlich. Der `ContractNetManager` stellt die Kommunikationsstruktur des Contract-Net-Verfahrens bereit, während der `BidCalculator` ausschließlich die fachliche Durchführung und Entscheidung der Ausschreibungen übernimmt.
 
 Dadurch können beispielsweise die Vergabestrategie oder die Regeln einer Ausschreibung verändert werden, ohne die Kommunikationsmechanismen zwischen den Agenten anpassen zu müssen. Umgekehrt können Änderungen an der Nachrichtenvermittlung vorgenommen werden, ohne die eigentliche Vergabelogik zu verändern.
 

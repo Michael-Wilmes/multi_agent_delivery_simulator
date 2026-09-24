@@ -23,3 +23,5 @@ class ContractNetMessage:
     deadline: int | None = None
     agent_id: int | None = None
     cost: float | None = None
+    distance: float | None = None
+    energy_range: float | None = None

@@ -190,9 +190,14 @@ def test_award_updates_the_depot_task_record():
     destination = engine.graph.destinations[0]
     task = DeliveryTask(2, depot, destination, engine.tick)
     depot.add_task(task)
+    engine.tasks.append(task)
+    agent = engine.agents[0]
 
-    engine.contract_net_manager.award_task(task.id, engine.agents[0].id, engine.tick, task)
+    depot.submit_task(task, engine.tick, deadline=engine.tick)
+    engine.contract_net_manager.record_bid(agent.id, task.id, 1.0, engine.tick)
+    outcomes = engine.contract_net_manager.award_ready_tasks([task], engine.tick)
 
+    assert outcomes[0].type.value == 'AWARD'
     assert depot.tasks[0].assigned_agent_id == engine.agents[0].id
     assert depot.tasks[0].status == AWAIT_PICKUP
 
@@ -204,7 +209,7 @@ def test_no_bid_is_recorded_at_task_deadline():
     destination = engine.graph.destinations[0]
     task = DeliveryTask(2, depot, destination, engine.tick)
     depot.add_task(task)
-    engine.contract_net_manager.announce_task(task, engine.tick, deadline=engine.tick)
+    depot.submit_task(task, engine.tick, deadline=engine.tick)
 
     outcomes = engine.contract_net_manager.award_ready_tasks([task], engine.tick)
 

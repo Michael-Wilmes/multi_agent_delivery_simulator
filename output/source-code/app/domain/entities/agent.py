@@ -3,7 +3,7 @@ from enum import Enum
 import math
 from .contractnetmessage import ContractNetMessage
 from .agentdelivery import AgentDelivery
-from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT
+from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT, STRANDED
 from .graph import Position
 from app.domain.services.routecalculator import ManhattanRouteCalculator
 from .contractnetmessage import MessageType
@@ -47,14 +47,24 @@ class Agent:
             if self.has_task_capacity() and self._is_target_reachable(task):
                 cost = self.calulate_delivery_task_cost(task)
                 if not math.isfinite(cost):
+                    distance = self._delivery_distance(task)
+                    maximum_distance = self._maximum_distance()
+                    maximum_distance_text = (
+                        "unlimited"
+                        if math.isinf(maximum_distance)
+                        else f"{maximum_distance:.1f}"
+                    )
                     self.log_messages.append(
-                        "Insufficient capacity."
+                        f"Not reachable. Distance: {self._delivery_distance(task):.1f}, "
+                        f"Energy range: {maximum_distance_text}."
                     )
                     return ContractNetMessage(
                         type=MessageType.NO_BID_RESOURCES,
                         tick=message.tick,
                         task_id=task.id,
                         agent_id=self.id,
+                        distance=distance,
+                        energy_range=maximum_distance,
                     )
                 self.deliveries.append(
                     AgentDelivery(
@@ -97,8 +107,28 @@ class Agent:
     def clear_notifications(self) -> None:
         self.notifications.clear()
 
+    def move_to(self, position: Position, battery_enabled: bool = True) -> bool:
+        """Move to an already-approved position and consume movement energy."""
+        if self.status == STRANDED:
+            return False
+
+        self.position = position
+        if not battery_enabled:
+            return False
+
+        self.battery = max(0.0, self.battery - self.battery_cost_per_field)
+        return self.battery <= 0
+
     def calulate_delivery_task_cost(self, task) -> float:
         """Calculates the cost of a delivery task for this agent."""
+        distance = self._delivery_distance(task)
+        battery_loss = distance * self.battery_cost_per_field
+
+        if self.battery - battery_loss < 0:
+            return float("inf")  # Not enough battery to complete the task
+        return distance
+
+    def _delivery_distance(self, task) -> float:
         distance_to_depot = self.route_calculator.calculate_distance(
             self.position,
             task.depot.position,
@@ -107,10 +137,10 @@ class Agent:
             task.depot.position,
             task.destination.position,
         )
-
-        battery_loss = (distance_to_depot + delivery_distance) * self.battery_cost_per_field
-
-        if self.battery - battery_loss < 0:
-            return float("inf")  # Not enough battery to complete the task
         return float(distance_to_depot + delivery_distance)
+
+    def _maximum_distance(self) -> float:
+        if self.battery_cost_per_field == 0:
+            return float("inf")
+        return self.battery / self.battery_cost_per_field
         
