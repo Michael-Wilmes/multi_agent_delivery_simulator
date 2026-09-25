@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from app.shared.constants import IDLE, OPEN
+from app.shared.constants import UNANNOUNCED
 from .depot import Depot
 from .destination import Destination
 
@@ -14,5 +14,5 @@ class DeliveryTask:
     depot: Depot
     destination: Destination
     created_tick: int
-    status: str = OPEN
+    status: str = UNANNOUNCED
     assigned_agent_id: int | None = None

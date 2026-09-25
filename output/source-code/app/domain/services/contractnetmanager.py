@@ -1,6 +1,15 @@
 from dataclasses import dataclass, field
+
 from app.domain.entities.contractnetmessage import ContractNetMessage, MessageType
 from app.domain.services.bidcalculator import BidCalculator
+from app.shared.constants import (
+    AWAIT_PICKUP,
+    DELIVERED,
+    IN_TRANSIT,
+    NO_BID,
+    OPEN,
+    UNANNOUNCED,
+)
 
 @dataclass
 class ContractNetManager:
@@ -20,8 +29,22 @@ class ContractNetManager:
         tick: int,
         deadline: int,
     ) -> tuple[ContractNetMessage, ...]:
+        if task.status != UNANNOUNCED:
+            raise ValueError("Only unannounced tasks can be announced")
         announcement = self.bid_calculator.announce_task(task, tick, deadline)
         self.events.append(announcement)
+        task.status = OPEN
+        self.events.append(
+            ContractNetMessage(
+                type=MessageType.TASK_OPEN,
+                tick=tick,
+                task_id=task.id,
+                depot_id=task.depot.id,
+                destination=task.destination.position,
+                destination_id=task.destination.id,
+                deadline=deadline,
+            )
+        )
         resource_events = []
         for agent in self.agents:
             response = agent.receive_notification(announcement, task)
@@ -53,8 +76,112 @@ class ContractNetManager:
             return
         for agent in self.agents:
             if agent.id == message.agent_id:
+                if message.type is MessageType.AWARD:
+                    task.status = AWAIT_PICKUP
+                    task.assigned_agent_id = agent.id
+                    self.events.append(
+                        ContractNetMessage(
+                            type=MessageType.TASK_ASSIGNED,
+                            tick=message.tick,
+                            task_id=task.id,
+                            agent_id=agent.id,
+                            depot_id=task.depot.id,
+                            destination=task.destination.position,
+                            destination_id=task.destination.id,
+                        )
+                    )
+                    self.events.append(
+                        ContractNetMessage(
+                            type=MessageType.TASK_AWAIT_PICKUP,
+                            tick=message.tick,
+                            task_id=task.id,
+                            agent_id=agent.id,
+                            depot=task.depot.position,
+                            depot_id=task.depot.id,
+                            destination=task.destination.position,
+                            destination_id=task.destination.id,
+                        )
+                    )
                 agent.receive_notification(message, task)
                 return
+
+    def assign_task_to_agent(self, agent, task, tick: int | None = None) -> bool:
+        if task is None or task.depot.position != agent.position:
+            return False
+        if task.status not in {OPEN, AWAIT_PICKUP}:
+            return False
+        if agent.load >= agent.capacity:
+            return False
+        if task.status == OPEN:
+            task.status = AWAIT_PICKUP
+            task.assigned_agent_id = agent.id
+            self.events.append(
+                ContractNetMessage(
+                    type=MessageType.TASK_ASSIGNED,
+                    tick=tick if tick is not None else 0,
+                    task_id=task.id,
+                    agent_id=agent.id,
+                    depot_id=task.depot.id,
+                    destination=task.destination.position,
+                    destination_id=task.destination.id,
+                )
+            )
+            self.events.append(
+                ContractNetMessage(
+                    type=MessageType.TASK_AWAIT_PICKUP,
+                    tick=tick if tick is not None else 0,
+                    task_id=task.id,
+                    agent_id=agent.id,
+                    depot=task.depot.position,
+                    depot_id=task.depot.id,
+                    destination=task.destination.position,
+                    destination_id=task.destination.id,
+                )
+            )
+        elif task.assigned_agent_id != agent.id:
+            return False
+        return True
+
+    def start_task_for_agent(self, agent, task, tick: int | None = None) -> bool:
+        if task is None or task.assigned_agent_id != agent.id:
+            return False
+        if task.status != IN_TRANSIT:
+            return False
+        self.events.append(
+            ContractNetMessage(
+                type=MessageType.TASK_IN_TRANSIT,
+                tick=tick if tick is not None else 0,
+                task_id=task.id,
+                agent_id=agent.id,
+                depot_id=task.depot.id,
+                destination=task.destination.position,
+                destination_id=task.destination.id,
+            )
+        )
+        return True
+
+    def deliver_task_for_agent(self, agent, task, tick: int | None = None) -> bool:
+        if task is None or task.status != DELIVERED:
+            return False
+        self.events.append(
+            ContractNetMessage(
+                type=MessageType.TASK_DELIVERED,
+                tick=tick if tick is not None else 0,
+                task_id=task.id,
+                agent_id=agent.id,
+                depot_id=task.depot.id,
+                destination=task.destination.position,
+                destination_id=task.destination.id,
+            )
+        )
+        return True
+
+    def close_task(self, task, status: str, tick: int | None = None) -> bool:
+        if task is None:
+            return False
+        task.status = status
+        task.assigned_agent_id = None
+        return True
 
     def recent_events(self, limit: int = 20) -> tuple[ContractNetMessage, ...]:
         return tuple(self.events[-limit:])

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Agent Delivery Simulator Architecture</title>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+  <style>
+    body {
+      font-family: Segoe UI, Arial, sans-serif;
+      margin: 24px;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+    .mermaid {
+      background: transparent;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Multi-Agent Delivery Simulator Architecture</h1>
+    <div class="mermaid">
+flowchart LR
+    User[User / Keyboard / Mouse] --> Main[main.py]
+    Main --> Config[app/config.py\nAppConfig + validation]
+    Config --> JSON[config/app.json]
+
+    Main --> Engine[app/simulation/engine.py\nSimulationEngine]
+    Main --> UI[app/ui/app.py\nSimulatorApp]
+
+    Engine --> GraphFactory[app/maps/factory.py\ncreate_graph_map]
+    GraphFactory --> MapPreset[Map Presets / Random Map Generator]
+    MapPreset --> Graph[GraphMap + Nodes + Depots + Destinations]
+
+    Engine --> Agents[Agent[]\napp/domain/entities/agent.py]
+    Engine --> Tasks[DeliveryTask[]]
+    Engine --> Depots[Depot[]]
+    Engine --> ContractMgr[ContractNetManager\napp/domain/services/contractnetmanager.py]
+    Engine --> KPI[KpiRecorder\napp/simulation/kpi_recorder.py]
+
+    ContractMgr --> BidCalc[BidCalculator]
+    ContractMgr --> Events[ContractNetMessage events]
+    Events --> Agents
+    Agents --> Notifications[Agent notifications / bids / awards]
+    Notifications --> ContractMgr
+
+    Tasks --> DepotTasks[Depot task queue]
+    Depots --> Tasks
+    Agents --> Move[Movement / pickup / delivery logic]
+    Graph --> Move
+
+    UI --> Snapshot[Simulation snapshot]
+    Engine --> Snapshot
+    Snapshot --> Render[Map rendering + panels + controls]
+    Render --> User
+
+    Engine --> Tick[Tick loop\nstep() / add_agent() / add_task()]
+    Tick --> CONTRACT[Contract-Net award cycle]
+    CONTRACT --> KPI
+    Tick --> KPI
+
+    classDef core fill:#dfe8ff,stroke:#3657c8,color:#111827
+    classDef domain fill:#eafaf1,stroke:#2d8f60,color:#111827
+    classDef ui fill:#fff4d6,stroke:#c58900,color:#111827
+    classDef data fill:#f9e8f5,stroke:#a33fa5,color:#111827
+
+    class Main,Engine,ContractMgr,GraphFactory,Graph,Tick core;
+    class Agents,Tasks,Depots,Events,BidCalc,Notifications,DepotTasks domain;
+    class UI,Render,Snapshot data;
+    class Config,JSON,KPI ui;
+    </div>
+  </div>
+</body>
+</html>

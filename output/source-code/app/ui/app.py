@@ -7,6 +7,7 @@ from app.shared.constants import (
 )
 from app.domain.entities.agent import AgentType
 from app.domain.entities.graph import NodeKind
+from app.domain.entities.contractnetmessage import describe
 
 from .widgets import Button
 
@@ -48,6 +49,9 @@ class SimulatorApp:
         self.depot_scroll = 0
         self.depot_scroll_dragging = False
         self.depot_scroll_drag_offset = 0
+        self.contract_scroll = 0
+        self.contract_scroll_max = 0
+        self.contract_scroll_drag_offset = 0
         self.active_scrollbar = None
         self.icons = self.load_icons()
 
@@ -85,6 +89,16 @@ class SimulatorApp:
                     self.agent_scroll_dragging = False
                     self.depot_scroll_dragging = False
                     self.active_scrollbar = None
+                elif e.type == pygame.MOUSEWHEEL:
+                    log_rect = getattr(self, "contract_log_rect", None)
+                    if log_rect and log_rect.collidepoint(pygame.mouse.get_pos()):
+                        self.contract_scroll = max(
+                            0,
+                            min(
+                                self.contract_scroll_max,
+                                self.contract_scroll + e.y * 3,
+                            ),
+                        )
                 elif e.type == pygame.MOUSEMOTION and self.active_scrollbar:
                     self.handle_scrollbar_drag(e.pos[1])
                 elif e.type == pygame.KEYDOWN:
@@ -127,7 +141,7 @@ class SimulatorApp:
                 return
 
     def handle_scrollbar_click(self, p):
-        for name in ("depot", "agent"):
+        for name in ("depot", "agent", "contract"):
             track = getattr(self, f"{name}_scrollbar_rect", None)
             if track is None or not track.collidepoint(p):
                 continue
@@ -166,6 +180,16 @@ class SimulatorApp:
             return
         fraction = max(0.0, min(1.0, (thumb_y - track.y) / travel))
         self.depot_scroll = round(fraction * self.depot_scroll_max)
+
+    def set_contract_scroll_from_y(self, thumb_y):
+        track = self.contract_scrollbar_rect
+        thumb = self.contract_scrollbar_thumb
+        travel = track.height - thumb.height
+        if travel <= 0:
+            self.contract_scroll = 0
+            return
+        fraction = max(0.0, min(1.0, (thumb_y - track.y) / travel))
+        self.contract_scroll = round((1 - fraction) * self.contract_scroll_max)
 
     def panel(self, r, title=None):
         pygame.draw.rect(self.screen, PANEL, r, border_radius=8)
@@ -350,7 +374,7 @@ class SimulatorApp:
         content_height = content_bottom - content_top
         gap = 10
         columns = 2
-        card_height = 90  # feste Hoehe: Badges duerfen nie ausserhalb der Karte landen
+        card_height = 118
         card_width = (panel.width - 28 - gap * (columns - 1)) // columns
         card_x = panel.x + 14
 
@@ -363,10 +387,11 @@ class SimulatorApp:
         self.screen.set_clip(pygame.Rect(panel.x + 8, content_top, panel.width - 24, content_height))
 
         badge_specs = (
-            ((OPEN,), "OFFEN", YELLOW),
-            ((AWAIT_PICKUP, IN_TRANSIT), "UNTERWEGS", BLUE),
-            ((DELIVERED,), "GELIEFERT", GREEN),
-            ((NO_BID,), "KEIN GEBOT", RED),
+            ((OPEN,), "OPEN", YELLOW),
+            ((AWAIT_PICKUP,), "AWAIT_PICKUP", BLUE),
+            ((IN_TRANSIT,), "IN_TRANSIT", BLUE),
+            ((DELIVERED,), "DELIVERED", GREEN),
+            ((NO_BID,), "NO_BID", RED),
         )
 
         for depot_index, depot in enumerate(s.graph.depots):
@@ -404,6 +429,12 @@ class SimulatorApp:
                 pygame.draw.rect(self.screen, color, badge, 1, border_radius=11)
                 label_surface = self.small.render(label, True, color)
                 count_surface = self.small.render(str(count), True, color)
+                label_width = max(1, badge.width - count_surface.get_width() - 28)
+                if label_surface.get_width() > label_width:
+                    label_surface = pygame.transform.smoothscale(
+                        label_surface,
+                        (label_width, label_surface.get_height()),
+                    )
                 self.screen.blit(label_surface, label_surface.get_rect(midleft=(badge.x + 10, badge.centery)))
                 self.screen.blit(count_surface, count_surface.get_rect(midright=(badge.right - 10, badge.centery)))
 
@@ -437,19 +468,33 @@ class SimulatorApp:
         pygame.draw.rect(self.screen, MUTED, self.agent_scrollbar_thumb, border_radius=3)
 
     def draw_contract(self, s, r):
+        self.contract_log_rect = r.copy()
         x = r.x + 15
-        y = r.y + 42
+        header_y = r.y + 42
         self.screen.blit(
             self.small.render("Tick   Phase             Agent              Details", True, TEXT),
-            (x, y),
+            (x, header_y),
         )
-        y += 23
+        content_top = r.y + 65
+        content_bottom = r.bottom - 8
+        content_height = max(0, content_bottom - content_top)
+        line_height = 22
+        visible_rows = content_height // line_height
+        self.contract_scroll_max = max(0, len(s.contract_log) - visible_rows)
+        self.contract_scroll = min(self.contract_scroll, self.contract_scroll_max)
+        row_end = len(s.contract_log) - self.contract_scroll
+        row_start = max(0, row_end - visible_rows)
+        rows = s.contract_log[row_start:row_end]
 
-        rows = s.contract_log[-5:]
+        previous_clip = self.screen.get_clip()
+        self.screen.set_clip(
+            pygame.Rect(r.x + 8, content_top, r.width - 24, content_height)
+        )
+        y = content_top
         if not rows:
             self.screen.blit(
                 self.small.render(
-                    "Noch keine Eintraege. Contract-Net wird in Aufgabe 2 implementiert.",
+                    "Noch keine Contract-Net-Nachrichten.",
                     True,
                     MUTED,
                 ),
@@ -457,37 +502,11 @@ class SimulatorApp:
             )
 
         for message in rows:
-            if message.type.value == "ANNOUNCE":
-                depot = f"Depot D{message.depot_id + 1} {message.depot}"
-                destination = f"Ziel Z{message.destination_id + 1} {message.destination}"
-                details = f"T-{message.task_id:03d}: {depot} -> {destination}"
-                details += f" bis {message.deadline}"
-            elif message.type.value == "BID":
-                details = f"T-{message.task_id:03d} Agent {message.agent_id} Kosten {message.cost}"
-            elif message.type.value == "AWARD":
-                details = (
-                    f"T-{message.task_id:03d} an Agent {message.agent_id}, "
-                    f"Kosten {message.cost}"
-                )
-            elif message.type.value == "BID_LOST":
-                details = f"T-{message.task_id:03d} verloren, Kosten {message.cost}"
-            elif message.type.value == "NO_BID":
-                details = f"T-{message.task_id:03d} ohne Gebot"
-            elif message.type.value == "NO_BID_RESOURCES":
-                distance = "unknown" if message.distance is None else f"{message.distance:.1f}"
-                energy_range = (
-                    "unlimited"
-                    if message.energy_range is None
-                    else f"{message.energy_range:.1f}"
-                )
-                details = (
-                    f"T-{message.task_id:03d} Agent {message.agent_id}: "
-                    f"Not reachable. Distance {distance}, "
-                    f"Energy range {energy_range}."
-                )
+            details = describe(message)
+            phase = message.type.value.removeprefix("TASK_")
             self.screen.blit(
                 self.small.render(
-                    f"{message.tick:<6} {message.type.value:<17} {message.agent_id or '-':<18} {details}",
+                    f"{message.tick:<6} {phase:<17} {message.agent_id or '-':<18} {details}",
                     True,
                     MUTED,
                 ),
@@ -495,8 +514,35 @@ class SimulatorApp:
             )
             y += 22
 
-        bx = r.x + int(r.width * 0.56)
-        by = r.y + 78
+        self.screen.set_clip(previous_clip)
+        self.draw_contract_scrollbar(r, len(s.contract_log), visible_rows)
+
+    def draw_contract_scrollbar(self, panel, event_count, visible_rows):
+        content_top = panel.y + 65
+        content_height = max(0, panel.bottom - 8 - content_top)
+        track = pygame.Rect(panel.right - 16, content_top, 7, content_height)
+        self.contract_scrollbar_rect = track
+        pygame.draw.rect(self.screen, (32, 45, 53), track, border_radius=3)
+        if event_count <= visible_rows or visible_rows <= 0:
+            self.contract_scrollbar_thumb = track.copy()
+            return
+        thumb_height = max(18, track.height * visible_rows // event_count)
+        travel = track.height - thumb_height
+        thumb_y = track.y + round(
+            travel * (1 - self.contract_scroll / self.contract_scroll_max)
+        )
+        self.contract_scrollbar_thumb = pygame.Rect(
+            track.x,
+            thumb_y,
+            track.width,
+            thumb_height,
+        )
+        pygame.draw.rect(
+            self.screen,
+            MUTED,
+            self.contract_scrollbar_thumb,
+            border_radius=3,
+        )
        
     def draw_controls(self, r):
         specs = [

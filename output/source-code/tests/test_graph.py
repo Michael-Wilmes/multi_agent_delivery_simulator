@@ -147,7 +147,7 @@ def test_agent_charges_at_depot_without_moving_but_can_pick_up():
     assert agent.status != LOADING
 
 
-def test_depot_tracks_created_tasks_and_removes_picked_up_task():
+def test_depot_tracks_created_tasks_and_keeps_task_after_pickup():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
     depot = engine.graph.depots[0]
@@ -159,7 +159,7 @@ def test_depot_tracks_created_tasks_and_removes_picked_up_task():
 
     engine.pick_up_task(agent)
 
-    assert task not in depot.tasks
+    assert task in depot.tasks
     assert task.status == IN_TRANSIT
     assert task.assigned_agent_id == agent.id
 
@@ -181,6 +181,44 @@ def test_agent_marks_task_delivered_and_removes_active_delivery():
     assert task.status == DELIVERED
     assert task not in [delivery.task for delivery in agent.deliveries]
     assert agent.load == 0
+
+
+def test_agent_picks_up_task_itself_when_available_at_depot():
+    config = load_config(__import__('pathlib').Path('config/app.json'))
+    engine = SimulationEngine(config)
+    agent = engine.agents[0]
+    depot = engine.graph.depots[0]
+    destination = engine.graph.destinations[0]
+    task = DeliveryTask(2, depot, destination, engine.tick)
+    depot.add_task(task)
+    agent.position = depot.position
+    agent.load = 0
+
+    assert engine.contract_net_manager.assign_task_to_agent(agent, task) is True
+    assert agent.pick_task(task) is True
+    assert engine.contract_net_manager.start_task_for_agent(agent, task) is True
+    assert agent.load == 1
+    assert task.status == IN_TRANSIT
+    assert task.assigned_agent_id == agent.id
+    assert task in depot.tasks
+
+
+def test_agent_sets_itself_stranded_when_battery_runs_out_away_from_depot():
+    config = load_config(__import__('pathlib').Path('config/app.json'))
+    engine = SimulationEngine(config)
+    agent = engine.agents[0]
+    road = next(
+        position for position, node in engine.graph.nodes.items()
+        if node.kind is NodeKind.ROAD and position != agent.position
+    )
+    agent.position = road
+    agent.battery = 0.0
+
+    agent.mark_stranded()
+
+    assert agent.status == STRANDED
+    assert agent.current_action == STRANDED
+    assert agent.battery == 0.0
 
 
 def test_award_updates_the_depot_task_record():

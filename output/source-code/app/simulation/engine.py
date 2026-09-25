@@ -49,6 +49,7 @@ class SimulationEngine:
         self.kpi_directory = Path(__file__).resolve().parents[2] / 'kpis'
         self.kpi_recorder = KpiRecorder(self.kpi_directory)
         self._all_stranded_message_sent = False
+        self._logged_contract_events = 0
 
         for _ in range(self.config.simulation.initial_standard_agents):
             self.add_agent(AgentType.STANDARD)
@@ -113,6 +114,7 @@ class SimulationEngine:
         ) #todo: use from a centralized place
         for event in depot.submit_task(t, self.tick, deadline):
             self.kpi_recorder.record_contract_event(event)
+        self._flush_contract_log()
         return True
 
     def step(self):
@@ -153,7 +155,8 @@ class SimulationEngine:
                 continue
 
             if self.config.simulation.battery_enabled and a.battery <= 0:
-                self.mark_stranded(a)
+                if self.graph.node_at(a.position).kind is not NodeKind.DEPOT:
+                    a.mark_stranded()
                 continue
 
             if self.graph.node_at(a.position).kind is NodeKind.DEPOT:
@@ -193,6 +196,7 @@ class SimulationEngine:
         )
         self.stop_if_all_agents_stranded()
         self.messages.append(f'Tick {self.tick} ausgeführt') #todo: use from a centralized place
+        self._flush_contract_log()
 
     def choose_random_action(self, agent):
         """Selects a random action for the initial simulation milestone.
@@ -274,6 +278,24 @@ class SimulationEngine:
         if agent.status == STRANDED:
             return
 
+        assigned_task = next(
+            (
+                task for task in self.tasks
+                if task.assigned_agent_id == agent.id
+                and task.status in {AWAIT_PICKUP, IN_TRANSIT}
+            ),
+            None,
+        )
+        target = None
+        distances = {}
+        if assigned_task is not None:
+            target = (
+                assigned_task.depot.position
+                if assigned_task.status == AWAIT_PICKUP
+                else assigned_task.destination.position
+            )
+            distances = self._distances_from(target)
+
         for _ in range(agent.speed):
             possible = [
                 p for p in self.graph.neighbors(agent.position)
@@ -296,7 +318,14 @@ class SimulationEngine:
                 break
 
             previous_position = agent.position
-            next_position = self.r.choice(possible)
+            route_steps = [p for p in possible if p in distances]
+            if target is not None and route_steps:
+                best_distance = min(distances[p] for p in route_steps)
+                next_position = self.r.choice(
+                    [p for p in route_steps if distances[p] == best_distance]
+                )
+            else:
+                next_position = self.r.choice(possible)
             occupied.discard(previous_position)
             battery_empty = agent.move_to(
                 next_position,
@@ -306,7 +335,8 @@ class SimulationEngine:
             reserved.add(agent.position)
 
             if battery_empty:
-                self.mark_stranded(agent)
+                if self.graph.node_at(agent.position).kind is not NodeKind.DEPOT:
+                    agent.mark_stranded()
                 break
 
             if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
@@ -324,6 +354,19 @@ class SimulationEngine:
             if self.graph.node_at(agent.position).kind is NodeKind.TARGET:
                 break
 
+    def _distances_from(self, target):
+        if target not in self.graph.nodes or not self.graph.node_at(target).walkable:
+            return {}
+
+        distances = {target: 0}
+        positions = [target]
+        for position in positions:
+            for neighbor in self.graph.neighbors(position):
+                if neighbor not in distances:
+                    distances[neighbor] = distances[position] + 1
+                    positions.append(neighbor)
+        return distances
+
     def start_charging(self, agent):
         """Starts a configured charging phase without charging in this tick."""
         agent.status = LOADING
@@ -331,12 +374,8 @@ class SimulationEngine:
         agent.current_action = CHARGE
 
     def mark_stranded(self, agent):
-        """Freezes an agent with an empty battery and leaves it as an obstacle."""
-        if agent.status == STRANDED:
-            return
-        agent.battery = 0.0
-        agent.status = STRANDED
-        agent.current_action = STRANDED
+        """Compatibility wrapper: an agent itself owns the stranded transition."""
+        agent.mark_stranded()
         self.messages.append(f'Agent {agent.id}: Batterie leer, Agent gestrandet')
 
     def all_agents_stranded(self):
@@ -353,10 +392,6 @@ class SimulationEngine:
             self.messages.append(f'Agent {agent.id}: Kein Depot an dieser Position')
             return
 
-        if agent.load >= agent.capacity:
-            self.messages.append(f'Agent {agent.id}: Kapazität erreicht')
-            return
-
         task = next(
             (
                 task for task in self.tasks
@@ -368,9 +403,14 @@ class SimulationEngine:
             self.messages.append(f'Agent {agent.id}: Kein Paket am Depot')
             return
 
-        agent.load += 1
-        agent.mark_task_in_transit(task)
-        task.depot.remove_task(task)
+        if not agent.pick_task(task):
+            self.messages.append(f'Agent {agent.id}: Kapazität erreicht')
+            return
+
+        if not self.contract_net_manager.start_task_for_agent(agent, task, self.tick):
+            self.messages.append(f'Agent {agent.id}: Aufgabe konnte nicht gestartet werden')
+            return
+
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} aufgenommen')
 
     def _task_available_for_agent(self, task, agent):
@@ -398,8 +438,14 @@ class SimulationEngine:
             self.messages.append(f'Agent {agent.id}: Keine Zustellung möglich')
             return
 
-        agent.load -= 1
-        agent.mark_task_delivered(task)
+        if not agent.deliver_task(task):
+            self.messages.append(f'Agent {agent.id}: Zustellung konnte nicht abgeschlossen werden')
+            return
+
+        if not self.contract_net_manager.deliver_task_for_agent(agent, task, self.tick):
+            self.messages.append(f'Agent {agent.id}: Zustellung konnte nicht abgeschlossen werden')
+            return
+
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} abgeliefert')
 
     def toggle_running(self):
@@ -409,13 +455,19 @@ class SimulationEngine:
         self.running = not self.running
 
     def mark_no_bid(self, task_id):
-        """Closes a task that received no bid by its deadline and drops it from the open queue."""
+        """Closes a task that received no bid by its deadline without deleting its lifecycle record."""
         task = next((task for task in self.tasks if task.id == task_id), None)
         if task is None:
             return
-        task.status = NO_BID
-        task.depot.remove_task(task)
+        self.contract_net_manager.close_task(task, NO_BID, self.tick)
         self.messages.append(f'T-{task.id:03d}: Kein Gebot erhalten, Auftrag geschlossen')
+
+    def _flush_contract_log(self):
+        """Writes every contract-net event not yet logged, mirroring the UI's contract-net log 1:1."""
+        events = self.contract_net_manager.events
+        for event in events[self._logged_contract_events:]:
+            self.kpi_recorder.record_contract_log(event)
+        self._logged_contract_events = len(events)
 
     def snapshot(self):
         return SimulationSnapshot(
@@ -424,7 +476,7 @@ class SimulationEngine:
             tuple(self.agents),
             tuple(self.tasks),
             tuple(self.messages[-20:]),
-            self.contract_net_manager.recent_events(),
+            tuple(self.contract_net_manager.events),
             tuple(self.package_creation_kpi),
             self.running,
         )

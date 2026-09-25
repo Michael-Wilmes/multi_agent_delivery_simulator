@@ -74,8 +74,6 @@ class Agent:
                         cost=cost,
                     )
                 )
-        elif message.type.value == "AWARD":
-            self.mark_task_await_pickup(task)
         elif message.type.value == "BID_LOST":
             self.remove_delivery(task.id)
             self.log_messages.append(f"Remove Task {task.id}, BID LOST")
@@ -89,23 +87,47 @@ class Agent:
             if delivery.task.id != task_id
         ]
 
-    def mark_task_in_transit(self, task) -> None:
+    def pick_task(self, task) -> bool:
+        """Pick up an assigned task and transition it to in transit at its depot."""
+        if task is None:
+            return False
+        if task.depot.position != self.position:
+            return False
+        if task.status != AWAIT_PICKUP or task.assigned_agent_id != self.id:
+            return False
+        if self.load >= self.capacity:
+            return False
         task.status = IN_TRANSIT
-        task.assigned_agent_id = self.id
+        self.load += 1
+        return True
 
-    def mark_task_await_pickup(self, task) -> None:
-        task.status = AWAIT_PICKUP
-        task.assigned_agent_id = self.id
-
-    def mark_task_delivered(self, task) -> None:
+    def deliver_task(self, task) -> bool:
+        """Mark an owned in-transit task delivered at its destination."""
+        if task is None:
+            return False
+        if task.status != IN_TRANSIT or task.assigned_agent_id != self.id:
+            return False
+        if task.destination.position != self.position:
+            return False
         task.status = DELIVERED
+        task.assigned_agent_id = None
+        self.load = max(0, self.load - 1)
         self.remove_delivery(task.id)
+        return True
 
     def _is_target_reachable(self, task) -> bool:
         return True
 
     def clear_notifications(self) -> None:
         self.notifications.clear()
+
+    def mark_stranded(self) -> None:
+        """Transition the agent into stranded state when battery is exhausted away from a depot."""
+        if self.status == STRANDED:
+            return
+        self.battery = 0.0
+        self.status = STRANDED
+        self.current_action = STRANDED
 
     def move_to(self, position: Position, battery_enabled: bool = True) -> bool:
         """Move to an already-approved position and consume movement energy."""

@@ -1,4 +1,5 @@
 IDLE = "idle"
+UNANNOUNCED = "unannounced"
 OPEN = "open"
 AWAIT_PICKUP = "await_pickup"
 IN_TRANSIT = "in_transit"
