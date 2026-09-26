@@ -63,12 +63,17 @@ Im nächsten Tick kann der Agent das Sonderfeld wieder verlassen, wenn dort kein
 passende Aufnahme- oder Ablieferaktion möglich ist.
 
 ```python
-# Meilenstein 1: In Meilenstein 2 durch die geplante Agentenaktion ersetzen.
-action = self.choose_random_action()
-self.execute_action(a, action, occupied, reserved)
+# Der Agent entscheidet; die Engine führt nur die Bewegung im Graphen aus.
+action = a.choose_action()
+if action == MOVE:
+    engine.move_agent(a, occupied, reserved)
+elif action == PICKUP:
+    a.pick_up_task(tick)
+elif action == DELIVER:
+    a.deliver_assigned_task(tick)
 ```
 
-Die Methode `choose_random_action(agent)` ist die austauschbare Auswahlstrategie. In Meilenstein 2 kann sie durch eine geplante Agentenaktion, Nachrichtenverarbeitung oder Contract-Net-Logik ersetzt werden. Die eigentlichen Aktionsmethoden bleiben davon unabhängig bestehen.
+Die Methode `Agent.choose_action()` wählt die Aktion anhand der eigenen zugewiesenen Lieferungen. Die Engine prüft weiterhin die Bewegungsbedingungen des Simulationsgraphen.
 
 ## Verfügbare Aktionen
 

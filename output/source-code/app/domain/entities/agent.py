@@ -4,7 +4,22 @@ import math
 from typing import TYPE_CHECKING
 from .contractnetmessage import ContractNetMessage
 from .agentdelivery import AgentDelivery
-from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT, STRANDED
+from app.shared.constants import (
+    AWAIT_PICKUP,
+    CHARGE,
+    DELIVER,
+    DELIVERED,
+    IDLE,
+    IN_TRANSIT,
+    LOAD_DELIVERY,
+    LOADING,
+    MOVE,
+    MOVING_TO_DROPOFF,
+    MOVING_TO_PICKUP,
+    OPEN,
+    PICKUP,
+    STRANDED,
+)
 from .graph import Position
 from app.domain.services.routecalculator import ManhattanRouteCalculator
 from .contractnetmessage import MessageType
@@ -46,6 +61,7 @@ class Agent:
         default_factory=ManhattanRouteCalculator,
         repr=False,
     )
+    battery_capacity: float = 100.0
 
     def receive_notification(self, message: ContractNetMessage, task=None) -> None:
         self.notifications.append(message)
@@ -87,6 +103,55 @@ class Agent:
             self.remove_delivery(task.id)
             self.log_messages.append(f"Remove Task {task.id}, BID LOST")
 
+    def submit_pending_bids(self, tick: int) -> None:
+        manager = self.contract_net_manager
+        if manager is None:
+            return
+
+        announced_task_ids = {
+            notification.task_id
+            for notification in self.notifications
+            if notification.type is MessageType.AUCTION_ANNOUNCE
+        }
+        for delivery in self.deliveries:
+            task = delivery.task
+            if (
+                task.id not in announced_task_ids
+                or task.status != OPEN
+                or manager.has_bid(task.id, self.id)
+            ):
+                continue
+            manager.record_bid(self.id, task.id, delivery.cost, tick)
+
+    def choose_action(self) -> str:
+        if self.status == STRANDED:
+            return STRANDED
+        if self.status == LOADING:
+            return self.current_action
+
+        assigned_tasks = [
+            delivery.task
+            for delivery in self.deliveries
+            if delivery.task.assigned_agent_id == self.id
+            and delivery.task.status in {AWAIT_PICKUP, IN_TRANSIT}
+        ]
+        if not assigned_tasks:
+            return IDLE
+        if any(
+            task.status == AWAIT_PICKUP
+            and task.depot.position == self.position
+            and self.load < self.capacity
+            for task in assigned_tasks
+        ):
+            return PICKUP
+        if any(
+            task.status == IN_TRANSIT
+            and task.destination.position == self.position
+            for task in assigned_tasks
+        ):
+            return DELIVER
+        return MOVE
+
     def has_task_capacity(self, reserved_tasks: int = 0) -> bool:
         return len(self.deliveries) + reserved_tasks < self.task_capacity
 
@@ -110,6 +175,37 @@ class Agent:
         self.load += 1
         return True
 
+    def pick_up_task(self, tick: int):
+        manager = self.contract_net_manager
+        if manager is None or self.load >= self.capacity:
+            return None
+
+        task = next(
+            (
+                delivery.task
+                for delivery in self.deliveries
+                if delivery.task.status == AWAIT_PICKUP
+                and delivery.task.assigned_agent_id == self.id
+                and delivery.task.depot.position == self.position
+            ),
+            None,
+        )
+        if task is None or not self.pick_task(task):
+            return None
+        if not manager.start_task_for_agent(self, task, tick):
+            return None
+
+        manager.record_agent_activity(
+            MessageType.AGENT_PICK_OFF,
+            self.id,
+            task.id,
+            tick,
+            self.position,
+        )
+        self.set_status(LOADING, tick)
+        self.current_action = LOAD_DELIVERY
+        return task
+
     def deliver_task(self, task) -> bool:
         """Mark an owned in-transit task delivered at its destination."""
         if task is None:
@@ -123,6 +219,36 @@ class Agent:
         self.load = max(0, self.load - 1)
         self.remove_delivery(task.id)
         return True
+
+    def deliver_assigned_task(self, tick: int):
+        manager = self.contract_net_manager
+        if manager is None:
+            return None
+
+        task = next(
+            (
+                delivery.task
+                for delivery in self.deliveries
+                if delivery.task.status == IN_TRANSIT
+                and delivery.task.assigned_agent_id == self.id
+                and delivery.task.destination.position == self.position
+            ),
+            None,
+        )
+        if task is None or not self.deliver_task(task):
+            return None
+        if not manager.deliver_task_for_agent(self, task, tick):
+            return None
+
+        manager.record_agent_activity(
+            MessageType.AGENT_DROP_OFF,
+            self.id,
+            task.id,
+            tick,
+            self.position,
+        )
+        self.set_status(self._task_activity_status(), tick)
+        return task
 
     def _is_target_reachable(self, task) -> bool:
         return True
@@ -167,6 +293,50 @@ class Agent:
         if self.battery <= 0:
             self.mark_stranded(tick)
         return self.battery <= 0
+
+    def start_charging(self, charging_duration_ticks: int, tick: int) -> bool:
+        if self.status == STRANDED or self.battery >= self.battery_capacity:
+            return False
+        self.set_status(LOADING, tick)
+        self.charging_ticks_remaining = max(1, charging_duration_ticks)
+        self.current_action = CHARGE
+        self._record_charge(tick)
+        return True
+
+    def advance_loading(self, tick: int) -> None:
+        if self.current_action == CHARGE:
+            self._record_charge(tick)
+            if self.charging_ticks_remaining > 1:
+                self.charging_ticks_remaining -= 1
+                return
+
+        self.battery = self.battery_capacity
+        self.charging_ticks_remaining = 0
+        self.set_status(self._task_activity_status(), tick)
+        self.current_action = CHARGE
+
+    def _task_activity_status(self) -> str:
+        assigned_tasks = [
+            delivery.task
+            for delivery in self.deliveries
+            if delivery.task.assigned_agent_id == self.id
+            and delivery.task.status in {AWAIT_PICKUP, IN_TRANSIT}
+        ]
+        if not assigned_tasks:
+            return IDLE
+        if assigned_tasks[0].status == AWAIT_PICKUP:
+            return MOVING_TO_PICKUP
+        return MOVING_TO_DROPOFF
+
+    def _record_charge(self, tick: int) -> None:
+        if self.contract_net_manager is not None:
+            self.contract_net_manager.record_agent_activity(
+                MessageType.AGENT_CHARGE,
+                self.id,
+                None,
+                tick,
+                self.position,
+            )
 
     def calulate_delivery_task_cost(self, task) -> float:
         """Calculates the cost of a delivery task for this agent."""

@@ -8,7 +8,7 @@ from app.domain.services.routecalculator import ManhattanRouteCalculator
 from app.maps.presets import create_map1, create_map2, graph_from_ascii
 from app.maps.random_map import RandomGraphMapFactory
 from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, DELIVERED, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED
-from app.simulation.engine import SimulationEngine
+from app.simulation.simulation_engine import SimulationEngine
 
 
 def check(g, w, h):
@@ -94,37 +94,36 @@ def test_actions_require_an_assigned_task():
     target = engine.graph.destinations[0]
 
     agent.position = depot.position
-    engine.tasks.append(
-        DeliveryTask(
-            2,
-            depot,
-            target,
-            engine.tick,
-            AWAIT_PICKUP,
-            agent.id,
-        )
+    pickup_task = DeliveryTask(
+        2,
+        depot,
+        target,
+        engine.tick,
+        AWAIT_PICKUP,
+        agent.id,
     )
-    assert engine.choose_action(agent) == PICKUP
+    agent.deliveries.append(AgentDelivery(pickup_task, agent.id, []))
+    assert agent.choose_action() == PICKUP
 
-    engine.tasks.clear()
-    assert engine.choose_action(agent) == IDLE
+    agent.deliveries.clear()
+    assert agent.choose_action() == IDLE
 
     transit_task = DeliveryTask(3, depot, target, engine.tick, IN_TRANSIT, agent.id)
-    engine.tasks.append(transit_task)
-    assert engine.choose_action(agent) == MOVE
+    agent.deliveries.append(AgentDelivery(transit_task, agent.id, []))
+    assert agent.choose_action() == MOVE
 
     agent.position = target.position
-    assert engine.choose_action(agent) == DELIVER
+    assert agent.choose_action() == DELIVER
 
-    engine.tasks.clear()
-    assert engine.choose_action(agent) == IDLE
+    agent.deliveries.clear()
+    assert agent.choose_action() == IDLE
 
     road = next(
         position for position, node in engine.graph.nodes.items()
         if node.kind is NodeKind.ROAD and position != agent.position
     )
     agent.position = road
-    assert engine.choose_action(agent) == IDLE
+    assert agent.choose_action() == IDLE
 
 
 def test_agent_charges_at_depot_without_moving_but_can_pick_up():
@@ -166,7 +165,8 @@ def test_depot_tracks_created_tasks_and_keeps_task_after_pickup():
     assert engine.add_task()
     task = depot.tasks[-1]
 
-    engine.pick_up_task(agent)
+    assert engine.contract_net_manager.assign_task_to_agent(agent, task, engine.tick)
+    assert agent.pick_up_task(engine.tick) is task
 
     assert task in depot.tasks
     assert task.status == IN_TRANSIT
@@ -185,7 +185,7 @@ def test_agent_marks_task_delivered_and_removes_active_delivery():
     agent.deliveries.append(AgentDelivery(task, agent.id, []))
     engine.tasks.append(task)
 
-    engine.deliver_task(agent)
+    assert agent.deliver_assigned_task(engine.tick) is task
 
     assert task.status == DELIVERED
     assert task not in [delivery.task for delivery in agent.deliveries]
@@ -293,7 +293,7 @@ def test_deliver_is_ignored_outside_target():
     agent.position = engine.graph.positions_of_kind(NodeKind.DEPOT)[0]
     agent.current_action = MOVE
 
-    engine.execute_action(agent, DELIVER, {agent.position}, set())
+    assert agent.deliver_assigned_task(engine.tick) is None
 
     assert agent.current_action == MOVE
 

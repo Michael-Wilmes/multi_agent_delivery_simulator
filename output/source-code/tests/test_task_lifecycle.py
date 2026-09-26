@@ -1,14 +1,45 @@
 from app.domain.entities.agent import Agent, AgentType
+from app.domain.entities.agentdelivery import AgentDelivery
 from app.domain.entities.contractnetmessage import MessageType, describe
 from app.domain.entities.depot import Depot
 from app.domain.entities.destination import Destination
 from app.domain.entities.deliverytask import DeliveryTask
 from app.domain.entities.graph import GraphMap, GraphNode, NodeKind
 from app.domain.services.contractnetmanager import ContractNetManager
-from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT, LOADING, MOVING_TO_DROPOFF, MOVING_TO_PICKUP, OPEN, WAIT
-from app.simulation.engine import SimulationEngine
+from app.shared.constants import AWAIT_PICKUP, DELIVER, DELIVERED, IDLE, IN_TRANSIT, LOADING, MOVE, MOVING_TO_DROPOFF, MOVING_TO_PICKUP, OPEN, PICKUP, WAIT
+from app.simulation.simulation_engine import SimulationEngine
 from app.config import load_config
 from pathlib import Path
+
+
+def test_agent_chooses_action_from_assigned_delivery():
+    depot = Depot(id=0, position=(0, 0))
+    destination = Destination(id=1, position=(2, 0))
+    agent = Agent(
+        id=1,
+        type=AgentType.STANDARD,
+        position=depot.position,
+        speed=1,
+        capacity=1,
+        task_capacity=1,
+    )
+    task = DeliveryTask(
+        id=1,
+        depot=depot,
+        destination=destination,
+        created_tick=0,
+        status=AWAIT_PICKUP,
+        assigned_agent_id=agent.id,
+    )
+    agent.deliveries.append(AgentDelivery(task, agent.id, []))
+
+    assert agent.choose_action() == PICKUP
+    task.status = IN_TRANSIT
+    assert agent.choose_action() == MOVE
+    agent.position = destination.position
+    assert agent.choose_action() == DELIVER
+    agent.deliveries.clear()
+    assert agent.choose_action() == IDLE
 
 
 def test_agent_status_changes_are_sent_to_contract_net():
@@ -83,8 +114,9 @@ def test_charging_emits_agent_charge_activity():
     engine.agents = [agent]
     engine.contract_net_manager.agents = [agent]
     agent.position = engine.graph.depots[0].position
+    agent.battery = 20.0
 
-    engine.start_charging(agent)
+    agent.start_charging(engine.config.battery.chargingDurationTicks, engine.tick)
     engine.step()
 
     charge_events = [
@@ -154,9 +186,15 @@ def test_announced_task_receives_agent_bid_and_award():
     engine.tasks.append(task)
 
     engine.contract_net_manager.submit_task(task, tick=0, deadline=1)
-    engine.submit_pending_bids(agent)
+    agent.submit_pending_bids(engine.tick)
 
     assert engine.contract_net_manager.has_bid(task.id, agent.id)
+    assert any(
+        event.type is MessageType.AUCTION_BID
+        and event.task_id == task.id
+        and event.agent_id == agent.id
+        for event in engine.snapshot().contract_log
+    )
     outcomes = engine.contract_net_manager.award_ready_tasks(engine.tasks, tick=1)
 
     assert outcomes[0].type is MessageType.AUCTION_AWARD
@@ -238,8 +276,7 @@ def test_contract_manager_emits_task_status_events_with_destination():
     assert task.status == AWAIT_PICKUP
     assert manager.assign_task_to_agent(agent, task, tick=3)
 
-    assert agent.pick_task(task)
-    assert manager.start_task_for_agent(agent, task, tick=4)
+    assert agent.pick_up_task(tick=4) is task
     assert task.status == IN_TRANSIT
     agent.position = destination.position
     assert agent.deliver_task(task)
@@ -308,6 +345,7 @@ def test_assigned_agent_routes_to_depot_and_emits_in_transit():
     )
     engine.tasks = [task]
     depot.add_task(task)
+    agent.deliveries.append(AgentDelivery(task, agent.id, []))
 
     assert engine.snapshot().awaiting_pickup_counts[agent.id] == 1
     for _ in range(2):
@@ -343,7 +381,7 @@ def test_assigned_agent_routes_to_depot_and_emits_in_transit():
     engine.step()
     for _ in range(4):
         engine.move_agent(agent, {agent.position}, set())
-    engine.deliver_task(agent)
+    assert agent.deliver_assigned_task(engine.tick) is task
 
     dropoff_move_events = [
         event for event in engine.contract_net_manager.events

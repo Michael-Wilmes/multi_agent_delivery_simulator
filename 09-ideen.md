@@ -103,9 +103,9 @@ ANNOUNCE
     -> Agent submits BID
 
 Each simulation tick
-    -> engine.py asks the agent for its next position
+    -> simulation_engine.py asks the agent for its next position
     -> Agent returns the next route position
-    -> engine.py validates collisions and applies movement  
+    -> simulation_engine.py validates collisions and applies movement
 
 ## Agenten und stranded: 
 An jedem Depot werden die Agenten komplett geladen. Kostet einen Tick. Somit sollten diese nicht out of Battery laufen  
@@ -131,7 +131,7 @@ Wenn ein Agent eine Lieferung liefert, muss er die Status setzen:
 Eine Zentriere Instanz  
 A good migration path is:
 
-Keep the current _store_*_kpi() methods in engine.py.
+Keep the current _store_*_kpi() methods in simulation_engine.py.
 Introduce a KpiWriter class later.
 Move the CSV-writing code from the engine into KpiWriter.
 Let the engine delegate:  

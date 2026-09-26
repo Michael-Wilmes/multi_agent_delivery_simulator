@@ -1,85 +1,1146 @@
 tick,phase,agent,details
-1,AGENT_IDLE,4,Agent 4 is idle
-1,AGENT_IDLE,3,Agent 3 is idle
 1,AGENT_IDLE,1,Agent 1 is idle
+1,AGENT_IDLE,3,Agent 3 is idle
 1,AGENT_IDLE,2,Agent 2 is idle
-2,AGENT_IDLE,1,Agent 1 is idle
+1,AGENT_IDLE,4,Agent 4 is idle
 2,AGENT_IDLE,2,Agent 2 is idle
 2,AGENT_IDLE,4,Agent 4 is idle
 2,AGENT_IDLE,3,Agent 3 is idle
+2,AGENT_IDLE,1,Agent 1 is idle
 3,AGENT_IDLE,1,Agent 1 is idle
+3,AGENT_IDLE,3,Agent 3 is idle
 3,AGENT_IDLE,2,Agent 2 is idle
 3,AGENT_IDLE,4,Agent 4 is idle
-3,AGENT_IDLE,3,Agent 3 is idle
-4,AGENT_IDLE,2,Agent 2 is idle
-4,AGENT_IDLE,1,Agent 1 is idle
 4,AGENT_IDLE,4,Agent 4 is idle
+4,AGENT_IDLE,1,Agent 1 is idle
+4,AGENT_IDLE,2,Agent 2 is idle
 4,AGENT_IDLE,3,Agent 3 is idle
-5,AGENT_IDLE,2,Agent 2 is idle
 5,AGENT_IDLE,1,Agent 1 is idle
-5,AGENT_IDLE,3,Agent 3 is idle
 5,AGENT_IDLE,4,Agent 4 is idle
-5,AUCTION_ANNOUNCE,,"T-001: Depot D8 (15, 31) -> Ziel Z4 (42, 47) bis 8"
-5,TASK_OPEN,,"T-001 open: awaiting bids for Destination Z4 (42, 47), deadline 8"
-5,AGENT_NO_BID,1,"T-001 Agent 1: Not reachable. Distance 64.0, Energy range 50.0."
-5,AGENT_NO_BID,2,"T-001 Agent 2: Not reachable. Distance 88.0, Energy range 50.0."
-5,AGENT_NO_BID,3,"T-001 Agent 3: Not reachable. Distance 55.0, Energy range 33.3."
-5,AGENT_NO_BID,4,"T-001 Agent 4: Not reachable. Distance 57.0, Energy range 33.3."
+5,AGENT_IDLE,3,Agent 3 is idle
+5,AGENT_IDLE,2,Agent 2 is idle
+5,AUCTION_ANNOUNCE,,"T-001: Depot D5 (13, 9) -> Ziel Z4 (0, 18) bis 14"
+5,TASK_OPEN,,"T-001 open: awaiting bids for Destination Z4 (0, 18), deadline 14"
+6,AUCTION_BID,2,T-001 Agent 2 Kosten 33.0
 6,AGENT_IDLE,2,Agent 2 is idle
+6,AUCTION_BID,4,T-001 Agent 4 Kosten 32.0
 6,AGENT_IDLE,4,Agent 4 is idle
-6,AGENT_IDLE,1,Agent 1 is idle
+6,AUCTION_BID,3,T-001 Agent 3 Kosten 32.0
 6,AGENT_IDLE,3,Agent 3 is idle
+6,AUCTION_BID,1,T-001 Agent 1 Kosten 36.0
+6,AGENT_IDLE,1,Agent 1 is idle
 7,AGENT_IDLE,1,Agent 1 is idle
+7,AGENT_IDLE,4,Agent 4 is idle
 7,AGENT_IDLE,2,Agent 2 is idle
 7,AGENT_IDLE,3,Agent 3 is idle
-7,AGENT_IDLE,4,Agent 4 is idle
+8,AGENT_IDLE,2,Agent 2 is idle
 8,AGENT_IDLE,1,Agent 1 is idle
 8,AGENT_IDLE,3,Agent 3 is idle
-8,AGENT_IDLE,2,Agent 2 is idle
 8,AGENT_IDLE,4,Agent 4 is idle
-8,AUCTION_NO_BID,,T-001 ohne Gebot
-9,AGENT_IDLE,3,Agent 3 is idle
-9,AGENT_IDLE,4,Agent 4 is idle
-9,AGENT_IDLE,1,Agent 1 is idle
 9,AGENT_IDLE,2,Agent 2 is idle
-10,AGENT_IDLE,3,Agent 3 is idle
+9,AGENT_IDLE,3,Agent 3 is idle
+9,AGENT_IDLE,1,Agent 1 is idle
+9,AGENT_IDLE,4,Agent 4 is idle
+10,AGENT_IDLE,1,Agent 1 is idle
 10,AGENT_IDLE,4,Agent 4 is idle
 10,AGENT_IDLE,2,Agent 2 is idle
-10,AGENT_IDLE,1,Agent 1 is idle
-10,AUCTION_ANNOUNCE,,"T-002: Depot D9 (18, 18) -> Ziel Z3 (49, 1) bis 12"
-10,TASK_OPEN,,"T-002 open: awaiting bids for Destination Z3 (49, 1), deadline 12"
-10,AGENT_NO_BID,1,"T-002 Agent 1: Not reachable. Distance 67.0, Energy range 50.0."
-10,AGENT_NO_BID,2,"T-002 Agent 2: Not reachable. Distance 77.0, Energy range 50.0."
-10,AGENT_NO_BID,3,"T-002 Agent 3: Not reachable. Distance 64.0, Energy range 33.3."
-10,AGENT_NO_BID,4,"T-002 Agent 4: Not reachable. Distance 72.0, Energy range 33.3."
+10,AGENT_IDLE,3,Agent 3 is idle
+10,AUCTION_ANNOUNCE,,"T-002: Depot D4 (9, 9) -> Ziel Z3 (2, 0) bis 12"
+10,TASK_OPEN,,"T-002 open: awaiting bids for Destination Z3 (2, 0), deadline 12"
 11,AGENT_IDLE,4,Agent 4 is idle
-11,AGENT_IDLE,2,Agent 2 is idle
+11,AUCTION_BID,1,T-002 Agent 1 Kosten 26.0
 11,AGENT_IDLE,1,Agent 1 is idle
+11,AUCTION_BID,2,T-002 Agent 2 Kosten 23.0
+11,AGENT_IDLE,2,Agent 2 is idle
 11,AGENT_IDLE,3,Agent 3 is idle
-12,AGENT_IDLE,1,Agent 1 is idle
 12,AGENT_IDLE,4,Agent 4 is idle
 12,AGENT_IDLE,3,Agent 3 is idle
 12,AGENT_IDLE,2,Agent 2 is idle
-12,AUCTION_NO_BID,,T-002 ohne Gebot
+12,AGENT_IDLE,1,Agent 1 is idle
+12,AUCTION_AWARD,2,"T-002 an Agent 2, Kosten 23.0"
+12,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+12,TASK_ASSIGNED,2,"T-002 assigned to agent 2; awaiting pickup for Destination Z3 (2, 0)"
+12,TASK_AWAIT_PICKUP,2,"T-002 AWAIT_PICKUP: waiting at (9, 9) for Agent 2"
+12,AUCTION_BID_LOST,1,"T-002 verloren, Kosten 26.0"
 13,AGENT_IDLE,1,Agent 1 is idle
-13,AGENT_IDLE,2,Agent 2 is idle
-13,AGENT_IDLE,3,Agent 3 is idle
 13,AGENT_IDLE,4,Agent 4 is idle
+13,AGENT_IDLE,3,Agent 3 is idle
+13,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (10, 16) while heading to pickup for T-002"
+13,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
 14,AGENT_IDLE,3,Agent 3 is idle
-14,AGENT_IDLE,1,Agent 1 is idle
 14,AGENT_IDLE,4,Agent 4 is idle
-14,AGENT_IDLE,2,Agent 2 is idle
-15,AGENT_IDLE,2,Agent 2 is idle
-15,AGENT_IDLE,4,Agent 4 is idle
+14,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (11, 16) while heading to pickup for T-002"
+14,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+14,AGENT_IDLE,1,Agent 1 is idle
+14,AUCTION_AWARD,3,"T-001 an Agent 3, Kosten 32.0"
+14,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+14,TASK_ASSIGNED,3,"T-001 assigned to agent 3; awaiting pickup for Destination Z4 (0, 18)"
+14,TASK_AWAIT_PICKUP,3,"T-001 AWAIT_PICKUP: waiting at (13, 9) for Agent 3"
+14,AUCTION_BID_LOST,2,"T-001 verloren, Kosten 33.0"
+14,AUCTION_BID_LOST,4,"T-001 verloren, Kosten 32.0"
+14,AUCTION_BID_LOST,1,"T-001 verloren, Kosten 36.0"
+15,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (9, 4) while heading to pickup for T-001"
+15,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (9, 5) while heading to pickup for T-001"
+15,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+15,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (11, 15) while heading to pickup for T-002"
+15,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
 15,AGENT_IDLE,1,Agent 1 is idle
-15,AGENT_IDLE,3,Agent 3 is idle
-15,AUCTION_ANNOUNCE,,"T-003: Depot D6 (31, 42) -> Ziel Z1 (23, 36) bis 21"
-15,TASK_OPEN,,"T-003 open: awaiting bids for Destination Z1 (23, 36), deadline 21"
-15,AGENT_NO_BID,1,"T-003 Agent 1: Not reachable. Distance 62.0, Energy range 50.0."
-15,AGENT_NO_BID,2,"T-003 Agent 2: Not reachable. Distance 54.0, Energy range 50.0."
-15,AGENT_NO_BID,3,"T-003 Agent 3: Not reachable. Distance 53.0, Energy range 33.3."
+15,AGENT_IDLE,4,Agent 4 is idle
+15,AUCTION_ANNOUNCE,,"T-003: Depot D6 (7, 8) -> Ziel Z3 (2, 0) bis 23"
+15,TASK_OPEN,,"T-003 open: awaiting bids for Destination Z3 (2, 0), deadline 23"
+16,AUCTION_BID,1,T-003 Agent 1 Kosten 24.0
 16,AGENT_IDLE,1,Agent 1 is idle
-16,AGENT_IDLE,2,Agent 2 is idle
-16,AUCTION_BID,4,T-003 Agent 4 Kosten 27.0
+16,AUCTION_BID,4,T-003 Agent 4 Kosten 18.0
 16,AGENT_IDLE,4,Agent 4 is idle
-16,AGENT_IDLE,3,Agent 3 is idle
+16,AUCTION_BID,2,T-003 Agent 2 Kosten 24.0
+16,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (12, 15) while heading to pickup for T-002"
+16,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+16,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (8, 5) while heading to pickup for T-001"
+16,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (7, 5) while heading to pickup for T-001"
+16,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+17,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (12, 14) while heading to pickup for T-002"
+17,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+17,AGENT_IDLE,4,Agent 4 is idle
+17,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (7, 4) while heading to pickup for T-001"
+17,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (6, 4) while heading to pickup for T-001"
+17,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+17,AGENT_IDLE,1,Agent 1 is idle
+18,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (5, 4) while heading to pickup for T-001"
+18,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (5, 3) while heading to pickup for T-001"
+18,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+18,AGENT_IDLE,4,Agent 4 is idle
+18,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (12, 13) while heading to pickup for T-002"
+18,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+18,AGENT_IDLE,1,Agent 1 is idle
+19,AGENT_IDLE,4,Agent 4 is idle
+19,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (12, 12) while heading to pickup for T-002"
+19,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+19,AGENT_IDLE,1,Agent 1 is idle
+19,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (5, 2) while heading to pickup for T-001"
+19,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (5, 1) while heading to pickup for T-001"
+19,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+20,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (12, 11) while heading to pickup for T-002"
+20,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+20,AGENT_IDLE,1,Agent 1 is idle
+20,AGENT_IDLE,4,Agent 4 is idle
+20,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (6, 1) while heading to pickup for T-001"
+20,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (6, 0) while heading to pickup for T-001"
+20,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+20,AUCTION_ANNOUNCE,,"T-004: Depot D3 (3, 12) -> Ziel Z2 (13, 16) bis 26"
+20,TASK_OPEN,,"T-004 open: awaiting bids for Destination Z2 (13, 16), deadline 26"
+21,AUCTION_BID,2,T-004 Agent 2 Kosten 24.0
+21,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (11, 11) while heading to pickup for T-002"
+21,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+21,AUCTION_BID,1,T-004 Agent 1 Kosten 25.0
+21,AGENT_IDLE,1,Agent 1 is idle
+21,AGENT_IDLE,4,Agent 4 is idle
+21,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (7, 0) while heading to pickup for T-001"
+21,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (8, 0) while heading to pickup for T-001"
+21,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+22,AGENT_IDLE,1,Agent 1 is idle
+22,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (9, 0) while heading to pickup for T-001"
+22,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (10, 0) while heading to pickup for T-001"
+22,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+22,AGENT_IDLE,4,Agent 4 is idle
+22,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (10, 11) while heading to pickup for T-002"
+22,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+23,AGENT_IDLE,1,Agent 1 is idle
+23,AGENT_IDLE,4,Agent 4 is idle
+23,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (11, 0) while heading to pickup for T-001"
+23,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (12, 0) while heading to pickup for T-001"
+23,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+23,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (10, 10) while heading to pickup for T-002"
+23,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+23,AUCTION_AWARD,4,"T-003 an Agent 4, Kosten 18.0"
+23,AGENT_MOVING_TO_PICKUP,4,Agent 4 is moving to pickup
+23,TASK_ASSIGNED,4,"T-003 assigned to agent 4; awaiting pickup for Destination Z3 (2, 0)"
+23,TASK_AWAIT_PICKUP,4,"T-003 AWAIT_PICKUP: waiting at (7, 8) for Agent 4"
+23,AUCTION_BID_LOST,1,"T-003 verloren, Kosten 24.0"
+23,AUCTION_BID_LOST,2,"T-003 verloren, Kosten 24.0"
+24,AGENT_IDLE,1,Agent 1 is idle
+24,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 0) while heading to pickup for T-001"
+24,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 1) while heading to pickup for T-001"
+24,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+24,AGENT_MOVING_PICK_UP,4,"Agent 4 moved to (6, 11) while heading to pickup for T-003"
+24,AGENT_LOADING,4,Agent 4 is loading
+24,AGENT_CHARGE,4,"Agent 4 is charging at (6, 11)"
+24,AGENT_LOADING,4,Agent 4 is loading
+24,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (9, 10) while heading to pickup for T-002"
+24,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+25,AGENT_CHARGE,4,"Agent 4 is charging at (6, 11)"
+25,AGENT_MOVING_TO_PICKUP,4,Agent 4 is moving to pickup
+25,AGENT_MOVING_TO_PICKUP,4,Agent 4 is moving to pickup
+25,AGENT_IDLE,1,Agent 1 is idle
+25,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (9, 9) while heading to pickup for T-002"
+25,TASK_IN_TRANSIT,2,"T-002 in delivery to Destination Z3 (2, 0) by Agent 2"
+25,AGENT_PICK_OFF,2,Agent 2 picked up T-002
+25,AGENT_LOADING,2,Agent 2 is loading
+25,AGENT_LOADING,2,Agent 2 is loading
+25,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 2) while heading to pickup for T-001"
+25,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (12, 2) while heading to pickup for T-001"
+25,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+25,AUCTION_ANNOUNCE,,"T-005: Depot D4 (9, 9) -> Ziel Z3 (2, 0) bis 32"
+25,TASK_OPEN,,"T-005 open: awaiting bids for Destination Z3 (2, 0), deadline 32"
+26,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (12, 3) while heading to pickup for T-001"
+26,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (12, 4) while heading to pickup for T-001"
+26,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+26,AUCTION_BID,1,T-005 Agent 1 Kosten 26.0
+26,AGENT_IDLE,1,Agent 1 is idle
+26,AUCTION_BID,2,T-005 Agent 2 Kosten 16.0
+26,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+26,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+26,AGENT_MOVING_PICK_UP,4,"Agent 4 moved to (7, 11) while heading to pickup for T-003"
+26,AGENT_MOVING_PICK_UP,4,"Agent 4 moved to (7, 10) while heading to pickup for T-003"
+26,AGENT_MOVING_TO_PICKUP,4,Agent 4 is moving to pickup
+26,AUCTION_AWARD,2,"T-004 an Agent 2, Kosten 24.0"
+26,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+26,TASK_ASSIGNED,2,"T-004 assigned to agent 2; awaiting pickup for Destination Z2 (13, 16)"
+26,TASK_AWAIT_PICKUP,2,"T-004 AWAIT_PICKUP: waiting at (3, 12) for Agent 2"
+26,AUCTION_BID_LOST,1,"T-004 verloren, Kosten 25.0"
+26,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+27,AGENT_MOVING_PICK_UP,4,"Agent 4 moved to (7, 9) while heading to pickup for T-003"
+27,AGENT_MOVING_PICK_UP,4,"Agent 4 moved to (7, 8) while heading to pickup for T-003"
+27,TASK_IN_TRANSIT,4,"T-003 in delivery to Destination Z3 (2, 0) by Agent 4"
+27,AGENT_PICK_OFF,4,Agent 4 picked up T-003
+27,AGENT_LOADING,4,Agent 4 is loading
+27,AGENT_LOADING,4,Agent 4 is loading
+27,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (12, 5) while heading to pickup for T-001"
+27,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 5) while heading to pickup for T-001"
+27,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+27,AGENT_IDLE,1,Agent 1 is idle
+27,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (9, 10) while heading to dropoff for T-002"
+27,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+28,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (10, 10) while heading to dropoff for T-002"
+28,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+28,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 6) while heading to pickup for T-001"
+28,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 7) while heading to pickup for T-001"
+28,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+28,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+28,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+28,AGENT_IDLE,1,Agent 1 is idle
+29,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (10, 11) while heading to dropoff for T-002"
+29,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+29,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 8) while heading to pickup for T-001"
+29,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (13, 9) while heading to pickup for T-001"
+29,TASK_IN_TRANSIT,3,"T-001 in delivery to Destination Z4 (0, 18) by Agent 3"
+29,AGENT_PICK_OFF,3,Agent 3 picked up T-001
+29,AGENT_LOADING,3,Agent 3 is loading
+29,AGENT_LOADING,3,Agent 3 is loading
+29,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (8, 8) while heading to dropoff for T-003"
+29,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (8, 9) while heading to dropoff for T-003"
+29,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+29,AGENT_IDLE,1,Agent 1 is idle
+30,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 11) while heading to dropoff for T-002"
+30,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+30,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (9, 9) while heading to dropoff for T-003"
+30,AGENT_LOADING,4,Agent 4 is loading
+30,AGENT_CHARGE,4,"Agent 4 is charging at (9, 9)"
+30,AGENT_LOADING,4,Agent 4 is loading
+30,AGENT_IDLE,1,Agent 1 is idle
+30,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+30,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+30,AUCTION_ANNOUNCE,,"T-006: Depot D1 (0, 4) -> Ziel Z3 (2, 0) bis 39"
+30,TASK_OPEN,,"T-006 open: awaiting bids for Destination Z3 (2, 0), deadline 39"
+31,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (12, 11) while heading to dropoff for T-002"
+31,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+31,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 8) while heading to dropoff for T-001"
+31,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 7) while heading to dropoff for T-001"
+31,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+31,AUCTION_BID,1,T-006 Agent 1 Kosten 28.0
+31,AGENT_IDLE,1,Agent 1 is idle
+31,AGENT_CHARGE,4,"Agent 4 is charging at (9, 9)"
+31,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+31,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+32,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (9, 10) while heading to dropoff for T-003"
+32,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (10, 10) while heading to dropoff for T-003"
+32,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+32,AGENT_IDLE,1,Agent 1 is idle
+32,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (12, 12) while heading to dropoff for T-002"
+32,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+32,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 6) while heading to dropoff for T-001"
+32,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 5) while heading to dropoff for T-001"
+32,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+32,AUCTION_AWARD,2,"T-005 an Agent 2, Kosten 16.0"
+32,AGENT_MOVING_TO_PICKUP,2,Agent 2 is moving to pickup
+32,TASK_ASSIGNED,2,"T-005 assigned to agent 2; awaiting pickup for Destination Z3 (2, 0)"
+32,TASK_AWAIT_PICKUP,2,"T-005 AWAIT_PICKUP: waiting at (9, 9) for Agent 2"
+32,AUCTION_BID_LOST,1,"T-005 verloren, Kosten 26.0"
+32,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+33,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (10, 11) while heading to dropoff for T-003"
+33,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (11, 11) while heading to dropoff for T-003"
+33,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+33,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (12, 5) while heading to dropoff for T-001"
+33,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (12, 4) while heading to dropoff for T-001"
+33,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+33,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (12, 13) while heading to dropoff for T-002"
+33,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+33,AGENT_IDLE,1,Agent 1 is idle
+34,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (12, 3) while heading to dropoff for T-001"
+34,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (12, 2) while heading to dropoff for T-001"
+34,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+34,AGENT_IDLE,1,Agent 1 is idle
+34,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (12, 11) while heading to dropoff for T-003"
+34,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (12, 12) while heading to dropoff for T-003"
+34,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+34,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (12, 14) while heading to dropoff for T-002"
+34,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+35,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 2) while heading to dropoff for T-001"
+35,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 1) while heading to dropoff for T-001"
+35,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+35,AGENT_IDLE,1,Agent 1 is idle
+35,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (12, 15) while heading to dropoff for T-002"
+35,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+35,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (12, 13) while heading to dropoff for T-003"
+35,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (12, 14) while heading to dropoff for T-003"
+35,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+35,AUCTION_ANNOUNCE,,"T-007: Depot D1 (0, 4) -> Ziel Z2 (13, 16) bis 41"
+35,TASK_OPEN,,"T-007 open: awaiting bids for Destination Z2 (13, 16), deadline 41"
+36,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (13, 0) while heading to dropoff for T-001"
+36,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (12, 0) while heading to dropoff for T-001"
+36,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+36,AUCTION_BID,1,T-007 Agent 1 Kosten 47.0
+36,AGENT_IDLE,1,Agent 1 is idle
+36,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 15) while heading to dropoff for T-002"
+36,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+36,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (12, 15) while heading to dropoff for T-003"
+36,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (12, 16) while heading to dropoff for T-003"
+36,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+37,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (11, 16) while heading to dropoff for T-003"
+37,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (10, 16) while heading to dropoff for T-003"
+37,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+37,AGENT_IDLE,1,Agent 1 is idle
+37,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (11, 0) while heading to dropoff for T-001"
+37,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (10, 0) while heading to dropoff for T-001"
+37,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+37,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 14) while heading to dropoff for T-002"
+37,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+38,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (10, 17) while heading to dropoff for T-003"
+38,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (9, 17) while heading to dropoff for T-003"
+38,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+38,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (9, 0) while heading to dropoff for T-001"
+38,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (8, 0) while heading to dropoff for T-001"
+38,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+38,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 15) while heading to dropoff for T-002"
+38,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+38,AGENT_IDLE,1,Agent 1 is idle
+39,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 16) while heading to dropoff for T-002"
+39,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+39,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (7, 0) while heading to dropoff for T-001"
+39,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (6, 0) while heading to dropoff for T-001"
+39,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+39,AGENT_IDLE,1,Agent 1 is idle
+39,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (9, 18) while heading to dropoff for T-003"
+39,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (9, 19) while heading to dropoff for T-003"
+39,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+39,AUCTION_AWARD,1,"T-006 an Agent 1, Kosten 28.0"
+39,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+39,TASK_ASSIGNED,1,"T-006 assigned to agent 1; awaiting pickup for Destination Z3 (2, 0)"
+39,TASK_AWAIT_PICKUP,1,"T-006 AWAIT_PICKUP: waiting at (0, 4) for Agent 1"
+40,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (6, 1) while heading to dropoff for T-001"
+40,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (5, 1) while heading to dropoff for T-001"
+40,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+40,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 17) while heading to dropoff for T-002"
+40,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+40,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (8, 19) while heading to dropoff for T-003"
+40,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (7, 19) while heading to dropoff for T-003"
+40,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+40,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (9, 18) while heading to pickup for T-006"
+40,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+40,AUCTION_ANNOUNCE,,"T-008: Depot D9 (2, 16) -> Ziel Z1 (6, 10) bis 49"
+40,TASK_OPEN,,"T-008 open: awaiting bids for Destination Z1 (6, 10), deadline 49"
+41,AUCTION_BID,1,T-008 Agent 1 Kosten 19.0
+41,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (9, 19) while heading to pickup for T-006"
+41,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+41,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (6, 19) while heading to dropoff for T-003"
+41,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (6, 18) while heading to dropoff for T-003"
+41,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+41,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (4, 1) while heading to dropoff for T-001"
+41,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (3, 1) while heading to dropoff for T-001"
+41,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+41,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (11, 18) while heading to dropoff for T-002"
+41,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+41,AUCTION_AWARD,1,"T-007 an Agent 1, Kosten 47.0"
+41,TASK_ASSIGNED,1,"T-007 assigned to agent 1; awaiting pickup for Destination Z2 (13, 16)"
+41,TASK_AWAIT_PICKUP,1,"T-007 AWAIT_PICKUP: waiting at (0, 4) for Agent 1"
+42,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (8, 19) while heading to pickup for T-006"
+42,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+42,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (10, 18) while heading to dropoff for T-002"
+42,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+42,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (5, 18) while heading to dropoff for T-003"
+42,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (4, 18) while heading to dropoff for T-003"
+42,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+42,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (3, 2) while heading to dropoff for T-001"
+42,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (2, 2) while heading to dropoff for T-001"
+42,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+43,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (1, 2) while heading to dropoff for T-001"
+43,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 2) while heading to dropoff for T-001"
+43,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+43,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (10, 19) while heading to dropoff for T-002"
+43,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+43,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (3, 18) while heading to dropoff for T-003"
+43,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (2, 18) while heading to dropoff for T-003"
+43,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+43,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (7, 19) while heading to pickup for T-006"
+43,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+44,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (9, 19) while heading to dropoff for T-002"
+44,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+44,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 3) while heading to dropoff for T-001"
+44,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 4) while heading to dropoff for T-001"
+44,AGENT_LOADING,3,Agent 3 is loading
+44,AGENT_CHARGE,3,"Agent 3 is charging at (0, 4)"
+44,AGENT_LOADING,3,Agent 3 is loading
+44,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (1, 18) while heading to dropoff for T-003"
+44,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (1, 19) while heading to dropoff for T-003"
+44,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+44,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (6, 19) while heading to pickup for T-006"
+44,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+45,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (0, 19) while heading to dropoff for T-003"
+45,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (1, 19) while heading to dropoff for T-003"
+45,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+45,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (6, 18) while heading to pickup for T-006"
+45,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+45,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (8, 19) while heading to dropoff for T-002"
+45,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+45,AGENT_CHARGE,3,"Agent 3 is charging at (0, 4)"
+45,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+45,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+45,AUCTION_ANNOUNCE,,"T-009: Depot D7 (2, 1) -> Ziel Z1 (6, 10) bis 55"
+45,TASK_OPEN,,"T-009 open: awaiting bids for Destination Z1 (6, 10), deadline 55"
+46,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (5, 18) while heading to pickup for T-006"
+46,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+46,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (0, 19) while heading to dropoff for T-003"
+46,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (1, 19) while heading to dropoff for T-003"
+46,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+46,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 5) while heading to dropoff for T-001"
+46,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 6) while heading to dropoff for T-001"
+46,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+46,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (7, 19) while heading to dropoff for T-002"
+46,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+47,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (1, 18) while heading to dropoff for T-003"
+47,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (2, 18) while heading to dropoff for T-003"
+47,AGENT_MOVING_TO_DROPOFF,4,Agent 4 is moving to dropoff
+47,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (6, 19) while heading to dropoff for T-002"
+47,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+47,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (4, 18) while heading to pickup for T-006"
+47,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+47,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 7) while heading to dropoff for T-001"
+47,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 8) while heading to dropoff for T-001"
+47,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+48,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (5, 19) while heading to dropoff for T-002"
+48,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+48,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (1, 18) while heading to dropoff for T-003"
+48,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+48,AGENT_MOVING_DROPOFF,4,"Agent 4 moved to (2, 18) while heading to dropoff for T-003"
+48,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+48,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (3, 18) while heading to pickup for T-006"
+48,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+48,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 9) while heading to dropoff for T-001"
+48,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 10) while heading to dropoff for T-001"
+48,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+49,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 11) while heading to dropoff for T-001"
+49,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 12) while heading to dropoff for T-001"
+49,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+49,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (3, 17) while heading to pickup for T-006"
+49,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+49,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (5, 18) while heading to dropoff for T-002"
+49,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+49,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+49,AUCTION_AWARD,1,"T-008 an Agent 1, Kosten 19.0"
+49,TASK_ASSIGNED,1,"T-008 assigned to agent 1; awaiting pickup for Destination Z1 (6, 10)"
+49,TASK_AWAIT_PICKUP,1,"T-008 AWAIT_PICKUP: waiting at (2, 16) for Agent 1"
+50,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+50,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+50,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+50,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (3, 18) while heading to pickup for T-006"
+50,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+50,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 13) while heading to dropoff for T-001"
+50,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 14) while heading to dropoff for T-001"
+50,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+50,AUCTION_ANNOUNCE,,"T-010: Depot D9 (2, 16) -> Ziel Z4 (0, 18) bis 58"
+50,TASK_OPEN,,"T-010 open: awaiting bids for Destination Z4 (0, 18), deadline 58"
+51,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (3, 19) while heading to pickup for T-006"
+51,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+51,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 15) while heading to dropoff for T-001"
+51,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 16) while heading to dropoff for T-001"
+51,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+51,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+51,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+51,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+52,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 17) while heading to dropoff for T-001"
+52,AGENT_MOVING_DROPOFF,3,"Agent 3 moved to (0, 18) while heading to dropoff for T-001"
+52,AGENT_MOVING_TO_DROPOFF,3,Agent 3 is moving to dropoff
+52,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (2, 19) while heading to pickup for T-006"
+52,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+52,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+52,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+52,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+53,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+53,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+53,TASK_DELIVERED,3,"T-001 delivered at Destination Z4 (0, 18) by Agent 3"
+53,AGENT_DROP_OFF,3,Agent 3 dropped off T-001
+53,AGENT_IDLE,3,Agent 3 is idle
+53,AGENT_IDLE,3,Agent 3 is idle
+53,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+53,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+53,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+54,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+54,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+54,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+54,AGENT_IDLE,3,Agent 3 is idle
+54,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+54,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+55,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+55,AGENT_IDLE,3,Agent 3 is idle
+55,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+55,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+55,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+55,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+55,AUCTION_ANNOUNCE,,"T-011: Depot D10 (18, 4) -> Ziel Z3 (2, 0) bis 60"
+55,TASK_OPEN,,"T-011 open: awaiting bids for Destination Z3 (2, 0), deadline 60"
+55,AGENT_NO_BID,3,"T-011 Agent 3: Not reachable. Distance 52.0, Energy range 19.3."
+55,AUCTION_NO_BID,,T-009 ohne Gebot
+56,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+56,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+56,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+56,AGENT_IDLE,3,Agent 3 is idle
+56,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+56,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+57,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+57,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+57,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+57,AGENT_IDLE,3,Agent 3 is idle
+57,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+57,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+58,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+58,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+58,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+58,AGENT_IDLE,3,Agent 3 is idle
+58,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+58,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+58,AUCTION_NO_BID,,T-010 ohne Gebot
+59,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+59,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+59,AGENT_IDLE,3,Agent 3 is idle
+59,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+59,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+59,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+60,AGENT_IDLE,3,Agent 3 is idle
+60,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+60,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+60,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+60,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+60,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+60,AUCTION_ANNOUNCE,,"T-012: Depot D2 (5, 12) -> Ziel Z2 (13, 16) bis 69"
+60,TASK_OPEN,,"T-012 open: awaiting bids for Destination Z2 (13, 16), deadline 69"
+60,AGENT_NO_BID,3,"T-012 Agent 3: Not reachable. Distance 23.0, Energy range 19.3."
+60,AUCTION_NO_BID,,T-011 ohne Gebot
+61,AGENT_IDLE,3,Agent 3 is idle
+61,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+61,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+61,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+61,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+61,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+62,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+62,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+62,AGENT_IDLE,3,Agent 3 is idle
+62,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+62,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+62,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+63,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+63,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+63,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+63,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+63,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+63,AGENT_IDLE,3,Agent 3 is idle
+64,AGENT_IDLE,3,Agent 3 is idle
+64,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+64,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+64,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+64,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+64,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+65,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+65,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+65,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+65,AGENT_IDLE,3,Agent 3 is idle
+65,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+65,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+65,AUCTION_ANNOUNCE,,"T-013: Depot D7 (2, 1) -> Ziel Z4 (0, 18) bis 70"
+65,TASK_OPEN,,"T-013 open: awaiting bids for Destination Z4 (0, 18), deadline 70"
+65,AGENT_NO_BID,3,"T-013 Agent 3: Not reachable. Distance 38.0, Energy range 19.3."
+66,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+66,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+66,AGENT_IDLE,3,Agent 3 is idle
+66,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+66,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+66,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+67,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+67,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+67,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+67,AGENT_IDLE,3,Agent 3 is idle
+67,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+67,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+68,AGENT_IDLE,3,Agent 3 is idle
+68,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+68,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+68,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+68,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 16) while heading to dropoff for T-002"
+68,AGENT_LOADING,2,Agent 2 is loading
+68,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+68,AGENT_LOADING,2,Agent 2 is loading
+69,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+69,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+69,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+69,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+69,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+69,AGENT_IDLE,3,Agent 3 is idle
+69,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+69,AUCTION_NO_BID,,T-012 ohne Gebot
+70,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+70,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+70,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+70,AGENT_IDLE,3,Agent 3 is idle
+70,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+70,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+70,AUCTION_ANNOUNCE,,"T-014: Depot D10 (18, 4) -> Ziel Z3 (2, 0) bis 74"
+70,TASK_OPEN,,"T-014 open: awaiting bids for Destination Z3 (2, 0), deadline 74"
+70,AGENT_NO_BID,3,"T-014 Agent 3: Not reachable. Distance 52.0, Energy range 19.3."
+70,AUCTION_NO_BID,,T-013 ohne Gebot
+71,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 16) while heading to dropoff for T-002"
+71,AGENT_LOADING,2,Agent 2 is loading
+71,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+71,AGENT_LOADING,2,Agent 2 is loading
+71,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+71,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+71,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+71,AGENT_IDLE,3,Agent 3 is idle
+72,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+72,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+72,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+72,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+72,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+72,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+72,AGENT_IDLE,3,Agent 3 is idle
+73,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+73,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+73,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+73,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+73,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+73,AGENT_IDLE,3,Agent 3 is idle
+74,AGENT_IDLE,3,Agent 3 is idle
+74,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+74,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+74,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+74,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+74,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+74,AUCTION_NO_BID,,T-014 ohne Gebot
+75,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+75,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+75,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+75,AGENT_IDLE,3,Agent 3 is idle
+75,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+75,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+75,AUCTION_ANNOUNCE,,"T-015: Depot D10 (18, 4) -> Ziel Z3 (2, 0) bis 82"
+75,TASK_OPEN,,"T-015 open: awaiting bids for Destination Z3 (2, 0), deadline 82"
+75,AGENT_NO_BID,3,"T-015 Agent 3: Not reachable. Distance 52.0, Energy range 19.3."
+76,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+76,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+76,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+76,AGENT_IDLE,3,Agent 3 is idle
+76,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+76,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+77,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+77,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+77,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+77,AGENT_IDLE,3,Agent 3 is idle
+77,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+77,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+78,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+78,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+78,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+78,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+78,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+78,AGENT_IDLE,3,Agent 3 is idle
+79,AGENT_IDLE,3,Agent 3 is idle
+79,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+79,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+79,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+79,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+79,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+80,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+80,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 16) while heading to dropoff for T-002"
+80,AGENT_LOADING,2,Agent 2 is loading
+80,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+80,AGENT_LOADING,2,Agent 2 is loading
+80,AGENT_IDLE,3,Agent 3 is idle
+80,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+80,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+80,AUCTION_ANNOUNCE,,"T-016: Depot D8 (6, 11) -> Ziel Z1 (6, 10) bis 89"
+80,TASK_OPEN,,"T-016 open: awaiting bids for Destination Z1 (6, 10), deadline 89"
+81,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+81,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+81,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+81,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+81,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+81,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+81,AUCTION_BID,3,T-016 Agent 3 Kosten 14.0
+81,AGENT_IDLE,3,Agent 3 is idle
+82,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+82,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+82,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+82,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+82,AGENT_IDLE,3,Agent 3 is idle
+82,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+82,AUCTION_NO_BID,,T-015 ohne Gebot
+83,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+83,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+83,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+83,AGENT_IDLE,3,Agent 3 is idle
+83,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 16) while heading to dropoff for T-002"
+83,AGENT_LOADING,2,Agent 2 is loading
+83,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+83,AGENT_LOADING,2,Agent 2 is loading
+84,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+84,AGENT_IDLE,3,Agent 3 is idle
+84,AGENT_CHARGE,2,"Agent 2 is charging at (2, 16)"
+84,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+84,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+84,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (0, 19) while heading to pickup for T-006"
+84,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+85,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+85,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+85,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+85,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+85,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+85,AGENT_IDLE,3,Agent 3 is idle
+85,AUCTION_ANNOUNCE,,"T-017: Depot D9 (2, 16) -> Ziel Z3 (2, 0) bis 87"
+85,TASK_OPEN,,"T-017 open: awaiting bids for Destination Z3 (2, 0), deadline 87"
+86,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+86,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+86,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+86,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+86,AGENT_IDLE,3,Agent 3 is idle
+86,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+87,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+87,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+87,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+87,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+87,AGENT_IDLE,3,Agent 3 is idle
+87,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+87,AUCTION_NO_BID,,T-017 ohne Gebot
+88,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 18) while heading to pickup for T-006"
+88,AGENT_MOVING_TO_PICKUP,1,Agent 1 is moving to pickup
+88,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+88,AGENT_IDLE,3,Agent 3 is idle
+88,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+88,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+89,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+89,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 19) while heading to pickup for T-006"
+89,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+89,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+89,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+89,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+89,AGENT_IDLE,3,Agent 3 is idle
+89,AUCTION_AWARD,3,"T-016 an Agent 3, Kosten 14.0"
+89,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+89,TASK_ASSIGNED,3,"T-016 assigned to agent 3; awaiting pickup for Destination Z1 (6, 10)"
+89,TASK_AWAIT_PICKUP,3,"T-016 AWAIT_PICKUP: waiting at (6, 11) for Agent 3"
+90,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+90,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+90,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+90,AGENT_MOVING_PICK_UP,3,"Agent 3 moved to (1, 18) while heading to pickup for T-016"
+90,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+90,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+90,AUCTION_ANNOUNCE,,"T-018: Depot D10 (18, 4) -> Ziel Z3 (2, 0) bis 94"
+90,TASK_OPEN,,"T-018 open: awaiting bids for Destination Z3 (2, 0), deadline 94"
+91,AGENT_WAIT,3,Agent 3 is waiting
+91,AGENT_WAIT,3,Agent 3 is waiting
+91,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+91,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 19) while heading to dropoff for T-002"
+91,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+91,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+92,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+92,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+92,AGENT_WAIT,3,Agent 3 is waiting
+92,AGENT_WAIT,3,Agent 3 is waiting
+92,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+92,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+92,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+93,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+93,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+93,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+93,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+93,AGENT_WAIT,3,Agent 3 is waiting
+93,AGENT_WAIT,3,Agent 3 is waiting
+93,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+94,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+94,AGENT_WAIT,3,Agent 3 is waiting
+94,AGENT_WAIT,3,Agent 3 is waiting
+94,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+94,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+94,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+94,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+94,AUCTION_NO_BID,,T-018 ohne Gebot
+95,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+95,AGENT_WAIT,3,Agent 3 is waiting
+95,AGENT_WAIT,3,Agent 3 is waiting
+95,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+95,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+95,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+95,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+95,AUCTION_ANNOUNCE,,"T-019: Depot D8 (6, 11) -> Ziel Z1 (6, 10) bis 100"
+95,TASK_OPEN,,"T-019 open: awaiting bids for Destination Z1 (6, 10), deadline 100"
+96,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+96,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+96,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+96,AGENT_WAIT,3,Agent 3 is waiting
+96,AGENT_WAIT,3,Agent 3 is waiting
+96,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+96,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+97,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+97,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+97,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+97,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+97,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+97,AGENT_WAIT,3,Agent 3 is waiting
+97,AGENT_WAIT,3,Agent 3 is waiting
+98,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+98,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+98,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+98,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+98,AGENT_WAIT,3,Agent 3 is waiting
+98,AGENT_WAIT,3,Agent 3 is waiting
+98,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+99,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+99,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+99,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+99,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+99,AGENT_WAIT,3,Agent 3 is waiting
+99,AGENT_WAIT,3,Agent 3 is waiting
+99,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+100,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+100,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+100,AGENT_WAIT,3,Agent 3 is waiting
+100,AGENT_WAIT,3,Agent 3 is waiting
+100,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+100,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+100,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+100,AUCTION_ANNOUNCE,,"T-020: Depot D7 (2, 1) -> Ziel Z2 (13, 16) bis 106"
+100,TASK_OPEN,,"T-020 open: awaiting bids for Destination Z2 (13, 16), deadline 106"
+100,AUCTION_NO_BID,,T-019 ohne Gebot
+101,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+101,AGENT_WAIT,3,Agent 3 is waiting
+101,AGENT_WAIT,3,Agent 3 is waiting
+101,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+101,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+101,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+101,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+102,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+102,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+102,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+102,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+102,AGENT_WAIT,3,Agent 3 is waiting
+102,AGENT_WAIT,3,Agent 3 is waiting
+102,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+103,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+103,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+103,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+103,AGENT_WAIT,3,Agent 3 is waiting
+103,AGENT_WAIT,3,Agent 3 is waiting
+103,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+103,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+104,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+104,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+104,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+104,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+104,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+104,AGENT_WAIT,3,Agent 3 is waiting
+104,AGENT_WAIT,3,Agent 3 is waiting
+105,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+105,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+105,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+105,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+105,AGENT_WAIT,3,Agent 3 is waiting
+105,AGENT_WAIT,3,Agent 3 is waiting
+105,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+105,AUCTION_ANNOUNCE,,"T-021: Depot D4 (9, 9) -> Ziel Z1 (6, 10) bis 111"
+105,TASK_OPEN,,"T-021 open: awaiting bids for Destination Z1 (6, 10), deadline 111"
+106,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+106,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+106,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+106,AGENT_WAIT,3,Agent 3 is waiting
+106,AGENT_WAIT,3,Agent 3 is waiting
+106,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+106,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+106,AUCTION_NO_BID,,T-020 ohne Gebot
+107,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+107,AGENT_WAIT,3,Agent 3 is waiting
+107,AGENT_WAIT,3,Agent 3 is waiting
+107,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+107,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+107,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+107,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+108,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+108,AGENT_WAIT,3,Agent 3 is waiting
+108,AGENT_WAIT,3,Agent 3 is waiting
+108,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+108,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+108,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+108,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+109,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+109,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+109,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+109,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+109,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+109,AGENT_WAIT,3,Agent 3 is waiting
+109,AGENT_WAIT,3,Agent 3 is waiting
+110,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+110,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+110,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+110,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+110,AGENT_WAIT,3,Agent 3 is waiting
+110,AGENT_WAIT,3,Agent 3 is waiting
+110,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+110,AUCTION_ANNOUNCE,,"T-022: Depot D5 (13, 9) -> Ziel Z2 (13, 16) bis 120"
+110,TASK_OPEN,,"T-022 open: awaiting bids for Destination Z2 (13, 16), deadline 120"
+111,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+111,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+111,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+111,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+111,AGENT_WAIT,3,Agent 3 is waiting
+111,AGENT_WAIT,3,Agent 3 is waiting
+111,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+111,AUCTION_NO_BID,,T-021 ohne Gebot
+112,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+112,AGENT_WAIT,3,Agent 3 is waiting
+112,AGENT_WAIT,3,Agent 3 is waiting
+112,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+112,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+112,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+112,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+113,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+113,AGENT_WAIT,3,Agent 3 is waiting
+113,AGENT_WAIT,3,Agent 3 is waiting
+113,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+113,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+113,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+113,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+114,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+114,AGENT_WAIT,3,Agent 3 is waiting
+114,AGENT_WAIT,3,Agent 3 is waiting
+114,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+114,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+114,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+114,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+115,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+115,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+115,AGENT_WAIT,3,Agent 3 is waiting
+115,AGENT_WAIT,3,Agent 3 is waiting
+115,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 17) while heading to dropoff for T-002"
+115,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+115,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+115,AUCTION_ANNOUNCE,,"T-023: Depot D7 (2, 1) -> Ziel Z2 (13, 16) bis 119"
+115,TASK_OPEN,,"T-023 open: awaiting bids for Destination Z2 (13, 16), deadline 119"
+116,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+116,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+116,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+116,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+116,AGENT_WAIT,3,Agent 3 is waiting
+116,AGENT_WAIT,3,Agent 3 is waiting
+116,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+117,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+117,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+117,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+117,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+117,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+117,AGENT_WAIT,3,Agent 3 is waiting
+117,AGENT_WAIT,3,Agent 3 is waiting
+118,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+118,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+118,AGENT_WAIT,3,Agent 3 is waiting
+118,AGENT_WAIT,3,Agent 3 is waiting
+118,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+118,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+118,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+119,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+119,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+119,AGENT_WAIT,3,Agent 3 is waiting
+119,AGENT_WAIT,3,Agent 3 is waiting
+119,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+119,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+119,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+119,AUCTION_NO_BID,,T-023 ohne Gebot
+120,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+120,AGENT_WAIT,3,Agent 3 is waiting
+120,AGENT_WAIT,3,Agent 3 is waiting
+120,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+120,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+120,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+120,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+120,AUCTION_ANNOUNCE,,"T-024: Depot D1 (0, 4) -> Ziel Z3 (2, 0) bis 127"
+120,TASK_OPEN,,"T-024 open: awaiting bids for Destination Z3 (2, 0), deadline 127"
+120,AUCTION_NO_BID,,T-022 ohne Gebot
+121,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+121,AGENT_WAIT,3,Agent 3 is waiting
+121,AGENT_WAIT,3,Agent 3 is waiting
+121,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+121,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+121,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+121,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+122,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+122,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (4, 18) while heading to dropoff for T-002"
+122,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+122,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+122,AGENT_WAIT,3,Agent 3 is waiting
+122,AGENT_WAIT,3,Agent 3 is waiting
+122,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+123,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+123,AGENT_WAIT,3,Agent 3 is waiting
+123,AGENT_WAIT,3,Agent 3 is waiting
+123,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+123,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+123,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+123,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+124,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+124,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+124,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+124,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+124,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+124,AGENT_WAIT,3,Agent 3 is waiting
+124,AGENT_WAIT,3,Agent 3 is waiting
+125,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+125,AGENT_WAIT,3,Agent 3 is waiting
+125,AGENT_WAIT,3,Agent 3 is waiting
+125,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+125,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+125,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 19) while heading to dropoff for T-002"
+125,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+125,AUCTION_ANNOUNCE,,"T-025: Depot D7 (2, 1) -> Ziel Z1 (6, 10) bis 134"
+125,TASK_OPEN,,"T-025 open: awaiting bids for Destination Z1 (6, 10), deadline 134"
+126,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+126,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+126,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+126,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+126,AGENT_WAIT,3,Agent 3 is waiting
+126,AGENT_WAIT,3,Agent 3 is waiting
+126,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+127,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+127,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+127,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+127,AGENT_WAIT,3,Agent 3 is waiting
+127,AGENT_WAIT,3,Agent 3 is waiting
+127,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (2, 19) while heading to dropoff for T-002"
+127,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+127,AUCTION_NO_BID,,T-024 ohne Gebot
+128,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+128,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+128,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+128,AGENT_WAIT,3,Agent 3 is waiting
+128,AGENT_WAIT,3,Agent 3 is waiting
+128,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+128,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+129,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+129,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+129,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+129,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+129,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+129,AGENT_WAIT,3,Agent 3 is waiting
+129,AGENT_WAIT,3,Agent 3 is waiting
+130,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+130,AGENT_WAIT,3,Agent 3 is waiting
+130,AGENT_WAIT,3,Agent 3 is waiting
+130,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+130,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+130,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+130,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+130,AUCTION_ANNOUNCE,,"T-026: Depot D7 (2, 1) -> Ziel Z4 (0, 18) bis 135"
+130,TASK_OPEN,,"T-026 open: awaiting bids for Destination Z4 (0, 18), deadline 135"
+131,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+131,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+131,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+131,AGENT_WAIT,3,Agent 3 is waiting
+131,AGENT_WAIT,3,Agent 3 is waiting
+131,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+131,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+132,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+132,AGENT_WAIT,3,Agent 3 is waiting
+132,AGENT_WAIT,3,Agent 3 is waiting
+132,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+132,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+132,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 19) while heading to dropoff for T-002"
+132,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+133,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 18) while heading to dropoff for T-002"
+133,AGENT_MOVING_TO_DROPOFF,2,Agent 2 is moving to dropoff
+133,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+133,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+133,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+133,AGENT_WAIT,3,Agent 3 is waiting
+133,AGENT_WAIT,3,Agent 3 is waiting
+134,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+134,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+134,AGENT_WAIT,3,Agent 3 is waiting
+134,AGENT_WAIT,3,Agent 3 is waiting
+134,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+134,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+134,AGENT_MOVING_DROPOFF,2,"Agent 2 moved to (3, 17) while heading to dropoff for T-002"
+134,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+134,AUCTION_NO_BID,,T-025 ohne Gebot
+135,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+135,AGENT_WAIT,3,Agent 3 is waiting
+135,AGENT_WAIT,3,Agent 3 is waiting
+135,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+135,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+135,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+135,AUCTION_ANNOUNCE,,"T-027: Depot D3 (3, 12) -> Ziel Z2 (13, 16) bis 140"
+135,TASK_OPEN,,"T-027 open: awaiting bids for Destination Z2 (13, 16), deadline 140"
+135,AUCTION_NO_BID,,T-026 ohne Gebot
+136,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+136,AGENT_WAIT,3,Agent 3 is waiting
+136,AGENT_WAIT,3,Agent 3 is waiting
+136,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+136,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+136,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+137,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+137,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+137,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+137,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+137,AGENT_WAIT,3,Agent 3 is waiting
+137,AGENT_WAIT,3,Agent 3 is waiting
+138,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+138,AGENT_WAIT,3,Agent 3 is waiting
+138,AGENT_WAIT,3,Agent 3 is waiting
+138,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+138,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+138,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+139,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+139,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+139,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+139,AGENT_WAIT,3,Agent 3 is waiting
+139,AGENT_WAIT,3,Agent 3 is waiting
+139,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+140,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+140,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+140,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+140,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+140,AGENT_WAIT,3,Agent 3 is waiting
+140,AGENT_WAIT,3,Agent 3 is waiting
+140,AUCTION_ANNOUNCE,,"T-028: Depot D4 (9, 9) -> Ziel Z2 (13, 16) bis 146"
+140,TASK_OPEN,,"T-028 open: awaiting bids for Destination Z2 (13, 16), deadline 146"
+140,AUCTION_NO_BID,,T-027 ohne Gebot
+141,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+141,AGENT_WAIT,3,Agent 3 is waiting
+141,AGENT_WAIT,3,Agent 3 is waiting
+141,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+141,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+141,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+142,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+142,AGENT_WAIT,3,Agent 3 is waiting
+142,AGENT_WAIT,3,Agent 3 is waiting
+142,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+142,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order
+142,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+143,AGENT_OUT_OF_ORDER,4,Agent 4 is out of order
+143,AGENT_MOVING_TO_PICKUP,3,Agent 3 is moving to pickup
+143,AGENT_WAIT,3,Agent 3 is waiting
+143,AGENT_WAIT,3,Agent 3 is waiting
+143,AGENT_OUT_OF_ORDER,2,Agent 2 is out of order
+143,AGENT_OUT_OF_ORDER,1,Agent 1 is out of order

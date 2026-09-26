@@ -7,7 +7,7 @@ from app.domain.entities.contractnetmessage import MessageType
 from app.domain.services.contractnetmanager import ContractNetManager
 from app.domain.entities.deliverytask import DeliveryTask
 from app.domain.entities.graph import NodeKind
-from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, MOVING_TO_DROPOFF, MOVING_TO_PICKUP, NO_BID, OPEN, PICKUP, STRANDED, SUBMIT_BID, WAIT
+from app.shared.constants import AWAIT_PICKUP, DELIVER, IDLE, IN_TRANSIT, LOADING, MOVE, MOVING_TO_DROPOFF, MOVING_TO_PICKUP, NO_BID, OPEN, PICKUP, STRANDED, SUBMIT_BID, WAIT
 from app.maps.factory import create_graph_map
 from app.config import validate_map_size, validate_depot_count
 from app.simulation.kpi_recorder import KpiRecorder
@@ -86,6 +86,7 @@ class SimulationEngine:
             type_config.taskCapacity,
             battery=float(type_config.batteryCapacity),
             battery_cost_per_field=type_config.batteryCostPerField,
+            battery_capacity=float(type_config.batteryCapacity),
         )
         self._next_agent_id += 1
         self.agents.append(a)
@@ -113,8 +114,7 @@ class SimulationEngine:
             f'Depot D{depot.id + 1} erzeugt T-{t.id:03d} bei Tick {self.tick}: '
             f'{t.depot.position} -> {t.destination.position}, Deadline: Tick {deadline}'
         ) #todo: use from a centralized place
-        for event in depot.submit_task(t, self.tick, deadline):
-            self.kpi_recorder.record_contract_event(event)
+        depot.submit_task(t, self.tick, deadline)
         self._flush_contract_log()
         return True
 
@@ -129,13 +129,13 @@ class SimulationEngine:
         order = list(self.agents)
         self.r.shuffle(order)
 
-        for a in order:
-            self._step_agent(a, occupied, reserved)
-            if a.status != WAIT:
-                self.update_agent_status(a)
+        for agent in order:
+            self._step_agent(agent, occupied, reserved)
+            if agent.status != WAIT:
+                self.update_agent_status(agent)
             self.contract_net_manager.record_agent_status(
-                a.id,
-                a.status,
+                agent.id,
+                agent.status,
                 self.tick,
             )
 
@@ -145,7 +145,6 @@ class SimulationEngine:
         for outcome in self.contract_net_manager.award_ready_tasks(self.tasks, self.tick):
             if outcome.type is MessageType.AUCTION_NO_BID:
                 self.mark_no_bid(outcome.task_id)
-            self.kpi_recorder.record_contract_event(outcome)
         for agent in self.agents:
             if agent.status != WAIT:
                 self.update_agent_status(agent)
@@ -164,49 +163,34 @@ class SimulationEngine:
             agent.current_action = STRANDED
             return
 
-        # Bids are submitted before physical actions so every agent can respond in this tick.
-        self.submit_pending_bids(agent)
+        agent.submit_pending_bids(self.tick)
         self.update_agent_status(agent)
 
         if agent.status == LOADING:
-            if agent.current_action == CHARGE:
-                self._record_agent_charge(agent)
-            if agent.charging_ticks_remaining > 1:
-                agent.charging_ticks_remaining -= 1
-                agent.current_action = CHARGE
-                return
-
-            battery_config = (
-                self.config.agentTypes.standard
-                if agent.type is AgentType.STANDARD
-                else self.config.agentTypes.express
-            )
-            agent.battery = float(battery_config.batteryCapacity)
-            agent.charging_ticks_remaining = 0
-            agent.set_status(self._task_activity_status(agent), self.tick)
-            agent.current_action = CHARGE
+            agent.advance_loading(self.tick)
             return
 
         if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
-            battery_config = (
-                self.config.agentTypes.standard
-                if agent.type is AgentType.STANDARD
-                else self.config.agentTypes.express
-            )
-            if agent.load < agent.capacity and any(
-                self._task_available_for_agent(task, agent)
-                for task in self.tasks
-            ):
-                self.pick_up_task(agent)
-                agent.set_status(LOADING, self.tick)
-                agent.current_action = LOAD_DELIVERY
+            task = agent.pick_up_task(self.tick)
+            if task is not None:
+                self._log_task_pickup(agent, task)
                 return
-            if agent.battery < battery_config.batteryCapacity:
-                self.start_charging(agent)
+            if agent.start_charging(
+                self.config.battery.chargingDurationTicks,
+                self.tick,
+            ):
                 return
 
         action = self.choose_action(agent)
-        self.execute_action(agent, action, occupied, reserved)
+        agent.current_action = action
+        if action == MOVE:
+            self.move_agent(agent, occupied, reserved)
+        elif action == PICKUP:
+            task = agent.pick_up_task(self.tick)
+            if task is not None:
+                self._log_task_pickup(agent, task)
+        elif action == DELIVER:
+            self.deliver_task(agent)
 
     def _assigned_tasks_for_agent(self, agent):
         return [
@@ -229,78 +213,7 @@ class SimulationEngine:
         agent.set_status(self._task_activity_status(agent), self.tick)
 
     def choose_action(self, agent):
-        if agent.status == STRANDED:
-            return STRANDED
-
-        assigned_tasks = self._assigned_tasks_for_agent(agent)
-        if not assigned_tasks:
-            return IDLE
-        if any(
-            task.status == AWAIT_PICKUP
-            and task.depot.position == agent.position
-            and agent.load < agent.capacity
-            for task in assigned_tasks
-        ):
-            return PICKUP
-        if any(
-            task.status == IN_TRANSIT
-            and task.destination.position == agent.position
-            for task in assigned_tasks
-        ):
-            return DELIVER
-        return MOVE
-
-    def execute_action(self, agent, action, occupied, reserved):
-        """Executes an action selected for an agent during the current tick."""
-        if agent.status == STRANDED:
-            agent.current_action = STRANDED
-            return
-
-        if action == DELIVER and self.graph.node_at(agent.position).kind is not NodeKind.TARGET:
-            return
-
-        agent.current_action = action
-        if action == MOVE:
-            if agent.status == LOADING:
-                return
-            self.move_agent(agent, occupied, reserved)
-        elif action == PICKUP:
-            self.pick_up_task(agent)
-        elif action == DELIVER:
-            self.deliver_task(agent)
-
-    def submit_pending_bids(self, agent):
-        """Submits bids for every notified, still-open task the agent hasn't bid on yet.
-
-        Runs for every agent every tick so all eligible agents can bid on the same
-        tick an announcement arrives, instead of one agent per tick in turn.
-        """
-        pending_tasks = [
-            task for task in self.tasks
-            if any(
-                notification.type is MessageType.AUCTION_ANNOUNCE
-                and notification.task_id == task.id
-                for notification in agent.notifications
-            )
-            and task.status == OPEN
-            and not self.contract_net_manager.has_bid(task.id, agent.id)
-            and any(delivery.task.id == task.id for delivery in agent.deliveries)
-        ]
-        for task in pending_tasks:
-            delivery = next(
-                delivery for delivery in agent.deliveries
-                if delivery.task.id == task.id
-            )
-            bid = self.contract_net_manager.record_bid(
-                agent.id,
-                task.id,
-                delivery.cost,
-                self.tick,
-            )
-            self.kpi_recorder.record_contract_event(bid)
-            self.messages.append(
-                f'Agent {agent.id}: Gebot für T-{task.id:03d} abgegeben ({delivery.cost:.1f})'
-            )
+        return agent.choose_action()
 
     def move_agent(self, agent, occupied, reserved):
         if agent.status in {LOADING, STRANDED}:
@@ -361,7 +274,7 @@ class SimulationEngine:
                     agent.current_action = WAIT
                 break
             occupied.discard(previous_position)
-            battery_empty = agent.move_to(
+            agent.move_to(
                 next_position,
                 self.config.simulation.battery_enabled,
                 self.tick,
@@ -382,21 +295,15 @@ class SimulationEngine:
                 agent.position,
             )
 
-            #if battery_empty:
-            #    if self.graph.node_at(agent.position).kind is not NodeKind.DEPOT:
-            #        agent.mark_stranded()
-            #    break
-
             if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
-                if agent.load < agent.capacity and any(
-                    self._task_available_for_agent(task, agent)
-                    for task in self.tasks
-                ):
-                    self.pick_up_task(agent)
-                    agent.set_status(LOADING, self.tick)
-                    agent.current_action = LOAD_DELIVERY
+                task = agent.pick_up_task(self.tick)
+                if task is not None:
+                    self._log_task_pickup(agent, task)
                 else:
-                    self.start_charging(agent)
+                    agent.start_charging(
+                        self.config.battery.chargingDurationTicks,
+                        self.tick,
+                    )
                 break
 
             if self.graph.node_at(agent.position).kind is NodeKind.TARGET:
@@ -415,22 +322,6 @@ class SimulationEngine:
                     positions.append(neighbor)
         return distances
 
-    def start_charging(self, agent):
-        """Starts a configured charging phase without charging in this tick."""
-        agent.set_status(LOADING, self.tick)
-        agent.charging_ticks_remaining = max(1, self.config.battery.chargingDurationTicks)
-        agent.current_action = CHARGE
-        self._record_agent_charge(agent)
-
-    def _record_agent_charge(self, agent):
-        self.contract_net_manager.record_agent_activity(
-            MessageType.AGENT_CHARGE,
-            agent.id,
-            None,
-            self.tick,
-            agent.position,
-        )
-
     def all_agents_stranded(self):
         return bool(self.agents) and all(agent.status == STRANDED for agent in self.agents)
 
@@ -440,80 +331,17 @@ class SimulationEngine:
             self.messages.append('Stopped. Agents out of battery')
             self._all_stranded_message_sent = True
 
-    def pick_up_task(self, agent):
-        if self.graph.node_at(agent.position).kind is not NodeKind.DEPOT:
-            self.messages.append(f'Agent {agent.id}: Kein Depot an dieser Position')
-            return
-
-        task = next(
-            (
-                task for task in self.tasks
-                if self._task_available_for_agent(task, agent)
-            ),
-            None,
-        )
-        if task is None:
-            self.messages.append(f'Agent {agent.id}: Kein Paket am Depot')
-            return
-
-        if not agent.pick_task(task):
-            self.messages.append(f'Agent {agent.id}: Kapazität erreicht')
-            return
-
-        if not self.contract_net_manager.start_task_for_agent(agent, task, self.tick):
-            self.messages.append(f'Agent {agent.id}: Aufgabe konnte nicht gestartet werden')
-            return
-
-        self.contract_net_manager.record_agent_activity(
-            MessageType.AGENT_PICK_OFF,
-            agent.id,
-            task.id,
-            self.tick,
-            agent.position,
-        )
+    def _log_task_pickup(self, agent, task):
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} aufgenommen')
-
-    def _task_available_for_agent(self, task, agent):
-        return (
-            task.depot.position == agent.position
-            and task.status == AWAIT_PICKUP
-            and task.assigned_agent_id == agent.id
-        )
 
     def deliver_task(self, agent):
         if self.graph.node_at(agent.position).kind is not NodeKind.TARGET:
             self.messages.append(f'Agent {agent.id}: Kein Ziel an dieser Position')
             return
-
-        task = next(
-            (
-                task for task in self.tasks
-                if task.status == IN_TRANSIT
-                and task.assigned_agent_id == agent.id
-                and task.destination.position == agent.position
-            ),
-            None,
-        )
+        task = agent.deliver_assigned_task(self.tick)
         if task is None:
             self.messages.append(f'Agent {agent.id}: Keine Zustellung möglich')
             return
-
-        if not agent.deliver_task(task):
-            self.messages.append(f'Agent {agent.id}: Zustellung konnte nicht abgeschlossen werden')
-            return
-
-        if not self.contract_net_manager.deliver_task_for_agent(agent, task, self.tick):
-            self.messages.append(f'Agent {agent.id}: Zustellung konnte nicht abgeschlossen werden')
-            return
-
-        self.contract_net_manager.record_agent_activity(
-            MessageType.AGENT_DROP_OFF,
-            agent.id,
-            task.id,
-            self.tick,
-            agent.position,
-        )
-        self.update_agent_status(agent)
         self.messages.append(f'Agent {agent.id}: T-{task.id:03d} abgeliefert')
 
     def toggle_running(self):
@@ -531,9 +359,10 @@ class SimulationEngine:
         self.messages.append(f'T-{task.id:03d}: Kein Gebot erhalten, Auftrag geschlossen')
 
     def _flush_contract_log(self):
-        """Writes every contract-net event not yet logged, mirroring the UI's contract-net log 1:1."""
+        """Persists every new manager event to KPI and contract-net logs."""
         events = self.contract_net_manager.events
         for event in events[self._logged_contract_events:]:
+            self.kpi_recorder.record_contract_event(event)
             self.kpi_recorder.record_contract_log(event)
         self._logged_contract_events = len(events)
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import pygame
 
 from app.config import load_config
-from app.simulation.engine import SimulationEngine
+from app.simulation.simulation_engine import SimulationEngine
 import app.ui.app
 
 

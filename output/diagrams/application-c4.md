@@ -7,7 +7,7 @@ flowchart TB
     subgraph System[Multi-Agent Delivery Simulator]
         subgraph C1[Context]
             App[Simulator App\nPygame UI\napp/ui/app.py]
-            Engine[Simulation Engine\nstep(), reset(), tick loop\napp/simulation/engine.py]
+            Engine[Simulation Engine\nstep(), reset(), tick loop\napp/simulation/simulation_engine.py]
         end
 
         subgraph C2[Containers]
@@ -79,7 +79,7 @@ flowchart TB
 
 ### Main responsibilities
 - `main.py` bootstraps the app and creates the engine.
-- `app/simulation/engine.py` orchestrates the simulation.
+- `app/simulation/simulation_engine.py` orchestrates the simulation.
 - `app/ui/app.py` renders the game state and handles user controls.
 - `app/domain/` contains the core business/domain logic.
 - `kpis/` stores contract and simulation metrics for analysis.

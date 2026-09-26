@@ -92,7 +92,7 @@ flowchart TB
 
 - `main.py` wires configuration, engine, and UI at startup.
 - `app/config.py` parses JSON into typed settings and validates map/depot limits.
-- `app/simulation/engine.py` owns live simulation state and coordinates ticks, movement, task lifecycle, contract-net calls, and snapshots.
+- `app/simulation/simulation_engine.py` owns live simulation state and coordinates ticks, movement, task lifecycle, contract-net calls, and snapshots.
 - `app/domain/entities/` defines the simulation's state-bearing entities and messages. `app/domain/services/` implements auction, award, and bid-distance behavior.
 - `app/maps/` constructs graph maps. `app/ui/` handles Pygame input and rendering. `app/simulation/kpi_recorder.py` persists CSV metrics.
 
