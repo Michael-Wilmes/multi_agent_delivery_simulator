@@ -328,6 +328,7 @@ class SimulatorApp:
         battery_text_x = battery_x + round(62 * scale)
         capacity_x = agents.x + round(535 * scale)
         load_x = agents.x + round(590 * scale)
+        pickup_x = agents.x + round(650 * scale)
 
         self.screen.blit(self.small.render("ID", True, TEXT), (id_x, agents.y + 39))
         self.screen.blit(self.small.render("Typ", True, TEXT), (type_x, agents.y + 39))
@@ -336,6 +337,7 @@ class SimulatorApp:
         self.screen.blit(self.small.render("Batterie", True, TEXT), (battery_x, agents.y + 39))
         self.screen.blit(self.small.render("Kap.", True, TEXT), (capacity_x, agents.y + 39))
         self.screen.blit(self.small.render("Ladung", True, TEXT), (load_x, agents.y + 39))
+        self.screen.blit(self.small.render("Abhol.", True, TEXT), (pickup_x, agents.y + 39))
 
         visible_rows = max(0, (agents.bottom - 8 - (agents.y + 64)) // 21)
         max_scroll = max(0, len(s.agents) - visible_rows)
@@ -359,6 +361,8 @@ class SimulatorApp:
 
             self.screen.blit(self.small.render(str(a.capacity), True, agent_color), (capacity_x, y))
             self.screen.blit(self.small.render(f"{a.load}/{a.capacity}", True, agent_color), (load_x, y))
+            pickup_count = s.awaiting_pickup_counts.get(a.id, 0)
+            self.screen.blit(self.small.render(str(pickup_count), True, agent_color), (pickup_x, y))
             y += 21
 
         self.draw_depot_tasks(s, depots)
@@ -388,7 +392,7 @@ class SimulatorApp:
 
         badge_specs = (
             ((OPEN,), "OPEN", YELLOW),
-            ((AWAIT_PICKUP,), "AWAIT_PICKUP", BLUE),
+            ((AWAIT_PICKUP,), "AWAIT_PICK_OFF", BLUE),
             ((IN_TRANSIT,), "IN_TRANSIT", BLUE),
             ((DELIVERED,), "DELIVERED", GREEN),
             ((NO_BID,), "NO_BID", RED),
@@ -503,7 +507,7 @@ class SimulatorApp:
 
         for message in rows:
             details = describe(message)
-            phase = message.type.value.removeprefix("TASK_")
+            phase = message.type.value
             self.screen.blit(
                 self.small.render(
                     f"{message.tick:<6} {phase:<17} {message.agent_id or '-':<18} {details}",

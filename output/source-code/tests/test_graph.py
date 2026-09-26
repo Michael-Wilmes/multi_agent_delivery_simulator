@@ -7,7 +7,7 @@ from app.domain.graph import NodeKind
 from app.domain.services.routecalculator import ManhattanRouteCalculator
 from app.maps.presets import create_map1, create_map2, graph_from_ascii
 from app.maps.random_map import RandomGraphMapFactory
-from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, DELIVERED, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED, SUBMIT_BID
+from app.shared.constants import AWAIT_PICKUP, BUSY, CHARGE, DELIVER, DELIVERED, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED
 from app.simulation.engine import SimulationEngine
 
 
@@ -85,7 +85,7 @@ def test_agents_stay_within_map_bounds_after_steps():
         assert all(engine.graph.in_bounds(agent.position) for agent in engine.agents)
 
 
-def test_random_actions_match_special_map_positions():
+def test_actions_require_an_assigned_task():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
     agent = engine.agents[0]
@@ -94,28 +94,37 @@ def test_random_actions_match_special_map_positions():
     target = engine.graph.destinations[0]
 
     agent.position = depot.position
-    engine.tasks.append(DeliveryTask(2, depot, target, engine.tick))
-    assert engine.choose_random_action(agent) == PICKUP
+    engine.tasks.append(
+        DeliveryTask(
+            2,
+            depot,
+            target,
+            engine.tick,
+            AWAIT_PICKUP,
+            agent.id,
+        )
+    )
+    assert engine.choose_action(agent) == PICKUP
 
     engine.tasks.clear()
-    assert engine.choose_random_action(agent) in {MOVE, SUBMIT_BID}
+    assert engine.choose_action(agent) == IDLE
 
-    engine.tasks.append(DeliveryTask(3, depot, target, engine.tick, IN_TRANSIT, agent.id))
-    assert engine.choose_random_action(agent) != DELIVER
+    transit_task = DeliveryTask(3, depot, target, engine.tick, IN_TRANSIT, agent.id)
+    engine.tasks.append(transit_task)
+    assert engine.choose_action(agent) == MOVE
 
     agent.position = target.position
-    engine.tasks.append(DeliveryTask(1, depot, target, engine.tick, IN_TRANSIT, agent.id))
-    assert engine.choose_random_action(agent) == DELIVER
+    assert engine.choose_action(agent) == DELIVER
 
     engine.tasks.clear()
-    assert engine.choose_random_action(agent) in {MOVE, SUBMIT_BID}
+    assert engine.choose_action(agent) == IDLE
 
     road = next(
         position for position, node in engine.graph.nodes.items()
         if node.kind is NodeKind.ROAD and position != agent.position
     )
     agent.position = road
-    assert engine.choose_random_action(agent) in {MOVE, SUBMIT_BID}
+    assert engine.choose_action(agent) == IDLE
 
 
 def test_agent_charges_at_depot_without_moving_but_can_pick_up():
@@ -304,7 +313,9 @@ def test_agent_without_delivery_task_cannot_enter_target():
 
     engine.move_agent(agent, {agent.position}, set())
 
-    assert agent.position != target
+    assert agent.position == previous_position
+    assert agent.status == IDLE
+    assert agent.current_action == IDLE
 
 
 def test_empty_battery_strands_agent_after_movement():
@@ -317,6 +328,16 @@ def test_empty_battery_strands_agent_after_movement():
     )
     agent.position = position
     agent.battery = float(agent.battery_cost_per_field)
+    engine.tasks = [
+        DeliveryTask(
+            id=1,
+            depot=engine.graph.depots[0],
+            destination=engine.graph.destinations[0],
+            created_tick=engine.tick,
+            status=IN_TRANSIT,
+            assigned_agent_id=agent.id,
+        )
+    ]
 
     engine.move_agent(agent, {agent.position}, set())
 
@@ -329,7 +350,7 @@ def test_simulation_stops_when_all_agents_are_stranded():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
     for agent in engine.agents:
-        engine.mark_stranded(agent)
+        agent.mark_stranded()
     engine.running = True
 
     engine.step()
@@ -341,7 +362,7 @@ def test_simulation_stops_when_all_agents_are_stranded():
 def test_one_stranded_agent_does_not_stop_simulation():
     config = load_config(__import__('pathlib').Path('config/app.json'))
     engine = SimulationEngine(config)
-    engine.mark_stranded(engine.agents[0])
+    engine.agents[0].mark_stranded()
     engine.running = True
 
     engine.step()

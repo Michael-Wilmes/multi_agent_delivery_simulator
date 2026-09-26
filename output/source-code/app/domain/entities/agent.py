@@ -1,12 +1,16 @@
 from dataclasses import dataclass, field
 from enum import Enum
 import math
+from typing import TYPE_CHECKING
 from .contractnetmessage import ContractNetMessage
 from .agentdelivery import AgentDelivery
 from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT, STRANDED
 from .graph import Position
 from app.domain.services.routecalculator import ManhattanRouteCalculator
 from .contractnetmessage import MessageType
+
+if TYPE_CHECKING:
+    from app.domain.services.contractnetmanager import ContractNetManager
 
 
 class AgentType(str, Enum):
@@ -33,6 +37,11 @@ class Agent:
     notifications: list[ContractNetMessage] = field(default_factory=list, repr=False)
     deliveries: list[AgentDelivery] = field(default_factory=list, repr=False)
     log_messages: list[str] = field(default_factory=list, repr=False)
+    contract_net_manager: "ContractNetManager | None" = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
     route_calculator: ManhattanRouteCalculator = field(
         default_factory=ManhattanRouteCalculator,
         repr=False,
@@ -43,7 +52,7 @@ class Agent:
         if task is None:
             return
 
-        if message.type.value == "ANNOUNCE":
+        if message.type is MessageType.AUCTION_ANNOUNCE:
             if self.has_task_capacity() and self._is_target_reachable(task):
                 cost = self.calulate_delivery_task_cost(task)
                 if not math.isfinite(cost):
@@ -59,7 +68,7 @@ class Agent:
                         f"Energy range: {maximum_distance_text}."
                     )
                     return ContractNetMessage(
-                        type=MessageType.NO_BID_RESOURCES,
+                        type=MessageType.AGENT_NO_BID,
                         tick=message.tick,
                         task_id=task.id,
                         agent_id=self.id,
@@ -74,7 +83,7 @@ class Agent:
                         cost=cost,
                     )
                 )
-        elif message.type.value == "BID_LOST":
+        elif message.type is MessageType.AUCTION_BID_LOST:
             self.remove_delivery(task.id)
             self.log_messages.append(f"Remove Task {task.id}, BID LOST")
 
@@ -121,15 +130,31 @@ class Agent:
     def clear_notifications(self) -> None:
         self.notifications.clear()
 
-    def mark_stranded(self) -> None:
+    def connect_contract_net_manager(self, manager: "ContractNetManager") -> None:
+        self.contract_net_manager = manager
+
+    def set_status(self, status: str, tick: int = 0) -> bool:
+        if self.status == status:
+            return False
+        self.status = status
+        if self.contract_net_manager is not None:
+            self.contract_net_manager.record_agent_status(self.id, status, tick)
+        return True
+
+    def mark_stranded(self, tick: int = 0) -> None:
         """Transition the agent into stranded state when battery is exhausted away from a depot."""
         if self.status == STRANDED:
             return
         self.battery = 0.0
-        self.status = STRANDED
+        self.set_status(STRANDED, tick)
         self.current_action = STRANDED
 
-    def move_to(self, position: Position, battery_enabled: bool = True) -> bool:
+    def move_to(
+        self,
+        position: Position,
+        battery_enabled: bool = True,
+        tick: int = 0,
+    ) -> bool:
         """Move to an already-approved position and consume movement energy."""
         if self.status == STRANDED:
             return False
@@ -139,6 +164,8 @@ class Agent:
             return False
 
         self.battery = max(0.0, self.battery - self.battery_cost_per_field)
+        if self.battery <= 0:
+            self.mark_stranded(tick)
         return self.battery <= 0
 
     def calulate_delivery_task_cost(self, task) -> float:

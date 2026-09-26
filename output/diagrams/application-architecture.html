@@ -3,89 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Multi-Agent Delivery Simulator Architecture</title>
+  <title>Multi-Agent Delivery Simulator Application Architecture</title>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
     mermaid.initialize({ startOnLoad: true, theme: 'default' });
   </script>
   <style>
-    body {
-      font-family: Segoe UI, Arial, sans-serif;
-      margin: 24px;
-      background: #f5f7fb;
-      color: #1f2937;
-    }
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.08);
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 28px;
-    }
-    .mermaid {
-      background: transparent;
-      overflow-x: auto;
-    }
+    :root { color-scheme: light; --ink: #17252c; --muted: #52646c; --line: #cbd8dd; --paper: #ffffff; --wash: #e9f0f1; --accent: #176b70; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px; background: var(--wash); color: var(--ink); font: 16px/1.55 "Segoe UI", sans-serif; }
+    main { max-width: 1440px; margin: 0 auto; padding: 28px; background: var(--paper); border-top: 5px solid var(--accent); }
+    h1 { margin: 0; font-size: 28px; }
+    p { color: var(--muted); margin: 8px 0 24px; }
+    .diagram { overflow-x: auto; border-block: 1px solid var(--line); padding: 20px 0; }
+    .mermaid { min-width: 900px; }
+    @media (max-width: 700px) { body { padding: 10px; } main { padding: 18px; } h1 { font-size: 23px; } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Multi-Agent Delivery Simulator Architecture</h1>
-    <div class="mermaid">
-flowchart LR
-    User[User / Keyboard / Mouse] --> Main[main.py]
-    Main --> Config[app/config.py\nAppConfig + validation]
-    Config --> JSON[config/app.json]
+    <main>
+    <h1>Multi-Agent Delivery Simulator</h1>
+    <p>Application component view. See <code>architecture-overview.md</code> for the system-level layer view.</p>
+    <div class="diagram"><div class="mermaid">
+  flowchart TB
+    Operator[Operator\nMouse and keyboard]
 
-    Main --> Engine[app/simulation/engine.py\nSimulationEngine]
-    Main --> UI[app/ui/app.py\nSimulatorApp]
+    subgraph Startup[Startup and configuration]
+      Main[main.py\nBootstrap]
+      Config[app/config.py\nLoad and validate AppConfig]
+      Json[config/app.json]
+    end
 
-    Engine --> GraphFactory[app/maps/factory.py\ncreate_graph_map]
-    GraphFactory --> MapPreset[Map Presets / Random Map Generator]
-    MapPreset --> Graph[GraphMap + Nodes + Depots + Destinations]
+    subgraph UI[Presentation: app/ui/]
+      App[SimulatorApp\nPygame loop, controls, rendering]
+      Snapshot[SimulationSnapshot]
+    end
 
-    Engine --> Agents[Agent[]\napp/domain/entities/agent.py]
-    Engine --> Tasks[DeliveryTask[]]
-    Engine --> Depots[Depot[]]
-    Engine --> ContractMgr[ContractNetManager\napp/domain/services/contractnetmanager.py]
-    Engine --> KPI[KpiRecorder\napp/simulation/kpi_recorder.py]
+    subgraph Core[Application core: app/simulation/]
+      Engine[SimulationEngine\nstep, reset, add_agent, add_task]
+      Recorder[KpiRecorder]
+    end
 
-    ContractMgr --> BidCalc[BidCalculator]
-    ContractMgr --> Events[ContractNetMessage events]
-    Events --> Agents
-    Agents --> Notifications[Agent notifications / bids / awards]
-    Notifications --> ContractMgr
+    subgraph MapLayer[Map creation: app/maps/]
+      Factory[create_graph_map]
+      Sources[Presets or RandomGraphMapFactory]
+      Graph[GraphMap\nNodes, roads, walls, depots, destinations]
+    end
 
-    Tasks --> DepotTasks[Depot task queue]
-    Depots --> Tasks
-    Agents --> Move[Movement / pickup / delivery logic]
-    Graph --> Move
+    subgraph Domain[Domain: app/domain/]
+      Agents[Agent\nState, notifications, task capacity]
+      Tasks[DeliveryTask\nStatus and assignment]
+      Depot[Depot\nTask queue and auction entry point]
+      Contract[ContractNetManager\nEvents and agent notifications]
+      Bid[BidCalculator\nAnnouncements and bids]
+      Award[AwardPolicy\nLowest-cost eligible bid]
+      Distance[ManhattanRouteCalculator\nBid cost estimate]
+    end
 
-    UI --> Snapshot[Simulation snapshot]
+    Csv[(kpis/*.csv\nTask, contract, and tick metrics)]
+
+    Operator -->|input| App
+    Main --> Config
+    Json --> Config
+    Main --> Engine
+    Main --> App
+    Config -->|validated settings| Engine
+    App -->|commands and timed ticks| Engine
+    Engine --> Factory
+    Factory --> Sources
+    Sources --> Graph
+    Engine --> Graph
+    Engine --> Agents
+    Engine --> Tasks
+    Graph --> Depot
+    Depot -->|submit task| Contract
+    Contract --> Bid
+    Bid --> Award
+    Award --> Contract
+    Contract -->|notifications and assignment| Agents
+    Agents -->|bid estimate| Distance
+    Engine -->|bid submission and lifecycle updates| Contract
+    Engine -->|movement over graph neighbors| Agents
+    Engine --> Recorder
+    Contract -->|event records| Recorder
+    Recorder --> Csv
     Engine --> Snapshot
-    Snapshot --> Render[Map rendering + panels + controls]
-    Render --> User
+    Snapshot --> App
+    App -->|map, panels, contract log| Operator
 
-    Engine --> Tick[Tick loop\nstep() / add_agent() / add_task()]
-    Tick --> CONTRACT[Contract-Net award cycle]
-    CONTRACT --> KPI
-    Tick --> KPI
-
-    classDef core fill:#dfe8ff,stroke:#3657c8,color:#111827
-    classDef domain fill:#eafaf1,stroke:#2d8f60,color:#111827
-    classDef ui fill:#fff4d6,stroke:#c58900,color:#111827
-    classDef data fill:#f9e8f5,stroke:#a33fa5,color:#111827
-
-    class Main,Engine,ContractMgr,GraphFactory,Graph,Tick core;
-    class Agents,Tasks,Depots,Events,BidCalc,Notifications,DepotTasks domain;
-    class UI,Render,Snapshot data;
-    class Config,JSON,KPI ui;
-    </div>
-  </div>
+    classDef entry fill:#dcebf2,stroke:#38677a,color:#15252d
+    classDef core fill:#e9f1d9,stroke:#627b38,color:#1d2714
+    classDef domain fill:#f7e8d7,stroke:#9a6534,color:#332316
+    classDef output fill:#eee4f1,stroke:#775783,color:#291d2e
+    class Main,Config,Engine,Factory,Graph entry
+    class App,Snapshot,Recorder core
+    class Sources,Agents,Tasks,Depot,Contract,Bid,Award,Distance domain
+    class Csv output
+    </div></div>
+    <h2>Runtime flow</h2>
+    <p>Startup validates configuration and creates the graph, agents, and services. The UI sends commands and timed ticks to the engine. The engine coordinates agent actions, graph-based movement, task lifecycle, and deadline-based auctions. Snapshots feed rendering; the KPI recorder persists task, contract, and per-tick data to CSV.</p>
+    <h2>Routing and bidding</h2>
+    <p>Agents estimate delivery bid cost with Manhattan distance. The engine moves agents across graph neighbors and uses BFS distances to guide assigned deliveries. These are separate responsibilities.</p>
+    </main>
 </body>
 </html>

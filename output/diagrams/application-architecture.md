@@ -1,69 +1,101 @@
-# Multi-Agent Delivery Simulator — Architecture
+# Multi-Agent Delivery Simulator — Application Architecture
+
+This component view follows the implementation under `output/source-code/`. For the system-level layer view, see [architecture-overview.md](architecture-overview.md).
 
 ```mermaid
-flowchart LR
-    User[User / Keyboard / Mouse] --> Main[main.py]
-    Main --> Config[app/config.py\nAppConfig + validation]
-    Config --> JSON[config/app.json]
+flowchart TB
+    Operator[Operator\nMouse and keyboard]
 
-    Main --> Engine[app/simulation/engine.py\nSimulationEngine]
-    Main --> UI[app/ui/app.py\nSimulatorApp]
+    subgraph Startup[Startup and configuration]
+        Main[main.py\nBootstrap]
+        Config[app/config.py\nLoad and validate AppConfig]
+        Json[config/app.json]
+    end
 
-    Engine --> GraphFactory[app/maps/factory.py\ncreate_graph_map]
-    GraphFactory --> MapPreset[Map Presets / Random Map Generator]
-    MapPreset --> Graph[GraphMap + Nodes + Depots + Destinations]
+    subgraph UI[Presentation: app/ui/]
+        App[SimulatorApp\nPygame loop, controls, rendering]
+        Snapshot[SimulationSnapshot]
+    end
 
-    Engine --> Agents[Agent[]\napp/domain/entities/agent.py]
-    Engine --> Tasks[DeliveryTask[]]
-    Engine --> Depots[Depot[]]
-    Engine --> ContractMgr[ContractNetManager\napp/domain/services/contractnetmanager.py]
-    Engine --> KPI[KpiRecorder\napp/simulation/kpi_recorder.py]
+    subgraph Core[Application core: app/simulation/]
+        Engine[SimulationEngine\nstep, reset, add_agent, add_task]
+        Recorder[KpiRecorder]
+    end
 
-    ContractMgr --> BidCalc[BidCalculator]
-    ContractMgr --> Events[ContractNetMessage events]
-    Events --> Agents
-    Agents --> Notifications[Agent notifications / bids / awards]
-    Notifications --> ContractMgr
+    subgraph MapLayer[Map creation: app/maps/]
+        Factory[create_graph_map]
+        Sources[Presets or RandomGraphMapFactory]
+        Graph[GraphMap\nNodes, roads, walls, depots, destinations]
+    end
 
-    Tasks --> DepotTasks[Depot task queue]
-    Depots --> Tasks
-    Agents --> Move[Movement / pickup / delivery logic]
-    Graph --> Move
+    subgraph Domain[Domain: app/domain/]
+        Agents[Agent\nState, notifications, task capacity]
+        Tasks[DeliveryTask\nStatus and assignment]
+        Depot[Depot\nTask queue and auction entry point]
+        Contract[ContractNetManager\nEvents and agent notifications]
+        Bid[BidCalculator\nAnnouncements and bids]
+        Award[AwardPolicy\nLowest-cost eligible bid]
+        Distance[ManhattanRouteCalculator\nBid cost estimate]
+    end
 
-    UI --> Snapshot[Simulation snapshot]
+    Csv[(kpis/*.csv\nTask, contract, and tick metrics)]
+
+    Operator -->|input| App
+    Main --> Config
+    Json --> Config
+    Main --> Engine
+    Main --> App
+    Config -->|validated settings| Engine
+    App -->|commands and timed ticks| Engine
+    Engine --> Factory
+    Factory --> Sources
+    Sources --> Graph
+    Engine --> Graph
+    Engine --> Agents
+    Engine --> Tasks
+    Graph --> Depot
+    Depot -->|submit task| Contract
+    Contract --> Bid
+    Bid --> Award
+    Award --> Contract
+    Contract -->|notifications and assignment| Agents
+    Agents -->|bid estimate| Distance
+    Engine -->|bid submission and lifecycle updates| Contract
+    Engine -->|movement over graph neighbors| Agents
+    Engine --> Recorder
+    Contract -->|event records| Recorder
+    Recorder --> Csv
     Engine --> Snapshot
-    Snapshot --> Render[Map rendering + panels + controls]
-    Render --> User
+    Snapshot --> App
+    App -->|map, panels, contract log| Operator
 
-    Engine --> Tick[Tick loop\nstep() / add_agent() / add_task()]
-    Tick --> CONTRACT[Contract-Net award cycle]
-    CONTRACT --> KPI
-    Tick --> KPI
-
-    classDef core fill:#dfe8ff,stroke:#3657c8,color:#111827
-    classDef domain fill:#eafaf1,stroke:#2d8f60,color:#111827
-    classDef ui fill:#fff4d6,stroke:#c58900,color:#111827
-    classDef data fill:#f9e8f5,stroke:#a33fa5,color:#111827
-
-    class Main,Engine,ContractMgr,GraphFactory,Graph,Tick core;
-    class Agents,Tasks,Depots,Events,BidCalc,Notifications,DepotTasks domain;
-    class UI,Render,Snapshot data;
-    class Config,JSON,KPI ui;
+    classDef entry fill:#dcebf2,stroke:#38677a,color:#15252d
+    classDef core fill:#e9f1d9,stroke:#627b38,color:#1d2714
+    classDef domain fill:#f7e8d7,stroke:#9a6534,color:#332316
+    classDef output fill:#eee4f1,stroke:#775783,color:#291d2e
+    class Main,Config,Engine,Factory,Graph entry
+    class App,Snapshot,Recorder core
+    class Sources,Agents,Tasks,Depot,Contract,Bid,Award,Distance domain
+    class Csv output
 ```
 
 ## Runtime flow
 
-1. `main.py` loads configuration and creates the `SimulationEngine`.
-2. The engine builds a graph map and validates map size / depot count.
-3. Agents and tasks are created, and `ContractNetManager` coordinates bidding/awards.
-4. `SimulatorApp` renders the live simulation, controls, and contract log.
-5. KPIs are recorded in `kpis/` while the simulation advances tick by tick.
+1. `main.py` loads and validates `config/app.json`, then creates the engine and Pygame application.
+2. `SimulationEngine.reset()` creates a preset or random graph, validates it, initializes the contract-net manager and KPI recorder, and creates configured agents.
+3. The UI sends manual commands and timed ticks to the engine. Each tick submits pending bids, processes agent actions, creates periodic tasks, closes auctions at their deadlines, and records simulation metrics.
+4. A depot announces a task through `ContractNetManager`. Agents calculate a cost estimate using `ManhattanRouteCalculator`; `BidCalculator` tracks bids and `AwardPolicy` selects the lowest-cost bid once the deadline is reached.
+5. Assigned agents pick up and deliver tasks through engine-coordinated domain state changes. Movement follows graph neighbors and uses BFS distances to guide movement toward an assigned task.
+6. The engine returns a `SimulationSnapshot` for rendering. `KpiRecorder` writes package creation, bidding/contract events, and per-tick metrics to CSV files in `kpis/`.
 
-## Main application responsibilities
+## Ownership boundaries
 
-- Simulation core: `app/simulation/engine.py`
-- Domain model: `app/domain/entities/` and `app/domain/services/`
-- Map generation: `app/maps/`
-- UI layer: `app/ui/`
-- Configuration: `app/config.py` and `config/app.json`
-- Data output: `kpis/`
+- `main.py` wires configuration, engine, and UI at startup.
+- `app/config.py` parses JSON into typed settings and validates map/depot limits.
+- `app/simulation/engine.py` owns live simulation state and coordinates ticks, movement, task lifecycle, contract-net calls, and snapshots.
+- `app/domain/entities/` defines the simulation's state-bearing entities and messages. `app/domain/services/` implements auction, award, and bid-distance behavior.
+- `app/maps/` constructs graph maps. `app/ui/` handles Pygame input and rendering. `app/simulation/kpi_recorder.py` persists CSV metrics.
+
+## Current implementation note
+
+Action selection still uses the engine's milestone random-action policy. The `ManhattanRouteCalculator` is used for bid cost estimates; movement itself is graph-based and uses BFS distances in the engine, not that calculator.

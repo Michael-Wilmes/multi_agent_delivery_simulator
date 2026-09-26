@@ -54,11 +54,11 @@ class KpiRecorder:
 
     def record_contract_event(self, event: ContractNetMessage):
         result = {
-            MessageType.BID: "submitted",
-            MessageType.NO_BID_RESOURCES: "no_bid_resources",
-            MessageType.AWARD: "won",
-            MessageType.BID_LOST: "lost",
-            MessageType.NO_BID: "no_bid",
+            MessageType.AUCTION_BID: "submitted",
+            MessageType.AGENT_NO_BID: "agent_no_bid",
+            MessageType.AUCTION_AWARD: "won",
+            MessageType.AUCTION_BID_LOST: "lost",
+            MessageType.AUCTION_NO_BID: "no_bid",
             MessageType.TASK_OPEN: "open",
             MessageType.TASK_ASSIGNED: "assigned",
             MessageType.TASK_AWAIT_PICKUP: "await_pickup",

@@ -4,10 +4,14 @@ from app.domain.entities.contractnetmessage import ContractNetMessage, MessageTy
 from app.domain.services.bidcalculator import BidCalculator
 from app.shared.constants import (
     AWAIT_PICKUP,
+    BUSY,
     DELIVERED,
+    IDLE,
     IN_TRANSIT,
+    LOADING,
     NO_BID,
     OPEN,
+    STRANDED,
     UNANNOUNCED,
 )
 
@@ -22,6 +26,47 @@ class ContractNetManager:
     def register_agent(self, agent) -> None:
         if agent not in self.agents:
             self.agents.append(agent)
+        agent.connect_contract_net_manager(self)
+
+    def record_agent_status(
+        self,
+        agent_id: int,
+        status: str,
+        tick: int,
+    ) -> ContractNetMessage:
+        message_type = {
+            IDLE: MessageType.AGENT_IDLE,
+            BUSY: MessageType.AGENT_BUSY,
+            LOADING: MessageType.AGENT_LOADING,
+            STRANDED: MessageType.AGENT_OUT_OF_ORDER,
+        }.get(status)
+        if message_type is None:
+            raise ValueError(f"Unsupported agent status: {status}")
+        event = ContractNetMessage(
+            type=message_type,
+            tick=tick,
+            agent_id=agent_id,
+        )
+        self.events.append(event)
+        return event
+
+    def record_agent_activity(
+        self,
+        message_type: MessageType,
+        agent_id: int,
+        task_id: int,
+        tick: int,
+        position: tuple[int, int] | None = None,
+    ) -> ContractNetMessage:
+        event = ContractNetMessage(
+            type=message_type,
+            tick=tick,
+            agent_id=agent_id,
+            task_id=task_id,
+            position=position,
+        )
+        self.events.append(event)
+        return event
 
     def submit_task(
         self,
@@ -76,9 +121,10 @@ class ContractNetManager:
             return
         for agent in self.agents:
             if agent.id == message.agent_id:
-                if message.type is MessageType.AWARD:
+                if message.type is MessageType.AUCTION_AWARD:
                     task.status = AWAIT_PICKUP
                     task.assigned_agent_id = agent.id
+                    agent.set_status(BUSY, message.tick)
                     self.events.append(
                         ContractNetMessage(
                             type=MessageType.TASK_ASSIGNED,
@@ -115,6 +161,7 @@ class ContractNetManager:
         if task.status == OPEN:
             task.status = AWAIT_PICKUP
             task.assigned_agent_id = agent.id
+            agent.set_status(BUSY, tick if tick is not None else 0)
             self.events.append(
                 ContractNetMessage(
                     type=MessageType.TASK_ASSIGNED,

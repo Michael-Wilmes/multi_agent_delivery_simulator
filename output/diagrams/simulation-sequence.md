@@ -1,96 +1,155 @@
-# Multi-Agent Delivery Simulator — Sequence Diagram for One Tick
+# Multi-Agent Delivery Simulator — Simulation Sequence
+
+This diagram shows one `SimulationEngine.step()` call. The Step control invokes it directly and Auto mode schedules the same call. Tasks are assigned by deadline-based auctions, and agents only move while they have an assigned task.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as User
+    actor Operator
     participant App as SimulatorApp
     participant Engine as SimulationEngine
     participant Graph as GraphMap
-    participant Depot as Depot
+    participant Depot
     participant Contract as ContractNetManager
     participant BidCalc as BidCalculator
-    participant Agent as Agent
+    participant Award as AwardPolicy
+    participant Agent
+    participant Route as ManhattanRouteCalculator
     participant Task as DeliveryTask
     participant KPI as KpiRecorder
 
-    User->>App: Press Auto / Step / Add Agent / Add Task
-    App->>Engine: step() / toggle_running()
+    Operator->>App: Step or Auto tick is due
+    App->>Engine: step()
+    alt all agents are already out of order
+        Engine->>Engine: stop_if_all_agents_stranded()
+    else run tick
+        Engine->>Engine: increment tick and shuffle agents
+        loop each agent
+            Engine->>Engine: _step_agent(agent)
+            alt agent is out of order
+                Engine->>Agent: keep out-of-order action
+            else agent is active
+                Engine->>Engine: submit pending bids
+                opt agent has an eligible unsubmitted bid
+                    Engine->>Contract: record_bid(agent_id, task_id, cost, tick)
+                    Contract->>BidCalc: record_bid(...)
+                    BidCalc->>BidCalc: store AUCTION_BID
+                    Contract-->>Engine: AUCTION_BID
+                    Engine->>KPI: record_contract_event(AUCTION_BID)
+                end
 
-    Engine->>Graph: inspect map and positions
-    Graph-->>Engine: walkable nodes, depots, targets
-
-    loop each agent in shuffled order
-        Engine->>Agent: submit_pending_bids(agent)
-
-        Agent->>Contract: has_bid(taskId, agentId)
-        Contract->>BidCalc: has_bid(taskId, agentId)
-        BidCalc-->>Contract: bool
-        Contract-->>Agent: bool
-
-        alt there are ANNOUNCE notifications for open tasks
-            Agent->>Agent: build delivery entry and task cost
-            Agent->>Contract: record_bid(agentId, taskId, cost, tick)
-            Contract->>BidCalc: record_bid(...)
-            BidCalc->>BidCalc: append BID to bids[taskId]
-            BidCalc-->>Contract: ContractNetMessage(BID)
-            Contract->>KPI: record_contract_event(bid)
-            Contract-->>Agent: bid recorded
+                alt agent is loading or charging
+                    Engine->>Agent: advance loading state
+                    Agent->>Contract: set status BUSY or LOADING
+                else battery is empty away from a depot
+                    Engine->>Agent: mark_stranded(tick)
+                    Agent->>Contract: AGENT_OUT_OF_ORDER
+                else assigned pickup task is at this depot
+                    Engine->>Engine: pick_up_task(agent)
+                    Engine->>Agent: pick_task(task)
+                    Agent->>Task: set IN_TRANSIT and increase load
+                    Engine->>Contract: start_task_for_agent(...)
+                    Contract->>Contract: append TASK_IN_TRANSIT
+                    Engine->>Contract: AGENT_PICK_OFF at current cell
+                else handle assigned task or idle agent
+                    Engine->>Engine: choose_action(agent)
+                    alt no assigned task
+                        Engine->>Agent: action IDLE and no movement
+                    else agent is at assigned destination
+                        Engine->>Engine: deliver_task(agent)
+                        Engine->>Agent: deliver_task(task)
+                        Agent->>Task: set DELIVERED and clear assignment and load
+                        Engine->>Contract: deliver_task_for_agent(...)
+                        Contract->>Contract: append TASK_DELIVERED
+                        Engine->>Contract: AGENT_DROP_OFF at destination
+                    else assigned task is still en route
+                        loop each movement cell up to agent speed
+                            Engine->>Graph: get walkable neighbors
+                            Graph-->>Engine: available adjacent cells
+                            Engine->>Engine: avoid occupied cells and follow BFS distance to task target
+                            Engine->>Agent: move_to(next cell)
+                            alt task status is AWAIT_PICKUP
+                                Engine->>Contract: AGENT_MOVING_PICK_UP with current cell
+                            else task status is IN_TRANSIT
+                                Engine->>Contract: AGENT_MOVING_DROPOFF with current cell
+                            end
+                            opt agent reaches assigned depot
+                                Engine->>Engine: pick_up_task(agent)
+                                Engine->>Agent: pick_task(task)
+                                Agent->>Task: set IN_TRANSIT
+                                Engine->>Contract: append TASK_IN_TRANSIT and AGENT_PICK_OFF
+                            end
+                        end
+                    end
+                end
+            end
+            Engine->>Engine: update_agent_status(agent)
+            Engine->>Contract: emit one status event for this agent and tick
         end
 
-        alt agent is charging
-            Engine->>Agent: decrement charging time
-        else battery empty
-            Engine->>Agent: mark_stranded()
-        else at depot and task is available
-            Engine->>Agent: pick_up_task()
-            Agent->>Task: set status = IN_TRANSIT
-            Agent->>Depot: remove_task(task)
-        else default action
-            Engine->>Agent: choose_random_action()
-            Engine->>Agent: move_agent() / execute_action()
-            Agent->>Graph: get neighbors
-            Graph-->>Agent: valid positions
+        opt every fifth tick
+            Engine->>Engine: add_task()
+            Engine->>Depot: add_task(task)
+            Engine->>KPI: record_task_created(...)
+            Engine->>Depot: submit_task(task, tick, deadline)
+            Depot->>Contract: submit_task(...)
+            Contract->>BidCalc: announce_task(...)
+            BidCalc->>BidCalc: store AUCTION_ANNOUNCE and initialize bids
+            Contract->>Task: set OPEN
+            Contract->>Contract: append TASK_OPEN
+            loop each registered agent
+                Contract->>Agent: receive_notification(AUCTION_ANNOUNCE)
+                alt task capacity and resources allow a bid
+                    Agent->>Route: estimate bid cost using Manhattan distance
+                    Route-->>Agent: estimated cost
+                    Agent->>Agent: store delivery entry
+                else resources are insufficient
+                    Agent-->>Contract: AGENT_NO_BID
+                end
+            end
+            Engine->>KPI: record package and resource-refusal events
         end
+
+        Engine->>Contract: award_ready_tasks(tasks, tick)
+        Contract->>BidCalc: award_ready_tasks(...)
+        loop each open task whose deadline has arrived
+            BidCalc->>Award: decide(announcement, bids, tick)
+            Award-->>BidCalc: lowest-cost bid or no winner
+            BidCalc->>BidCalc: create AUCTION_AWARD and AUCTION_BID_LOST, or AUCTION_NO_BID
+        end
+        BidCalc-->>Contract: auction outcomes
+        loop each auction outcome
+            Contract->>Contract: append outcome
+            alt AUCTION_AWARD
+                Contract->>Task: assign winner and set AWAIT_PICKUP
+                Contract->>Agent: notify winner and set BUSY
+                Contract->>Contract: append TASK_ASSIGNED and TASK_AWAIT_PICKUP
+            else AUCTION_BID_LOST
+                Contract->>Agent: notify losing agent
+                Agent->>Agent: remove saved delivery entry
+            else AUCTION_NO_BID
+                Contract-->>Engine: AUCTION_NO_BID
+                Engine->>Contract: close_task(...)
+                Contract->>Task: clear assignment and set NO_BID
+            end
+        end
+        Engine->>KPI: record simulation tick and auction outcomes
+        Engine->>Engine: stop_if_all_agents_stranded and flush contract log
     end
-
-    Engine->>Engine: every 5 ticks => add_task()
-    Engine->>Depot: submit_task(task, tick, deadline)
-    Depot->>Contract: submit_task(task, tick, deadline)
-    Contract->>BidCalc: announce_task(task, tick, deadline)
-    BidCalc->>BidCalc: store announcement and initialize bids[taskId]
-    BidCalc-->>Contract: ContractNetMessage(ANNOUNCE)
-    Contract->>Agent: receive_notification(ANNOUNCE, task)
-    Agent->>Agent: check capacity and reachability
-    Agent-->>Contract: NO_BID_RESOURCES or none
-
-    Engine->>Contract: award_ready_tasks(tasks, tick)
-    Contract->>BidCalc: award_ready_tasks(tasks, tick)
-    BidCalc->>BidCalc: evaluate deadline / choose winner / create AWARD + BID_LOST + NO_BID
-    BidCalc-->>Contract: outcomes
-    Contract->>Agent: _notify_agent(outcome, tasks)
-    Agent->>Task: set status = AWAIT_PICKUP / DELIVERED
-    Agent-->>Contract: task update
-
-    Engine->>KPI: record_contract_event(outcome)
-    Engine->>KPI: record_simulation_tick(...)
-    Engine->>Engine: stop_if_all_agents_stranded()
-
-    Engine-->>App: snapshot()
-    App-->>User: redraw map, logs, panels, contract window
+    Engine-->>App: step complete
+    App->>Engine: snapshot()
+    Engine-->>App: graph, agents, tasks, per-agent pickup counts, events
+    App-->>Operator: render map, depot badges, agent status, and contract log
 ```
 
-## Why the earlier version was wrong
+## Task state and agent messages
 
-The bug in the earlier diagram was that it showed bids being sent directly to the contract manager without the actual stateful auction logic in the BidCalculator.
+| Moment | Task state | Depot badge | Agent activity message |
+| --- | --- | --- | --- |
+| Auction is open | `OPEN` | `OPEN` | Bid response or `AGENT_NO_BID` |
+| Agent wins and travels to depot | `AWAIT_PICKUP` | `AWAIT_PICK_OFF` | `AGENT_MOVING_PICK_UP` with the cell reached |
+| Pickup succeeds | `IN_TRANSIT` | `IN_TRANSIT` | `AGENT_PICK_OFF` |
+| Agent travels to destination | `IN_TRANSIT` | `IN_TRANSIT` | `AGENT_MOVING_DROPOFF` with the cell reached |
+| Delivery succeeds | `DELIVERED` | `DELIVERED` | `AGENT_DROP_OFF` |
 
-In the real implementation:
-
-1. `ContractNetManager.submit_task()` announces the task.
-2. Each agent evaluates the task and may create a delivery entry.
-3. `SimulationEngine.submit_pending_bids()` calls `ContractNetManager.record_bid()`.
-4. `ContractNetManager.record_bid()` delegates to `BidCalculator.record_bid()`.
-5. `BidCalculator` stores bids in `self.bids[task_id]` and exposes `has_bid()` and `award_ready_tasks()`.
-6. Only later, when the deadline is reached, `award_ready_tasks()` selects the winner and emits `AWARD` / `BID_LOST` / `NO_BID` messages.
-
-So the correct flow is: task announcement -> bid storage in the BidCalculator -> deadline-based award decision -> agent notifications.
+Each processed agent emits one status message per simulation tick (`AGENT_IDLE`, `AGENT_BUSY`, `AGENT_LOADING`, or `AGENT_OUT_OF_ORDER`). Movement messages are additional activity events and include the agent's resulting cell coordinate.

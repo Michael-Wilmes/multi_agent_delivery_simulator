@@ -16,7 +16,7 @@ class BidCalculator:
 
     def announce_task(self, task, tick: int, deadline: int) -> ContractNetMessage:
         announcement = ContractNetMessage(
-            type=MessageType.ANNOUNCE,
+            type=MessageType.AUCTION_ANNOUNCE,
             tick=tick,
             task_id=task.id,
             depot=task.depot.position,
@@ -37,7 +37,7 @@ class BidCalculator:
         tick: int,
     ) -> ContractNetMessage:
         bid = ContractNetMessage(
-            type=MessageType.BID,
+            type=MessageType.AUCTION_BID,
             tick=tick,
             task_id=task_id,
             agent_id=agent_id,
@@ -70,7 +70,7 @@ class BidCalculator:
             if decision is None:
                 outcomes.append(
                     ContractNetMessage(
-                        type=MessageType.NO_BID,
+                        type=MessageType.AUCTION_NO_BID,
                         tick=tick,
                         task_id=task.id,
                     )
@@ -78,7 +78,7 @@ class BidCalculator:
             else:
                 outcomes.append(
                     ContractNetMessage(
-                        type=MessageType.AWARD,
+                        type=MessageType.AUCTION_AWARD,
                         tick=tick,
                         task_id=task.id,
                         agent_id=decision.agent_id,
@@ -87,7 +87,7 @@ class BidCalculator:
                 )
                 outcomes.extend(
                     ContractNetMessage(
-                        type=MessageType.BID_LOST,
+                        type=MessageType.AUCTION_BID_LOST,
                         tick=tick,
                         task_id=task.id,
                         agent_id=bid.agent_id,
