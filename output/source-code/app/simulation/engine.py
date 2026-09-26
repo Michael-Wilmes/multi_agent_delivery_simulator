@@ -7,7 +7,7 @@ from app.domain.entities.contractnetmessage import MessageType
 from app.domain.services.contractnetmanager import ContractNetManager
 from app.domain.entities.deliverytask import DeliveryTask
 from app.domain.entities.graph import NodeKind
-from app.shared.constants import AWAIT_PICKUP, BUSY, CHARGE, DELIVER, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, NO_BID, OPEN, PICKUP, STRANDED, SUBMIT_BID
+from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, MOVING_TO_DROPOFF, MOVING_TO_PICKUP, NO_BID, OPEN, PICKUP, STRANDED, SUBMIT_BID, WAIT
 from app.maps.factory import create_graph_map
 from app.config import validate_map_size, validate_depot_count
 from app.simulation.kpi_recorder import KpiRecorder
@@ -131,7 +131,8 @@ class SimulationEngine:
 
         for a in order:
             self._step_agent(a, occupied, reserved)
-            self.update_agent_status(a)
+            if a.status != WAIT:
+                self.update_agent_status(a)
             self.contract_net_manager.record_agent_status(
                 a.id,
                 a.status,
@@ -146,7 +147,8 @@ class SimulationEngine:
                 self.mark_no_bid(outcome.task_id)
             self.kpi_recorder.record_contract_event(outcome)
         for agent in self.agents:
-            self.update_agent_status(agent)
+            if agent.status != WAIT:
+                self.update_agent_status(agent)
         self.kpi_recorder.record_simulation_tick(
             self.tick,
             self.agents,
@@ -167,6 +169,8 @@ class SimulationEngine:
         self.update_agent_status(agent)
 
         if agent.status == LOADING:
+            if agent.current_action == CHARGE:
+                self._record_agent_charge(agent)
             if agent.charging_ticks_remaining > 1:
                 agent.charging_ticks_remaining -= 1
                 agent.current_action = CHARGE
@@ -182,11 +186,6 @@ class SimulationEngine:
             agent.set_status(self._task_activity_status(agent), self.tick)
             agent.current_action = CHARGE
             return
-
-        # if self.config.simulation.battery_enabled and agent.battery <= 0:
-        #     if self.graph.node_at(agent.position).kind is not NodeKind.DEPOT:
-        #         agent.mark_stranded(self.tick)
-        #     return
 
         if self.graph.node_at(agent.position).kind is NodeKind.DEPOT:
             battery_config = (
@@ -217,7 +216,12 @@ class SimulationEngine:
         ]
 
     def _task_activity_status(self, agent):
-        return BUSY if self._assigned_tasks_for_agent(agent) else IDLE
+        assigned_tasks = self._assigned_tasks_for_agent(agent)
+        if not assigned_tasks:
+            return IDLE
+        if assigned_tasks[0].status == AWAIT_PICKUP:
+            return MOVING_TO_PICKUP
+        return MOVING_TO_DROPOFF
 
     def update_agent_status(self, agent):
         if agent.status in {LOADING, STRANDED}:
@@ -308,7 +312,7 @@ class SimulationEngine:
             agent.current_action = IDLE
             return
 
-        agent.set_status(BUSY, self.tick)
+        agent.set_status(self._task_activity_status(agent), self.tick)
         assigned_task = assigned_tasks[0]
         target = None
         distances = {}
@@ -319,6 +323,7 @@ class SimulationEngine:
         )
         distances = self._distances_from(target)
 
+        moved = False
         for _ in range(agent.speed):
             possible = [
                 p for p in self.graph.neighbors(agent.position)
@@ -338,6 +343,9 @@ class SimulationEngine:
                 )
             ]
             if not possible:
+                if not moved:
+                    agent.set_status(WAIT, self.tick)
+                    agent.current_action = WAIT
                 break
 
             previous_position = agent.position
@@ -348,7 +356,10 @@ class SimulationEngine:
                     [p for p in route_steps if distances[p] == best_distance]
                 )
             else:
-                next_position = self.r.choice(possible)
+                if not moved:
+                    agent.set_status(WAIT, self.tick)
+                    agent.current_action = WAIT
+                break
             occupied.discard(previous_position)
             battery_empty = agent.move_to(
                 next_position,
@@ -357,6 +368,7 @@ class SimulationEngine:
             )
             occupied.add(agent.position)
             reserved.add(agent.position)
+            moved = True
             movement_type = (
                 MessageType.AGENT_MOVING_PICK_UP
                 if assigned_task.status == AWAIT_PICKUP
@@ -408,6 +420,16 @@ class SimulationEngine:
         agent.set_status(LOADING, self.tick)
         agent.charging_ticks_remaining = max(1, self.config.battery.chargingDurationTicks)
         agent.current_action = CHARGE
+        self._record_agent_charge(agent)
+
+    def _record_agent_charge(self, agent):
+        self.contract_net_manager.record_agent_activity(
+            MessageType.AGENT_CHARGE,
+            agent.id,
+            None,
+            self.tick,
+            agent.position,
+        )
 
     def all_agents_stranded(self):
         return bool(self.agents) and all(agent.status == STRANDED for agent in self.agents)

@@ -5,7 +5,7 @@ from app.domain.entities.destination import Destination
 from app.domain.entities.deliverytask import DeliveryTask
 from app.domain.entities.graph import GraphMap, GraphNode, NodeKind
 from app.domain.services.contractnetmanager import ContractNetManager
-from app.shared.constants import AWAIT_PICKUP, BUSY, DELIVERED, IDLE, IN_TRANSIT, LOADING, OPEN
+from app.shared.constants import AWAIT_PICKUP, DELIVERED, IDLE, IN_TRANSIT, LOADING, MOVING_TO_DROPOFF, MOVING_TO_PICKUP, OPEN, WAIT
 from app.simulation.engine import SimulationEngine
 from app.config import load_config
 from pathlib import Path
@@ -23,25 +23,31 @@ def test_agent_status_changes_are_sent_to_contract_net():
     manager = ContractNetManager()
     manager.register_agent(agent)
 
-    agent.set_status(BUSY, tick=4)
-    agent.set_status(LOADING, tick=5)
-    agent.set_status(IDLE, tick=6)
-    agent.mark_stranded(tick=7)
+    agent.set_status(MOVING_TO_PICKUP, tick=4)
+    agent.set_status(MOVING_TO_DROPOFF, tick=5)
+    agent.set_status(WAIT, tick=6)
+    agent.set_status(LOADING, tick=7)
+    agent.set_status(IDLE, tick=8)
+    agent.mark_stranded(tick=9)
 
     status_events = [
         event for event in manager.events
         if event.type in {
             MessageType.AGENT_LOADING,
-            MessageType.AGENT_BUSY,
+            MessageType.AGENT_MOVING_TO_PICKUP,
+            MessageType.AGENT_MOVING_TO_DROPOFF,
+            MessageType.AGENT_WAIT,
             MessageType.AGENT_IDLE,
             MessageType.AGENT_OUT_OF_ORDER,
         }
     ]
     assert [(event.tick, event.type) for event in status_events] == [
-        (4, MessageType.AGENT_BUSY),
-        (5, MessageType.AGENT_LOADING),
-        (6, MessageType.AGENT_IDLE),
-        (7, MessageType.AGENT_OUT_OF_ORDER),
+        (4, MessageType.AGENT_MOVING_TO_PICKUP),
+        (5, MessageType.AGENT_MOVING_TO_DROPOFF),
+        (6, MessageType.AGENT_WAIT),
+        (7, MessageType.AGENT_LOADING),
+        (8, MessageType.AGENT_IDLE),
+        (9, MessageType.AGENT_OUT_OF_ORDER),
     ]
     assert all(event.agent_id == agent.id and event.task_id is None for event in status_events)
     assert describe(status_events[-1]) == "Agent 1 is out of order"
@@ -58,7 +64,9 @@ def test_every_agent_emits_a_status_message_each_tick():
         if event.tick == engine.tick
         and event.type in {
             MessageType.AGENT_IDLE,
-            MessageType.AGENT_BUSY,
+            MessageType.AGENT_MOVING_TO_PICKUP,
+            MessageType.AGENT_MOVING_TO_DROPOFF,
+            MessageType.AGENT_WAIT,
             MessageType.AGENT_LOADING,
             MessageType.AGENT_OUT_OF_ORDER,
         }
@@ -66,6 +74,74 @@ def test_every_agent_emits_a_status_message_each_tick():
     assert {event.agent_id for event in tick_events} == {
         agent.id for agent in engine.agents
     }
+
+
+def test_charging_emits_agent_charge_activity():
+    config_path = Path(__file__).parents[1] / "config" / "app.json"
+    engine = SimulationEngine(load_config(config_path))
+    agent = engine.agents[0]
+    engine.agents = [agent]
+    engine.contract_net_manager.agents = [agent]
+    agent.position = engine.graph.depots[0].position
+
+    engine.start_charging(agent)
+    engine.step()
+
+    charge_events = [
+        event for event in engine.contract_net_manager.events
+        if event.type is MessageType.AGENT_CHARGE
+    ]
+    assert len(charge_events) >= 2
+    assert all(event.agent_id == agent.id for event in charge_events)
+    assert all(event.position == agent.position for event in charge_events)
+    assert describe(charge_events[0]) == f"Agent {agent.id} is charging at {agent.position}"
+
+
+def test_blocked_assigned_agent_emits_wait_state():
+    config_path = Path(__file__).parents[1] / "config" / "app.json"
+    engine = SimulationEngine(load_config(config_path))
+    agent = engine.agents[0]
+    engine.agents = [agent]
+    engine.contract_net_manager.agents = [agent]
+
+    depot = Depot(id=0, position=(4, 0))
+    destination = Destination(id=0, position=(4, 1))
+    graph = GraphMap(width=5, height=1, name="Blocked route test")
+    for x in range(5):
+        graph.add_node(
+            GraphNode(
+                (x, 0),
+                NodeKind.DEPOT if x == 4 else NodeKind.ROAD,
+            )
+        )
+    graph.rebuild_edges()
+    graph.depots = [depot]
+    graph.destinations = [destination]
+    depot.connect_contract_net_manager(engine.contract_net_manager)
+    engine.graph = graph
+
+    agent.position = (2, 0)
+    task = DeliveryTask(
+        id=44,
+        depot=depot,
+        destination=destination,
+        created_tick=0,
+        status=AWAIT_PICKUP,
+        assigned_agent_id=agent.id,
+    )
+    engine.tasks = [task]
+    occupied = {agent.position, (1, 0), (3, 0)}
+
+    engine.move_agent(agent, occupied, set())
+
+    wait_events = [
+        event for event in engine.contract_net_manager.events
+        if event.type is MessageType.AGENT_WAIT
+    ]
+    assert agent.position == (2, 0)
+    assert agent.status == WAIT
+    assert agent.current_action == WAIT
+    assert wait_events[-1].agent_id == agent.id
 
 
 def test_announced_task_receives_agent_bid_and_award():

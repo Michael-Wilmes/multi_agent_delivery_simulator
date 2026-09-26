@@ -38,6 +38,7 @@ class SimulatorApp:
         self.clock = pygame.time.Clock()
         self.engine = engine
         self.config = config
+        self.mode_label = "AUTO" if engine.running else "PAUSE"
         self.font = pygame.font.SysFont("segoeui", 16)
         self.small = pygame.font.SysFont("consolas", 13)
         self.title = pygame.font.SysFont("segoeui", 18, bold=True)
@@ -137,8 +138,16 @@ class SimulatorApp:
     def handle_click(self, p):
         for b, a in self.buttons:
             if b.hit(p):
-                a()
+                self._run_button_action(b.text, a)
                 return
+
+    def _run_button_action(self, label, action):
+        action()
+        self.mode_label = (
+            ("AUTO" if self.engine.running else "PAUSE")
+            if label == "Auto"
+            else label.upper()
+        )
 
     def handle_scrollbar_click(self, p):
         for name in ("depot", "agent", "contract"):
@@ -230,12 +239,7 @@ class SimulatorApp:
 
     def draw_map(self, s, r):
         g = s.graph
-        self.screen.blit(
-            self.title.render(f"KARTE: {g.name} ({g.width}x{g.height})", True, TEXT),
-            (r.x + 14, r.y + 9),
-        )
-        inner = r.inflate(-28, -58)
-        inner.y += 16
+        inner = r.inflate(-28, -28)
         cell = max(7, min(inner.width // g.width, inner.height // g.height))
         ox = inner.x + (inner.width - cell * g.width) // 2
         oy = inner.y + (inner.height - cell * g.height) // 2
@@ -290,33 +294,47 @@ class SimulatorApp:
         pygame.draw.rect(self.screen, color, fill, border_radius=4)
 
     def draw_right(self, s, r):
-        gap = 12
-        top_h = 125
-        sim_w = 220
+        gap = 10
+        sim_h = 105
+        agents_h = min(240, max(140, round((r.height - sim_h - gap * 2) * 0.35))) + 50
 
-        agents_y = r.y + top_h + gap
-        agents_h = min(220, max(150, (r.bottom - agents_y - gap) // 2))
-        combined_h = top_h + gap + agents_h
-
-        sim = pygame.Rect(r.x, r.y, sim_w, combined_h)
-        agents = pygame.Rect(sim.right + gap, r.y, r.width - sim_w - gap, combined_h)
+        sim = pygame.Rect(r.x, r.y, r.width, sim_h)
+        agents = pygame.Rect(r.x, sim.bottom + gap, r.width, agents_h)
         depots = pygame.Rect(
             r.x,
-            sim.bottom + gap,
+            agents.bottom + gap,
             r.width,
-            r.bottom - sim.bottom - gap,
+            r.bottom - agents.bottom - gap,
         )
         self.agent_panel_rect = agents
 
-        self.panel(sim, "SIMULATION") #todo: use from a centralized place
+        self.panel(sim)
         self.panel(agents, "AGENTENSTATUS")#    todo: use from a centralized place
         self.panel(depots, f"DEPOT-AUFTRAEGE ({len(s.graph.depots)})")
 
-        self.screen.blit(self.font.render("Tick", True, MUTED), (sim.x + 15, sim.y + 43))
-        self.screen.blit(self.title.render(str(s.tick), True, TEXT), (sim.x + 15, sim.y + 67))
+        simulation_summary = self.font.render(
+            f"Karte: {s.graph.name} ({s.graph.width}x{s.graph.height})   "
+            f"Tick: {s.tick}   Modus: {self.mode_label}",
+            True,
+            TEXT,
+        )
+        max_summary_width = sim.width - 28
+        if simulation_summary.get_width() > max_summary_width:
+            summary_height = max(
+                1,
+                round(
+                    simulation_summary.get_height()
+                    * max_summary_width
+                    / simulation_summary.get_width()
+                ),
+            )
+            simulation_summary = pygame.transform.smoothscale(
+                simulation_summary,
+                (max_summary_width, summary_height),
+            )
         self.screen.blit(
-            self.small.render("AUTO" if s.running else "PAUSE", True, GREEN if s.running else MUTED), #todo: use from a centralized place
-            (sim.x + 85, sim.y + 72),
+            simulation_summary,
+            simulation_summary.get_rect(center=sim.center),
         )
         # Spaltenabstaende skalieren mit der (jetzt schmaleren) Agentenspalte.
         scale = agents.width / 809
@@ -368,88 +386,150 @@ class SimulatorApp:
         self.draw_depot_tasks(s, depots)
 
     def draw_depot_tasks(self, s, panel):
-        """Renders depots as a fixed 2x10 grid so card size never depends on message volume."""
+        """Render one compact status-count row per depot."""
         tasks_by_depot = {depot.id: [] for depot in s.graph.depots}
         for task in s.tasks:
             tasks_by_depot.setdefault(task.depot.id, []).append(task)
 
-        content_top = panel.y + 40
-        content_bottom = panel.bottom - 8
-        content_height = content_bottom - content_top
-        gap = 10
-        columns = 2
-        card_height = 118
-        card_width = (panel.width - 28 - gap * (columns - 1)) // columns
-        card_x = panel.x + 14
-
-        total_rows = max(1, -(-len(s.graph.depots) // columns))
-        total_height = total_rows * card_height + (total_rows - 1) * gap
-        self.depot_scroll_max = max(0, total_height - content_height)
+        status_columns = (
+            ((OPEN,), ("OPEN",), YELLOW),
+            ((AWAIT_PICKUP,), ("AWAIT", "PICK-OFF"), BLUE),
+            ((IN_TRANSIT,), ("IN", "TRANSIT"), BLUE),
+            ((DELIVERED,), ("DELIVERED",), GREEN),
+            ((NO_BID,), ("NO", "BID"), RED),
+        )
+        table_x = panel.x + 14
+        table_width = panel.width - 38
+        depot_column_width = min(190, max(110, round(table_width * 0.27)))
+        status_column_width = (table_width - depot_column_width) / len(status_columns)
+        header_y = panel.y + 39
+        header_height = 38
+        rows_y = header_y + header_height
+        row_height = 28
+        visible_height = max(0, panel.bottom - 8 - rows_y)
+        total_height = (len(s.graph.depots) + 1) * row_height
+        self.depot_scroll_max = max(0, total_height - visible_height)
         self.depot_scroll = min(self.depot_scroll, self.depot_scroll_max)
 
         clip = self.screen.get_clip()
-        self.screen.set_clip(pygame.Rect(panel.x + 8, content_top, panel.width - 24, content_height))
-
-        badge_specs = (
-            ((OPEN,), "OPEN", YELLOW),
-            ((AWAIT_PICKUP,), "AWAIT_PICK_OFF", BLUE),
-            ((IN_TRANSIT,), "IN_TRANSIT", BLUE),
-            ((DELIVERED,), "DELIVERED", GREEN),
-            ((NO_BID,), "NO_BID", RED),
+        self.screen.set_clip(
+            pygame.Rect(panel.x + 8, header_y, panel.width - 24, panel.bottom - header_y - 8)
         )
 
-        for depot_index, depot in enumerate(s.graph.depots):
-            row = depot_index // columns
-            column = depot_index % columns
-            card_y = content_top - self.depot_scroll + row * (card_height + gap)
-            x = card_x + column * (card_width + gap)
-            depot_tasks = tasks_by_depot[depot.id]
+        depot_header = pygame.Rect(table_x, header_y, depot_column_width, header_height)
+        pygame.draw.rect(self.screen, (16, 26, 30), depot_header)
+        pygame.draw.rect(self.screen, BORDER, depot_header, 1)
+        depot_label = self.small.render("DEPOT", True, TEXT)
+        self.screen.blit(
+            depot_label,
+            depot_label.get_rect(midleft=(depot_header.x + 10, depot_header.centery)),
+        )
 
-            card = pygame.Rect(x, card_y, card_width, card_height)
-            pygame.draw.rect(self.screen, (24, 45, 55), card, border_radius=5)
-            pygame.draw.rect(self.screen, BORDER, card, 1, border_radius=5)
-            self.screen.blit(
-                self.small.render(
-                    f"Depot {depot.id + 1} Start {depot.position}",
-                    True,
-                    TEXT,
-                ),
-                (card.x + 10, card.y + 9),
+        for column_index, (_, label_lines, color) in enumerate(status_columns):
+            column_x = table_x + depot_column_width + round(column_index * status_column_width)
+            next_column_x = table_x + depot_column_width + round((column_index + 1) * status_column_width)
+            header = pygame.Rect(
+                column_x,
+                header_y,
+                next_column_x - column_x,
+                header_height,
             )
-
-            counts = [
-                (label, sum(task.status in statuses for task in depot_tasks), color)
-                for statuses, label, color in badge_specs
-            ]
-            badge_gap = 6
-            badge_w = (card_width - 20 - badge_gap) // 2
-            for badge_index, (label, count, color) in enumerate(counts):
-                badge_col = badge_index % 2
-                badge_row = badge_index // 2
-                badge_x = card.x + 10 + badge_col * (badge_w + badge_gap)
-                badge_y = card.y + 30 + badge_row * (22 + badge_gap)
-                badge = pygame.Rect(badge_x, badge_y, badge_w, 22)
-                pygame.draw.rect(self.screen, (16, 26, 30), badge, border_radius=11)
-                pygame.draw.rect(self.screen, color, badge, 1, border_radius=11)
+            pygame.draw.rect(self.screen, (16, 26, 30), header)
+            pygame.draw.rect(self.screen, color, header, 1)
+            line_height = self.small.get_linesize()
+            first_line_y = header.centery - (len(label_lines) * line_height) // 2
+            for line_index, label in enumerate(label_lines):
                 label_surface = self.small.render(label, True, color)
-                count_surface = self.small.render(str(count), True, color)
-                label_width = max(1, badge.width - count_surface.get_width() - 28)
-                if label_surface.get_width() > label_width:
+                max_label_width = max(1, header.width - 8)
+                if label_surface.get_width() > max_label_width:
+                    scaled_height = max(
+                        1,
+                        round(label_surface.get_height() * max_label_width / label_surface.get_width()),
+                    )
                     label_surface = pygame.transform.smoothscale(
                         label_surface,
-                        (label_width, label_surface.get_height()),
+                        (max_label_width, scaled_height),
                     )
-                self.screen.blit(label_surface, label_surface.get_rect(midleft=(badge.x + 10, badge.centery)))
-                self.screen.blit(count_surface, count_surface.get_rect(midright=(badge.right - 10, badge.centery)))
+                self.screen.blit(
+                    label_surface,
+                    label_surface.get_rect(
+                        center=(header.centerx, first_line_y + line_index * line_height + line_height // 2)
+                    ),
+                )
+
+        visible_rows = max(0, visible_height // row_height)
+        visible_depots = s.graph.depots[
+            self.depot_scroll // row_height:self.depot_scroll // row_height + visible_rows + 1
+        ]
+        for row_index, depot in enumerate(visible_depots):
+            depot_y = rows_y + row_index * row_height - self.depot_scroll % row_height
+            row_rect = pygame.Rect(table_x, depot_y, table_width, row_height)
+            pygame.draw.rect(self.screen, (24, 45, 55), row_rect)
+            pygame.draw.rect(self.screen, BORDER, row_rect, 1)
+            depot_text = self.small.render(
+                f"Depot {depot.id + 1}  {depot.position}",
+                True,
+                TEXT,
+            )
+            self.screen.blit(
+                depot_text,
+                depot_text.get_rect(midleft=(row_rect.x + 10, row_rect.centery)),
+            )
+
+            depot_tasks = tasks_by_depot[depot.id]
+            for column_index, (statuses, _, color) in enumerate(status_columns):
+                column_x = table_x + depot_column_width + round(column_index * status_column_width)
+                next_column_x = table_x + depot_column_width + round((column_index + 1) * status_column_width)
+                count = sum(task.status in statuses for task in depot_tasks)
+                count_surface = self.small.render(str(count), True, color)
+                self.screen.blit(
+                    count_surface,
+                    count_surface.get_rect(
+                        center=((column_x + next_column_x) // 2, row_rect.centery)
+                    ),
+                )
+
+        summary_y = rows_y + len(s.graph.depots) * row_height - self.depot_scroll
+        summary_rect = pygame.Rect(table_x, summary_y, table_width, row_height)
+        pygame.draw.rect(self.screen, (16, 26, 30), summary_rect)
+        pygame.draw.line(
+            self.screen,
+            TEXT,
+            (summary_rect.x, summary_rect.y),
+            (summary_rect.right, summary_rect.y),
+            2,
+        )
+        total_counts = [
+            sum(task.status in statuses for task in s.tasks)
+            for statuses, _, _ in status_columns
+        ]
+        total_label = self.small.render(f"TOTAL ({sum(total_counts)})", True, TEXT)
+        self.screen.blit(
+            total_label,
+            total_label.get_rect(midleft=(summary_rect.x + 10, summary_rect.centery)),
+        )
+        for column_index, ((_, _, color), count) in enumerate(
+            zip(status_columns, total_counts)
+        ):
+            column_x = table_x + depot_column_width + round(column_index * status_column_width)
+            next_column_x = table_x + depot_column_width + round((column_index + 1) * status_column_width)
+            count_surface = self.small.render(str(count), True, color)
+            self.screen.blit(
+                count_surface,
+                count_surface.get_rect(
+                    center=((column_x + next_column_x) // 2, summary_rect.centery)
+                ),
+            )
 
         self.screen.set_clip(clip)
-        self.draw_depot_scrollbar(panel, total_height, content_height)
+        self.draw_depot_scrollbar(panel, total_height, visible_height, rows_y)
 
-    def draw_depot_scrollbar(self, panel, content_height, visible_height):
-        self.depot_scrollbar_rect = pygame.Rect(panel.right - 16, panel.y + 40, 7, panel.height - 48)
+    def draw_depot_scrollbar(self, panel, content_height, visible_height, content_top):
+        track_height = max(0, panel.bottom - 8 - content_top)
+        self.depot_scrollbar_rect = pygame.Rect(panel.right - 16, content_top, 7, track_height)
         track = self.depot_scrollbar_rect
         pygame.draw.rect(self.screen, (32, 45, 53), track, border_radius=3)
-        if content_height <= visible_height:
+        if content_height <= visible_height or visible_height <= 0 or track.height <= 0:
             self.depot_scrollbar_thumb = track.copy()
             return
         thumb_height = max(18, track.height * visible_height // content_height)
@@ -474,11 +554,22 @@ class SimulatorApp:
     def draw_contract(self, s, r):
         self.contract_log_rect = r.copy()
         x = r.x + 15
+        column_gap = self.small.size(" ")[0]
+        tick_column_width = self.small.size("0" * 6)[0]
+        phase_column_width = self.small.size("0" * 17)[0] + 50
+        agent_column_width = self.small.size("0" * 18)[0]
+        tick_x = x
+        phase_x = tick_x + tick_column_width + column_gap
+        agent_x = phase_x + phase_column_width + column_gap
+        details_x = agent_x + agent_column_width + column_gap
         header_y = r.y + 42
-        self.screen.blit(
-            self.small.render("Tick   Phase             Agent              Details", True, TEXT),
-            (x, header_y),
-        )
+        for label, column_x in (
+            ("Tick", tick_x),
+            ("Phase", phase_x),
+            ("Agent", agent_x),
+            ("Details", details_x),
+        ):
+            self.screen.blit(self.small.render(label, True, TEXT), (column_x, header_y))
         content_top = r.y + 65
         content_bottom = r.bottom - 8
         content_height = max(0, content_bottom - content_top)
@@ -508,14 +599,23 @@ class SimulatorApp:
         for message in rows:
             details = describe(message)
             phase = message.type.value
+            phase_surface = self.small.render(phase, True, MUTED)
+            if phase_surface.get_width() > phase_column_width:
+                phase_surface = pygame.transform.smoothscale(
+                    phase_surface,
+                    (phase_column_width, phase_surface.get_height()),
+                )
+            agent_id = str(message.agent_id) if message.agent_id is not None else "-"
             self.screen.blit(
-                self.small.render(
-                    f"{message.tick:<6} {phase:<17} {message.agent_id or '-':<18} {details}",
-                    True,
-                    MUTED,
-                ),
-                (x, y),
+                self.small.render(str(message.tick), True, MUTED),
+                (tick_x, y),
             )
+            self.screen.blit(phase_surface, (phase_x, y))
+            self.screen.blit(
+                self.small.render(agent_id, True, MUTED),
+                (agent_x, y),
+            )
+            self.screen.blit(self.small.render(details, True, MUTED), (details_x, y))
             y += 22
 
         self.screen.set_clip(previous_clip)

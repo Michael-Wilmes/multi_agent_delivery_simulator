@@ -1,5 +1,7 @@
 IDLE = "idle"
-BUSY = "busy"
+MOVING_TO_PICKUP = "moving_to_pickup"
+MOVING_TO_DROPOFF = "moving_to_dropoff"
+WAIT = "wait"
 UNANNOUNCED = "unannounced"
 OPEN = "open"
 AWAIT_PICKUP = "await_pickup"

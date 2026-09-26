@@ -4,15 +4,17 @@ from app.domain.entities.contractnetmessage import ContractNetMessage, MessageTy
 from app.domain.services.bidcalculator import BidCalculator
 from app.shared.constants import (
     AWAIT_PICKUP,
-    BUSY,
     DELIVERED,
     IDLE,
     IN_TRANSIT,
     LOADING,
+    MOVING_TO_DROPOFF,
+    MOVING_TO_PICKUP,
     NO_BID,
     OPEN,
     STRANDED,
     UNANNOUNCED,
+    WAIT,
 )
 
 @dataclass
@@ -36,7 +38,9 @@ class ContractNetManager:
     ) -> ContractNetMessage:
         message_type = {
             IDLE: MessageType.AGENT_IDLE,
-            BUSY: MessageType.AGENT_BUSY,
+            MOVING_TO_PICKUP: MessageType.AGENT_MOVING_TO_PICKUP,
+            MOVING_TO_DROPOFF: MessageType.AGENT_MOVING_TO_DROPOFF,
+            WAIT: MessageType.AGENT_WAIT,
             LOADING: MessageType.AGENT_LOADING,
             STRANDED: MessageType.AGENT_OUT_OF_ORDER,
         }.get(status)
@@ -54,7 +58,7 @@ class ContractNetManager:
         self,
         message_type: MessageType,
         agent_id: int,
-        task_id: int,
+        task_id: int | None,
         tick: int,
         position: tuple[int, int] | None = None,
     ) -> ContractNetMessage:
@@ -124,7 +128,7 @@ class ContractNetManager:
                 if message.type is MessageType.AUCTION_AWARD:
                     task.status = AWAIT_PICKUP
                     task.assigned_agent_id = agent.id
-                    agent.set_status(BUSY, message.tick)
+                    agent.set_status(MOVING_TO_PICKUP, message.tick)
                     self.events.append(
                         ContractNetMessage(
                             type=MessageType.TASK_ASSIGNED,
@@ -161,7 +165,7 @@ class ContractNetManager:
         if task.status == OPEN:
             task.status = AWAIT_PICKUP
             task.assigned_agent_id = agent.id
-            agent.set_status(BUSY, tick if tick is not None else 0)
+            agent.set_status(MOVING_TO_PICKUP, tick if tick is not None else 0)
             self.events.append(
                 ContractNetMessage(
                     type=MessageType.TASK_ASSIGNED,

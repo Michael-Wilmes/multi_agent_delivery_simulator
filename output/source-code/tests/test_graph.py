@@ -7,7 +7,7 @@ from app.domain.graph import NodeKind
 from app.domain.services.routecalculator import ManhattanRouteCalculator
 from app.maps.presets import create_map1, create_map2, graph_from_ascii
 from app.maps.random_map import RandomGraphMapFactory
-from app.shared.constants import AWAIT_PICKUP, BUSY, CHARGE, DELIVER, DELIVERED, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED
+from app.shared.constants import AWAIT_PICKUP, CHARGE, DELIVER, DELIVERED, IDLE, IN_TRANSIT, LOAD_DELIVERY, LOADING, MOVE, PICKUP, STRANDED
 from app.simulation.engine import SimulationEngine
 
 

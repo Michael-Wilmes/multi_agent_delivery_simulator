@@ -1,134 +1,85 @@
 tick,phase,agent,details
-1,AGENT_IDLE,3,Agent 3 is idle
-1,AGENT_IDLE,2,Agent 2 is idle
-1,AGENT_IDLE,1,Agent 1 is idle
 1,AGENT_IDLE,4,Agent 4 is idle
-2,AGENT_IDLE,2,Agent 2 is idle
+1,AGENT_IDLE,3,Agent 3 is idle
+1,AGENT_IDLE,1,Agent 1 is idle
+1,AGENT_IDLE,2,Agent 2 is idle
 2,AGENT_IDLE,1,Agent 1 is idle
+2,AGENT_IDLE,2,Agent 2 is idle
 2,AGENT_IDLE,4,Agent 4 is idle
 2,AGENT_IDLE,3,Agent 3 is idle
 3,AGENT_IDLE,1,Agent 1 is idle
+3,AGENT_IDLE,2,Agent 2 is idle
 3,AGENT_IDLE,4,Agent 4 is idle
 3,AGENT_IDLE,3,Agent 3 is idle
-3,AGENT_IDLE,2,Agent 2 is idle
 4,AGENT_IDLE,2,Agent 2 is idle
+4,AGENT_IDLE,1,Agent 1 is idle
 4,AGENT_IDLE,4,Agent 4 is idle
 4,AGENT_IDLE,3,Agent 3 is idle
-4,AGENT_IDLE,1,Agent 1 is idle
-5,AGENT_IDLE,1,Agent 1 is idle
 5,AGENT_IDLE,2,Agent 2 is idle
+5,AGENT_IDLE,1,Agent 1 is idle
 5,AGENT_IDLE,3,Agent 3 is idle
 5,AGENT_IDLE,4,Agent 4 is idle
-5,AUCTION_ANNOUNCE,,"T-001: Depot D8 (2, 6) -> Ziel Z3 (7, 5) bis 10"
-5,TASK_OPEN,,"T-001 open: awaiting bids for Destination Z3 (7, 5), deadline 10"
-6,AUCTION_BID,2,T-001 Agent 2 Kosten 22.0
+5,AUCTION_ANNOUNCE,,"T-001: Depot D8 (15, 31) -> Ziel Z4 (42, 47) bis 8"
+5,TASK_OPEN,,"T-001 open: awaiting bids for Destination Z4 (42, 47), deadline 8"
+5,AGENT_NO_BID,1,"T-001 Agent 1: Not reachable. Distance 64.0, Energy range 50.0."
+5,AGENT_NO_BID,2,"T-001 Agent 2: Not reachable. Distance 88.0, Energy range 50.0."
+5,AGENT_NO_BID,3,"T-001 Agent 3: Not reachable. Distance 55.0, Energy range 33.3."
+5,AGENT_NO_BID,4,"T-001 Agent 4: Not reachable. Distance 57.0, Energy range 33.3."
 6,AGENT_IDLE,2,Agent 2 is idle
-6,AUCTION_BID,1,T-001 Agent 1 Kosten 8.0
-6,AGENT_IDLE,1,Agent 1 is idle
-6,AUCTION_BID,4,T-001 Agent 4 Kosten 18.0
 6,AGENT_IDLE,4,Agent 4 is idle
-6,AUCTION_BID,3,T-001 Agent 3 Kosten 18.0
+6,AGENT_IDLE,1,Agent 1 is idle
 6,AGENT_IDLE,3,Agent 3 is idle
-7,AGENT_IDLE,2,Agent 2 is idle
 7,AGENT_IDLE,1,Agent 1 is idle
+7,AGENT_IDLE,2,Agent 2 is idle
 7,AGENT_IDLE,3,Agent 3 is idle
 7,AGENT_IDLE,4,Agent 4 is idle
-8,AGENT_IDLE,3,Agent 3 is idle
-8,AGENT_IDLE,4,Agent 4 is idle
-8,AGENT_IDLE,2,Agent 2 is idle
 8,AGENT_IDLE,1,Agent 1 is idle
-9,AGENT_IDLE,1,Agent 1 is idle
-9,AGENT_IDLE,4,Agent 4 is idle
-9,AGENT_IDLE,2,Agent 2 is idle
+8,AGENT_IDLE,3,Agent 3 is idle
+8,AGENT_IDLE,2,Agent 2 is idle
+8,AGENT_IDLE,4,Agent 4 is idle
+8,AUCTION_NO_BID,,T-001 ohne Gebot
 9,AGENT_IDLE,3,Agent 3 is idle
+9,AGENT_IDLE,4,Agent 4 is idle
+9,AGENT_IDLE,1,Agent 1 is idle
+9,AGENT_IDLE,2,Agent 2 is idle
+10,AGENT_IDLE,3,Agent 3 is idle
 10,AGENT_IDLE,4,Agent 4 is idle
 10,AGENT_IDLE,2,Agent 2 is idle
-10,AGENT_IDLE,3,Agent 3 is idle
 10,AGENT_IDLE,1,Agent 1 is idle
-10,AUCTION_ANNOUNCE,,"T-002: Depot D4 (8, 16) -> Ziel Z3 (7, 5) bis 19"
-10,TASK_OPEN,,"T-002 open: awaiting bids for Destination Z3 (7, 5), deadline 19"
-10,AUCTION_AWARD,1,"T-001 an Agent 1, Kosten 8.0"
-10,AGENT_BUSY,1,Agent 1 is busy
-10,TASK_ASSIGNED,1,"T-001 assigned to agent 1; awaiting pickup for Destination Z3 (7, 5)"
-10,TASK_AWAIT_PICKUP,1,"T-001 AWAIT_PICKUP: waiting at (2, 6) for Agent 1"
-10,AUCTION_BID_LOST,2,"T-001 verloren, Kosten 22.0"
-10,AUCTION_BID_LOST,4,"T-001 verloren, Kosten 18.0"
-10,AUCTION_BID_LOST,3,"T-001 verloren, Kosten 18.0"
-11,AGENT_IDLE,3,Agent 3 is idle
-11,AUCTION_BID,2,T-002 Agent 2 Kosten 18.0
-11,AGENT_IDLE,2,Agent 2 is idle
-11,AUCTION_BID,1,T-002 Agent 1 Kosten 30.0
-11,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (1, 6) while heading to pickup for T-001"
-11,AGENT_BUSY,1,Agent 1 is busy
+10,AUCTION_ANNOUNCE,,"T-002: Depot D9 (18, 18) -> Ziel Z3 (49, 1) bis 12"
+10,TASK_OPEN,,"T-002 open: awaiting bids for Destination Z3 (49, 1), deadline 12"
+10,AGENT_NO_BID,1,"T-002 Agent 1: Not reachable. Distance 67.0, Energy range 50.0."
+10,AGENT_NO_BID,2,"T-002 Agent 2: Not reachable. Distance 77.0, Energy range 50.0."
+10,AGENT_NO_BID,3,"T-002 Agent 3: Not reachable. Distance 64.0, Energy range 33.3."
+10,AGENT_NO_BID,4,"T-002 Agent 4: Not reachable. Distance 72.0, Energy range 33.3."
 11,AGENT_IDLE,4,Agent 4 is idle
-12,AGENT_IDLE,2,Agent 2 is idle
-12,AGENT_IDLE,3,Agent 3 is idle
+11,AGENT_IDLE,2,Agent 2 is idle
+11,AGENT_IDLE,1,Agent 1 is idle
+11,AGENT_IDLE,3,Agent 3 is idle
+12,AGENT_IDLE,1,Agent 1 is idle
 12,AGENT_IDLE,4,Agent 4 is idle
-12,AGENT_MOVING_PICK_UP,1,"Agent 1 moved to (2, 6) while heading to pickup for T-001"
-12,TASK_IN_TRANSIT,1,"T-001 in delivery to Destination Z3 (7, 5) by Agent 1"
-12,AGENT_PICK_OFF,1,Agent 1 picked up T-001
-12,AGENT_LOADING,1,Agent 1 is loading
-12,AGENT_LOADING,1,Agent 1 is loading
-13,AGENT_BUSY,1,Agent 1 is busy
-13,AGENT_BUSY,1,Agent 1 is busy
-13,AGENT_IDLE,3,Agent 3 is idle
+12,AGENT_IDLE,3,Agent 3 is idle
+12,AGENT_IDLE,2,Agent 2 is idle
+12,AUCTION_NO_BID,,T-002 ohne Gebot
+13,AGENT_IDLE,1,Agent 1 is idle
 13,AGENT_IDLE,2,Agent 2 is idle
+13,AGENT_IDLE,3,Agent 3 is idle
 13,AGENT_IDLE,4,Agent 4 is idle
 14,AGENT_IDLE,3,Agent 3 is idle
-14,AGENT_IDLE,2,Agent 2 is idle
+14,AGENT_IDLE,1,Agent 1 is idle
 14,AGENT_IDLE,4,Agent 4 is idle
-14,AGENT_MOVING_DROPOFF,1,"Agent 1 moved to (3, 6) while heading to dropoff for T-001"
-14,AGENT_BUSY,1,Agent 1 is busy
-15,AGENT_IDLE,3,Agent 3 is idle
-15,AGENT_IDLE,4,Agent 4 is idle
-15,AGENT_MOVING_DROPOFF,1,"Agent 1 moved to (4, 6) while heading to dropoff for T-001"
-15,AGENT_BUSY,1,Agent 1 is busy
+14,AGENT_IDLE,2,Agent 2 is idle
 15,AGENT_IDLE,2,Agent 2 is idle
-15,AUCTION_ANNOUNCE,,"T-003: Depot D7 (6, 13) -> Ziel Z1 (4, 14) bis 19"
-15,TASK_OPEN,,"T-003 open: awaiting bids for Destination Z1 (4, 14), deadline 19"
-16,AUCTION_BID,3,T-003 Agent 3 Kosten 18.0
-16,AGENT_IDLE,3,Agent 3 is idle
-16,AUCTION_BID,4,T-003 Agent 4 Kosten 12.0
-16,AGENT_IDLE,4,Agent 4 is idle
-16,AUCTION_BID,1,T-003 Agent 1 Kosten 12.0
-16,AGENT_MOVING_DROPOFF,1,"Agent 1 moved to (4, 5) while heading to dropoff for T-001"
-16,AGENT_BUSY,1,Agent 1 is busy
-16,AUCTION_BID,2,T-003 Agent 2 Kosten 10.0
+15,AGENT_IDLE,4,Agent 4 is idle
+15,AGENT_IDLE,1,Agent 1 is idle
+15,AGENT_IDLE,3,Agent 3 is idle
+15,AUCTION_ANNOUNCE,,"T-003: Depot D6 (31, 42) -> Ziel Z1 (23, 36) bis 21"
+15,TASK_OPEN,,"T-003 open: awaiting bids for Destination Z1 (23, 36), deadline 21"
+15,AGENT_NO_BID,1,"T-003 Agent 1: Not reachable. Distance 62.0, Energy range 50.0."
+15,AGENT_NO_BID,2,"T-003 Agent 2: Not reachable. Distance 54.0, Energy range 50.0."
+15,AGENT_NO_BID,3,"T-003 Agent 3: Not reachable. Distance 53.0, Energy range 33.3."
+16,AGENT_IDLE,1,Agent 1 is idle
 16,AGENT_IDLE,2,Agent 2 is idle
-17,AGENT_IDLE,2,Agent 2 is idle
-17,AGENT_MOVING_DROPOFF,1,"Agent 1 moved to (5, 5) while heading to dropoff for T-001"
-17,AGENT_BUSY,1,Agent 1 is busy
-17,AGENT_IDLE,4,Agent 4 is idle
-17,AGENT_IDLE,3,Agent 3 is idle
-18,AGENT_MOVING_DROPOFF,1,"Agent 1 moved to (6, 5) while heading to dropoff for T-001"
-18,AGENT_BUSY,1,Agent 1 is busy
-18,AGENT_IDLE,3,Agent 3 is idle
-18,AGENT_IDLE,2,Agent 2 is idle
-18,AGENT_IDLE,4,Agent 4 is idle
-19,AGENT_IDLE,2,Agent 2 is idle
-19,AGENT_IDLE,4,Agent 4 is idle
-19,AGENT_MOVING_DROPOFF,1,"Agent 1 moved to (7, 5) while heading to dropoff for T-001"
-19,AGENT_BUSY,1,Agent 1 is busy
-19,AGENT_IDLE,3,Agent 3 is idle
-19,AUCTION_AWARD,2,"T-002 an Agent 2, Kosten 18.0"
-19,AGENT_BUSY,2,Agent 2 is busy
-19,TASK_ASSIGNED,2,"T-002 assigned to agent 2; awaiting pickup for Destination Z3 (7, 5)"
-19,TASK_AWAIT_PICKUP,2,"T-002 AWAIT_PICKUP: waiting at (8, 16) for Agent 2"
-19,AUCTION_BID_LOST,1,"T-002 verloren, Kosten 30.0"
-19,AUCTION_AWARD,2,"T-003 an Agent 2, Kosten 10.0"
-19,TASK_ASSIGNED,2,"T-003 assigned to agent 2; awaiting pickup for Destination Z1 (4, 14)"
-19,TASK_AWAIT_PICKUP,2,"T-003 AWAIT_PICKUP: waiting at (6, 13) for Agent 2"
-19,AUCTION_BID_LOST,3,"T-003 verloren, Kosten 18.0"
-19,AUCTION_BID_LOST,4,"T-003 verloren, Kosten 12.0"
-19,AUCTION_BID_LOST,1,"T-003 verloren, Kosten 12.0"
-20,TASK_DELIVERED,1,"T-001 delivered at Destination Z3 (7, 5) by Agent 1"
-20,AGENT_DROP_OFF,1,Agent 1 dropped off T-001
-20,AGENT_IDLE,1,Agent 1 is idle
-20,AGENT_IDLE,1,Agent 1 is idle
-20,AGENT_IDLE,3,Agent 3 is idle
-20,AGENT_MOVING_PICK_UP,2,"Agent 2 moved to (5, 18) while heading to pickup for T-002"
-20,AGENT_BUSY,2,Agent 2 is busy
-20,AGENT_IDLE,4,Agent 4 is idle
-20,AUCTION_ANNOUNCE,,"T-004: Depot D9 (14, 3) -> Ziel Z2 (6, 14) bis 22"
-20,TASK_OPEN,,"T-004 open: awaiting bids for Destination Z2 (6, 14), deadline 22"
-20,AGENT_NO_BID,4,"T-004 Agent 4: Not reachable. Distance 46.0, Energy range 33.3."
+16,AUCTION_BID,4,T-003 Agent 4 Kosten 27.0
+16,AGENT_IDLE,4,Agent 4 is idle
+16,AGENT_IDLE,3,Agent 3 is idle

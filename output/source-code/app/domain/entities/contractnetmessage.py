@@ -15,8 +15,11 @@ class MessageType(StrEnum):
     TASK_DELIVERED = "TASK_DELIVERED"
     AGENT_NO_BID = "AGENT_NO_BID"
     AGENT_IDLE = "AGENT_IDLE"
-    AGENT_BUSY = "AGENT_BUSY"
+    AGENT_MOVING_TO_PICKUP = "AGENT_MOVING_TO_PICKUP"
+    AGENT_MOVING_TO_DROPOFF = "AGENT_MOVING_TO_DROPOFF"
+    AGENT_WAIT = "AGENT_WAIT"
     AGENT_LOADING = "AGENT_LOADING"
+    AGENT_CHARGE = "AGENT_CHARGE"
     AGENT_OUT_OF_ORDER = "AGENT_OUT_OF_ORDER"
     AGENT_MOVING_PICK_UP = "AGENT_MOVING_PICK_UP"
     AGENT_PICK_OFF = "AGENT_PICK_OFF"
@@ -47,10 +50,16 @@ def describe(message: ContractNetMessage) -> str:
     match message.type:
         case MessageType.AGENT_IDLE:
             return f"Agent {message.agent_id} is idle"
-        case MessageType.AGENT_BUSY:
-            return f"Agent {message.agent_id} is busy"
+        case MessageType.AGENT_MOVING_TO_PICKUP:
+            return f"Agent {message.agent_id} is moving to pickup"
+        case MessageType.AGENT_MOVING_TO_DROPOFF:
+            return f"Agent {message.agent_id} is moving to dropoff"
+        case MessageType.AGENT_WAIT:
+            return f"Agent {message.agent_id} is waiting"
         case MessageType.AGENT_LOADING:
             return f"Agent {message.agent_id} is loading"
+        case MessageType.AGENT_CHARGE:
+            return f"Agent {message.agent_id} is charging at {message.position}"
         case MessageType.AGENT_OUT_OF_ORDER:
             return f"Agent {message.agent_id} is out of order"
         case MessageType.AGENT_MOVING_PICK_UP:
